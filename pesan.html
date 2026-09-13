@@ -61,7 +61,7 @@
 .pj-hint strong { color: var(--primary-dark); font-weight: 700; }
 
 /* ============================================================
-   CUSTOM SELECT (duplikat dari index.html)
+   CUSTOM SELECT
    ============================================================ */
 .cs { position: relative; width: 100%; }
 .cs-trigger {
@@ -182,7 +182,7 @@
 /* ============================================================
    SEARCH
    ============================================================ */
-.search-wrap { position: relative; margin-bottom: var(--sp-3); }
+.search-wrap { position: relative; }
 .search-results {
   position: absolute; top: calc(100% + 4px); left: 0; right: 0;
   background: var(--surface); border: 1px solid var(--border);
@@ -212,6 +212,18 @@
   padding: 16px; text-align: center;
   color: var(--text-muted); font-size: 12px;
 }
+
+.search-stok-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: var(--r-full);
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+.search-stok-badge.ok { background: var(--success-bg); color: var(--success); }
+.search-stok-badge.low { background: var(--warning-bg); color: var(--warning); }
+.search-stok-badge.empty { background: var(--danger-bg); color: var(--danger); }
 
 /* ============================================================
    CART
@@ -243,6 +255,19 @@
   font-family: ui-monospace, monospace;
 }
 .cart-item-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+.cart-item-warning {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: var(--warning-bg);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--r-sm);
+  font-size: 11px;
+  color: var(--warning-dark, var(--warning));
+  font-weight: 600;
+}
+.cart-item-warning svg { width: 12px; height: 12px; flex-shrink: 0; }
 
 .qty-ctrl {
   display: flex; align-items: center;
@@ -326,6 +351,20 @@
   font-size: 12px; line-height: 1.8;
 }
 .confirm-list strong { color: var(--text); }
+
+.confirm-warning {
+  display: flex; gap: 10px;
+  padding: 12px 14px;
+  background: var(--warning-bg);
+  border: 1px solid var(--warning);
+  border-radius: var(--r-md);
+  font-size: 12px;
+  color: var(--warning-dark, var(--warning));
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.confirm-warning svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+.confirm-warning strong { font-weight: 700; }
 </style>
 </head>
 <body>
@@ -352,7 +391,7 @@
 'use strict';
 
 /* ============================================================
-   HELPERS — inline loader & empty state
+   HELPERS
    ============================================================ */
 const H = {
   loader(text) {
@@ -375,9 +414,11 @@ const H = {
 };
 
 /* ============================================================
-   SESSION KHUSUS RUANG — key terpisah dari petugas
+   SESSION & CACHE RUANG
    ============================================================ */
 const RUANG_SESSION_KEY = 'pkm_ruang_session';
+const RUANG_CACHE_KEY = 'pkm_ruang_list';
+const RUANG_CACHE_TTL_MS = 86400000; // 24 jam
 
 const RuangStore = {
   get() {
@@ -401,9 +442,33 @@ const RuangStore = {
   }
 };
 
+const RuangCache = {
+  get() {
+    try {
+      const raw = localStorage.getItem(RUANG_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed.expires && Date.now() > parsed.expires) {
+        localStorage.removeItem(RUANG_CACHE_KEY);
+        return null;
+      }
+      return Array.isArray(parsed.items) ? parsed.items : null;
+    } catch (e) { return null; }
+  },
+  set(items) {
+    try {
+      localStorage.setItem(RUANG_CACHE_KEY, JSON.stringify({
+        items: items, expires: Date.now() + RUANG_CACHE_TTL_MS
+      }));
+    } catch (e) {}
+  },
+  clear() {
+    try { localStorage.removeItem(RUANG_CACHE_KEY); } catch (e) {}
+  }
+};
+
 /* ============================================================
    OVERRIDE Api._buildRequest — pakai session ruang
-   (dipanggil setelah core.js loaded, lihat BOOT di bawah)
    ============================================================ */
 function installRuangApiOverride() {
   if (typeof Api === 'undefined') {
@@ -425,17 +490,9 @@ function installRuangApiOverride() {
 }
 
 /* ============================================================
-   CUSTOM SELECT (duplikat dari index.html)
+   CUSTOM SELECT
    ============================================================ */
 const CS = {
-  enhanceAll(root) {
-    if (!root) root = document;
-    U.$$('select', root).forEach(sel => {
-      if (sel.dataset.csEnhanced === '1') return;
-      this.enhance(sel);
-    });
-  },
-
   enhance(selectEl) {
     if (selectEl.dataset.csEnhanced === '1') return;
     selectEl.dataset.csEnhanced = '1';
@@ -520,7 +577,7 @@ const CS = {
 };
 
 /* ============================================================
-   PESAN API — wrapper endpoint khusus pesanan
+   PESAN API
    ============================================================ */
 const PesanApi = {
   getRuangList() {
@@ -558,34 +615,43 @@ const PesanApp = {
   /* -------------------------------------------------- INIT */
   async init() {
     dbg('PesanApp init');
+
     const stored = RuangStore.get();
 
     if (stored && stored.token) {
-      dbg('Ada session ruang, verifikasi...');
-      try {
-        const res = await Api.whoAmI();
-        if (res && res.code === 200 && res.data && res.data.role === 'Ruang') {
-          this.session = {
-            token: stored.token,
-            role: 'Ruang',
-            id_petugas: res.data.id_petugas,
-            username: res.data.username,
-            nama: res.data.nama,
-            kode_ruang: res.data.kode_ruang,
-            nama_ruang: res.data.nama_ruang,
-            pj: res.data.pj || '',
-            expiry: res.data.expiry
-          };
-          RuangStore.set(this.session);
-          this._hideBoot();
-          await this.showMain();
-          return;
-        }
-      } catch (err) {
-        dbgWarn('whoAmI ruang gagal:', err.message);
+      // Cek session + preload ruang list paralel
+      const [whoRes, ruangRes] = await Promise.allSettled([
+        Api.whoAmI().catch(e => { throw e; }),
+        this._fetchRuangList()
+      ]);
+
+      if (whoRes.status === 'fulfilled' &&
+          whoRes.value && whoRes.value.code === 200 &&
+          whoRes.value.data && whoRes.value.data.role === 'Ruang') {
+        const res = whoRes.value;
+        this.session = {
+          token: stored.token,
+          role: 'Ruang',
+          id_petugas: res.data.id_petugas,
+          username: res.data.username,
+          nama: res.data.nama,
+          kode_ruang: res.data.kode_ruang,
+          nama_ruang: res.data.nama_ruang,
+          pj: res.data.pj || '',
+          expiry: res.data.expiry
+        };
+        RuangStore.set(this.session);
+        this._hideBoot();
+        await this.showMain();
+        return;
       }
+
+      // Session invalid → clear
       RuangStore.clear();
     }
+
+    // Belum login → pastikan ruang list siap (dari cache atau fetch)
+    await this._ensureRuangList();
 
     this._hideBoot();
     this.showLogin();
@@ -598,6 +664,39 @@ const PesanApp = {
     setTimeout(() => {
       if (el.parentNode) el.parentNode.removeChild(el);
     }, 300);
+  },
+
+  async _fetchRuangList() {
+    const res = await PesanApi.getRuangList();
+    const items = (res.data && res.data.items) || [];
+    this.ruangList = items;
+    RuangCache.set(items);
+    return items;
+  },
+
+  async _ensureRuangList() {
+    // 1. Cache dulu
+    const cached = RuangCache.get();
+    if (cached && cached.length > 0) {
+      this.ruangList = cached;
+      dbg('Ruang list dari cache: ' + cached.length);
+      // Background refresh
+      this._fetchRuangList().catch(err => dbgWarn('BG refresh ruang gagal:', err.message));
+      return cached;
+    }
+
+    // 2. Fetch dengan timeout (biar tidak block boot splash selamanya)
+    try {
+      const items = await Promise.race([
+        this._fetchRuangList(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+      ]);
+      return items;
+    } catch (err) {
+      dbgWarn('Gagal fetch ruang list:', err.message);
+      this.ruangList = [];
+      return [];
+    }
   },
 
   /* -------------------------------------------------- API ERROR */
@@ -622,6 +721,8 @@ const PesanApp = {
     const root = U.$('#pesan-root');
     root.innerHTML = this._renderLogin();
 
+    this._populateRuangDropdown();
+
     const form = U.$('#form-login-ruang');
     if (form) {
       form.addEventListener('submit', (e) => {
@@ -630,15 +731,23 @@ const PesanApp = {
       });
     }
 
-    this._loadRuangList();
-
     setTimeout(() => {
       const pinEl = U.$('#login-pin');
       if (pinEl) pinEl.focus();
-    }, 300);
+    }, 250);
   },
 
   _renderLogin() {
+    const hasRuang = this.ruangList.length > 0;
+    const placeholder = hasRuang
+      ? ''
+      : '<div style="padding:12px 0;color:var(--danger);font-size:13px">' +
+        'Gagal memuat daftar ruang. <br>' +
+        '<button type="button" id="btn-reload-ruang" ' +
+        'style="color:var(--primary);text-decoration:underline;background:none;border:none;' +
+        'cursor:pointer;padding:0;font-size:13px;margin-top:6px">Coba lagi</button>' +
+        '</div>';
+
     return '' +
       '<div class="login-screen compact">' +
         '<div class="login-card">' +
@@ -648,7 +757,8 @@ const PesanApp = {
           '<form class="login-form" id="form-login-ruang" autocomplete="off">' +
             '<div class="field">' +
               '<label class="field-label">Ruang <span class="required">*</span></label>' +
-              '<div id="login-ruang-wrap">' + H.loaderSm('Memuat ruang...') + '</div>' +
+              '<div id="login-ruang-wrap"></div>' +
+              placeholder +
               '<div class="pj-hint" id="pj-hint" style="display:none"></div>' +
             '</div>' +
             '<div class="field">' +
@@ -672,54 +782,62 @@ const PesanApp = {
       '</div>';
   },
 
-  async _loadRuangList() {
-    const placeholder = U.$('#login-ruang-wrap');
-    if (!placeholder) return;
+  _populateRuangDropdown() {
+    const wrap = U.$('#login-ruang-wrap');
+    if (!wrap) return;
+
+    if (this.ruangList.length === 0) {
+      wrap.innerHTML = '<div style="padding:10px;background:var(--surface-2);' +
+        'border-radius:var(--r-md);color:var(--text-muted);font-size:13px">' +
+        'Tidak ada ruang aktif</div>';
+      const reloadBtn = U.$('#btn-reload-ruang');
+      if (reloadBtn) {
+        reloadBtn.addEventListener('click', () => this._reloadRuangList());
+      }
+      return;
+    }
+
+    const select = document.createElement('select');
+    select.className = 'select';
+    select.id = 'login-ruang';
+    select.innerHTML = '<option value="">— Pilih Ruang —</option>' +
+      this.ruangList.map(r =>
+        '<option value="' + U.escapeHtml(r.kode) + '">' +
+          U.escapeHtml(r.kode + ' · ' + r.nama) +
+        '</option>'
+      ).join('');
+
+    wrap.innerHTML = '';
+    wrap.appendChild(select);
+
+    CS.enhance(select);
+
+    const self = this;
+    select.addEventListener('change', () => {
+      const r = self.ruangList.find(x => x.kode === select.value);
+      const pjHint = U.$('#pj-hint');
+      if (!pjHint) return;
+      if (r && r.pj) {
+        pjHint.style.display = 'flex';
+        pjHint.innerHTML = U.icon('users', 14) +
+          '<span>PJ: <strong>' + U.escapeHtml(r.pj) + '</strong></span>';
+      } else {
+        pjHint.style.display = 'none';
+      }
+    });
+  },
+
+  async _reloadRuangList() {
+    const wrap = U.$('#login-ruang-wrap');
+    if (wrap) wrap.innerHTML = '<div style="padding:12px 0">' +
+      H.loaderSm('Memuat ulang ruang...') + '</div>';
 
     try {
-      const res = await PesanApi.getRuangList();
-      this.ruangList = (res.data && res.data.items) || [];
-
-      if (this.ruangList.length === 0) {
-        placeholder.innerHTML =
-          '<div style="color:var(--danger);font-size:12px;padding:8px">' +
-          'Belum ada ruang aktif. Hubungi admin.</div>';
-        return;
-      }
-
-      const select = document.createElement('select');
-      select.className = 'select';
-      select.id = 'login-ruang';
-      select.innerHTML = '<option value="">— Pilih Ruang —</option>' +
-        this.ruangList.map(r =>
-          '<option value="' + U.escapeHtml(r.kode) + '">' +
-            U.escapeHtml(r.kode + ' · ' + r.nama) +
-          '</option>'
-        ).join('');
-
-      placeholder.innerHTML = '';
-      placeholder.appendChild(select);
-
-      CS.enhance(select);
-
-      const self = this;
-      select.addEventListener('change', () => {
-        const r = self.ruangList.find(x => x.kode === select.value);
-        const pjHint = U.$('#pj-hint');
-        if (!pjHint) return;
-        if (r && r.pj) {
-          pjHint.style.display = 'flex';
-          pjHint.innerHTML = U.icon('users', 14) +
-            '<span>PJ: <strong>' + U.escapeHtml(r.pj) + '</strong></span>';
-        } else {
-          pjHint.style.display = 'none';
-        }
-      });
+      await this._fetchRuangList();
+      this.showLogin();
     } catch (err) {
-      dbgWarn('Gagal load ruang:', err.message);
-      placeholder.innerHTML =
-        '<div style="color:var(--danger);font-size:12px;padding:8px">' +
-        'Gagal memuat ruang: ' + U.escapeHtml(err.message) + '</div>';
+      Toast.error('Gagal memuat ruang: ' + err.message);
+      this.showLogin();
     }
   },
 
@@ -870,11 +988,17 @@ const PesanApp = {
     const searchDisabled = this.barangLoading ? ' disabled' : '';
 
     el.innerHTML = '' +
-      '<div class="search-wrap">' +
-        '<input type="text" class="input" id="barang-search" ' +
-          'placeholder="' + U.escapeHtml(searchPlaceholder) + '" ' +
-          'autocomplete="off"' + searchDisabled + '>' +
-        '<div class="search-results" id="search-results" style="display:none"></div>' +
+      '<div style="display:flex;gap:8px;margin-bottom:var(--sp-3)">' +
+        '<div class="search-wrap" style="flex:1">' +
+          '<input type="text" class="input" id="barang-search" ' +
+            'placeholder="' + U.escapeHtml(searchPlaceholder) + '" ' +
+            'autocomplete="off"' + searchDisabled + '>' +
+          '<div class="search-results" id="search-results" style="display:none"></div>' +
+        '</div>' +
+        '<button type="button" class="btn btn-secondary" id="btn-refresh-stok" ' +
+          'title="Refresh stok">' +
+          U.icon('refresh', 16) +
+        '</button>' +
       '</div>' +
 
       '<div class="card" style="padding:0">' +
@@ -916,6 +1040,48 @@ const PesanApp = {
 
     const btnKirim = U.$('#btn-kirim');
     if (btnKirim) btnKirim.addEventListener('click', () => this._confirmKirim());
+
+    const btnRefresh = U.$('#btn-refresh-stok');
+    if (btnRefresh) {
+      btnRefresh.addEventListener('click', () => this._refreshBarang(btnRefresh));
+    }
+  },
+
+  async _refreshBarang(btn) {
+    if (this.barangLoading) return;
+    this.barangLoading = true;
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px"></span>';
+    }
+
+    try {
+      const res = await PesanApi.getBarangUntukPesan();
+      this.barangList = (res.data && res.data.items) || [];
+
+      // Update stok di cart untuk item yang sudah ada
+      const byKode = {};
+      this.barangList.forEach(b => { byKode[b.kode] = b; });
+      Object.keys(this.cart).forEach(kode => {
+        if (byKode[kode]) {
+          this.cart[kode].stok_tersedia = Number(byKode[kode].stok_tersedia) || 0;
+        }
+      });
+
+      Toast.success('Stok diperbarui');
+      this._renderCart();
+    } catch (err) {
+      dbgWarn('Refresh stok gagal:', err.message);
+      if (this._handleApiError(err)) return;
+      Toast.error('Gagal refresh: ' + err.message);
+    } finally {
+      this.barangLoading = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = U.icon('refresh', 16);
+      }
+    }
   },
 
   _attachCatatan() {
@@ -956,13 +1122,14 @@ const PesanApp = {
       ).slice(0, 30);
 
       if (found.length === 0) {
-        results.innerHTML =
-          '<div class="search-empty">Tidak ditemukan</div>';
+        results.innerHTML = '<div class="search-empty">Tidak ditemukan</div>';
         return;
       }
 
       results.innerHTML = found.map(b => {
         const inCart = !!this.cart[b.kode];
+        const stok = Number(b.stok_tersedia) || 0;
+        const stokCls = stok === 0 ? 'empty' : stok <= 5 ? 'low' : 'ok';
         return '' +
           '<button type="button" class="search-item" data-kode="' +
             U.escapeHtml(b.kode) + '">' +
@@ -971,6 +1138,9 @@ const PesanApp = {
               '<div class="search-item-meta">' +
                 '<strong>' + U.escapeHtml(b.kode) + '</strong> · ' +
                 U.escapeHtml(b.tipe) + ' · ' + U.escapeHtml(b.satuan || '-') +
+                '<span class="search-stok-badge ' + stokCls + '">' +
+                  'Sisa: ' + U.formatNumber(stok) +
+                '</span>' +
               '</div>' +
             '</div>' +
             '<span class="badge ' + (inCart ? 'badge-success' : 'badge-primary') + '">' +
@@ -998,7 +1168,6 @@ const PesanApp = {
       }
     });
 
-    // Close on outside click
     const clickHandler = (e) => {
       if (!e.target.closest('.search-wrap')) closeResults();
     };
@@ -1028,14 +1197,14 @@ const PesanApp = {
       nama: b.nama,
       tipe: b.tipe,
       satuan: b.satuan || '',
-      qty: 1
+      qty: 1,
+      stok_tersedia: Number(b.stok_tersedia) || 0
     };
 
     U.vibrate(15);
     this._renderCart();
     this._updateCartBar();
 
-    // Refresh search result badges kalau masih terbuka
     const results = U.$('#search-results');
     if (results && results.style.display === 'block') {
       const input = U.$('#barang-search');
@@ -1056,14 +1225,24 @@ const PesanApp = {
       return;
     }
 
-    area.innerHTML = '<div class="cart-list">' + items.map(it =>
+    area.innerHTML = '<div class="cart-list">' + items.map(it => {
+      const stok = Number(it.stok_tersedia) || 0;
+      const kurang = it.qty > stok;
+      const warnHtml = kurang
+        ? '<div class="cart-item-warning">' + U.icon('alert', 12) +
+          '<span>Minta ' + it.qty + ', stok tinggal ' + stok +
+          '. Gudang akan konfirmasi ketersediaan.</span></div>'
+        : '';
+      return '' +
       '<div class="cart-item" data-kode="' + U.escapeHtml(it.kode) + '">' +
         '<div class="cart-item-info">' +
           '<div class="cart-item-name">' + U.escapeHtml(it.nama) + '</div>' +
           '<div class="cart-item-meta">' +
             U.escapeHtml(it.kode) + ' · ' + U.escapeHtml(it.tipe) +
             (it.satuan ? ' · ' + U.escapeHtml(it.satuan) : '') +
+            ' · Sisa: ' + U.formatNumber(stok) +
           '</div>' +
+          warnHtml +
         '</div>' +
         '<div class="cart-item-actions">' +
           '<div class="qty-ctrl">' +
@@ -1080,8 +1259,8 @@ const PesanApp = {
             U.icon('trash', 16) +
           '</button>' +
         '</div>' +
-      '</div>'
-    ).join('') + '</div>';
+      '</div>';
+    }).join('') + '</div>';
 
     U.$$('[data-act]', area).forEach(el => {
       const kode = el.dataset.kode;
@@ -1101,6 +1280,7 @@ const PesanApp = {
           v = Math.floor(v);
           this.cart[kode].qty = v;
           el.value = v;
+          this._renderCart();
           this._updateCartBar();
         });
         el.addEventListener('blur', () => {
@@ -1199,6 +1379,12 @@ const PesanApp = {
     if (items.length === 0) { Toast.error('Keranjang kosong'); return; }
 
     const totalQty = items.reduce((a, b) => a + b.qty, 0);
+    const itemsKurang = items.filter(it => it.qty > (Number(it.stok_tersedia) || 0));
+    const warnBlock = itemsKurang.length > 0
+      ? '<div class="confirm-warning">' + U.icon('alert', 16) +
+        '<div><strong>' + itemsKurang.length + ' item melebihi stok tersedia.</strong><br>' +
+        'Pesanan tetap dikirim. Gudang akan konfirmasi ketersediaan.</div></div>'
+      : '';
 
     const body = '' +
       '<div style="font-size:var(--fs-sm);line-height:1.6;margin-bottom:12px">' +
@@ -1206,11 +1392,16 @@ const PesanApp = {
         '<strong>' + items.length + ' item</strong> · total <strong>' +
         totalQty + ' pcs</strong>' +
       '</div>' +
+      warnBlock +
       '<div class="confirm-list">' +
-        items.map(it =>
-          '• ' + U.escapeHtml(it.nama) + ' — <strong>' + it.qty + '</strong> ' +
-          U.escapeHtml(it.satuan || '')
-        ).join('<br>') +
+        items.map(it => {
+          const stok = Number(it.stok_tersedia) || 0;
+          const kurang = it.qty > stok;
+          return '• ' + U.escapeHtml(it.nama) +
+            ' — <strong>' + it.qty + '</strong> ' +
+            U.escapeHtml(it.satuan || '') +
+            (kurang ? ' <span style="color:var(--warning)">(stok: ' + stok + ')</span>' : '');
+        }).join('<br>') +
       '</div>';
 
     const self = this;
@@ -1252,7 +1443,9 @@ const PesanApp = {
 
       const idPesanan = (res.data && res.data.id_pesanan) || '-';
       const notified = !!(res.data && res.data.notified);
+      const itemsKurang = (res.data && res.data.items_kurang) || 0;
 
+      const self = this;
       Modal.open({
         title: 'Pesanan Terkirim',
         icon: 'success',
@@ -1271,18 +1464,22 @@ const PesanApp = {
                 U.icon('check', 14) + ' Notifikasi Telegram terkirim</div>'
               : '<div class="badge badge-warning" style="padding:8px 14px;font-size:12px">' +
                 '⚠️ Notifikasi Telegram tidak terkirim</div>') +
+            (itemsKurang > 0
+              ? '<div class="badge badge-warning" style="padding:8px 14px;font-size:12px;margin-top:8px">' +
+                U.icon('alert', 14) + ' ' + itemsKurang + ' item melebihi stok — gudang akan konfirmasi</div>'
+              : '') +
           '</div>',
         actions: [
           {
             label: 'Pesan Lagi',
             class: 'btn-primary',
             onClick: () => {
-              this.cart = {};
-              this.catatan = '';
-              this.currentTab = 'pesan';
+              self.cart = {};
+              self.catatan = '';
+              self.currentTab = 'pesan';
               U.$$('#tabbar button').forEach(b =>
                 b.classList.toggle('active', b.dataset.tab === 'pesan'));
-              this._renderTab();
+              self._renderTab();
             }
           }
         ]
@@ -1293,7 +1490,6 @@ const PesanApp = {
 
       Toast.error('Gagal kirim: ' + err.message);
 
-      // PARTIAL_WRITE: pesanan tercatat dengan status Gagal, beri tahu user
       if (err.code === 'PARTIAL_WRITE' && err.raw && err.raw.data && err.raw.data.id_pesanan) {
         Modal.close();
         Modal.open({
@@ -1329,13 +1525,12 @@ const PesanApp = {
 };
 
 /* ============================================================
-   BOOT — tunggu core.js (defer) selesai
+   BOOT
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
   dbg('pesan.html ready');
 
   if (!installRuangApiOverride()) {
-    // core.js tidak loaded — tampilkan error yang jelas
     const el = document.getElementById('boot-splash');
     if (el) el.classList.add('hide');
     document.getElementById('pesan-root').innerHTML =
