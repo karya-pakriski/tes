@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d7377">
+<meta name="description" content="Scanner Gudang Puskesmas Sanden">
+<title>Scanner Gudang — Puskesmas Sanden</title>
+<link rel="stylesheet" href="shared/core.css">
+<style>
+/* ============================================================
+   SCAN.HTML SPECIFIC STYLES
+   ============================================================ */
+.scan-app { min-height: 100vh; padding-bottom: calc(20px + var(--safe-bottom)); }
+
+/* Topbar */
+.scan-topbar {
+  position: sticky; top: 0; z-index: 30;
+  height: var(--topbar-h);
+  padding-top: var(--safe-top);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+}
+.scan-topbar-brand {
+  display: flex; align-items: center; gap: var(--sp-2);
+  flex: 1; min-width: 0;
+}
+.scan-topbar-logo {
+  width: clamp(28px, 3vw, 34px);
+  height: clamp(28px, 3vw, 34px);
+  background: var(--primary); color: white;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: var(--fs-sm);
+}
+.scan-topbar-title {
+  font-weight: 600; font-size: var(--fs-base);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.scan-topbar-actions {
+  display: flex; align-items: center; gap: var(--sp-1);
+}
+.scan-icon-btn {
+  width: 38px; height: 38px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+}
+.scan-icon-btn:hover { background: var(--surface-2); color: var(--text); }
+
+/* Main container */
+.scan-main {
+  padding: var(--sp-4) var(--sp-3);
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Layer 1: Welcome + Menu */
+.scan-welcome {
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-3) 0;
+}
+.scan-welcome-greeting {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.scan-welcome-name {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.scan-welcome-role {
+  display: inline-flex; align-items: center;
+  margin-top: var(--sp-2);
+  padding: 3px 10px;
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+  border-radius: var(--r-full);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.scan-menu-title {
+  font-size: var(--fs-base);
+  color: var(--text-muted);
+  margin-bottom: var(--sp-3);
+}
+.scan-menu-cards {
+  display: flex; flex-direction: column;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+.scan-menu-card {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  text-align: left;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+.scan-menu-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+.scan-menu-card:active { transform: translateY(0); }
+.scan-menu-card-icon {
+  width: 52px; height: 52px;
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.scan-menu-card-icon.obat { background: var(--primary-bg); color: var(--primary); }
+.scan-menu-card-icon.bmhp { background: var(--success-bg); color: var(--success); }
+.scan-menu-card-icon.atk { background: var(--warning-bg); color: var(--warning); }
+.scan-menu-card-body { flex: 1; min-width: 0; }
+.scan-menu-card-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: var(--text);
+}
+.scan-menu-card-desc {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+.scan-menu-card-arrow {
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+
+/* Recent history preview on Layer 1 */
+.scan-history-preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.scan-history-preview-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--sp-2);
+}
+.scan-history-preview-title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Layer 2: Scanner */
+.scan-header {
+  display: flex; align-items: center; gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+.scan-header-back {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+.scan-header-back:hover { background: var(--surface-2); }
+.scan-header-mode {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.scan-header-mode.obat { background: var(--primary-bg); color: var(--primary-dark); }
+.scan-header-mode.bmhp { background: var(--success-bg); color: var(--success); }
+.scan-header-mode.atk { background: var(--warning-bg); color: var(--warning); }
+
+/* Batch dropdown FEFO */
+.batch-option-row {
+  display: flex; align-items: center; gap: 6px;
+  flex-wrap: wrap;
+}
+.batch-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 7px;
+  border-radius: var(--r-full);
+  font-size: 10px;
+  font-weight: 700;
+}
+.batch-badge.fefo { background: var(--primary); color: white; }
+.batch-badge.near-ed { background: var(--warning); color: white; }
+.batch-badge.expired { background: var(--danger); color: white; }
+
+/* Selected item info card */
+.selected-item-card {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  margin-bottom: var(--sp-3);
+}
+.selected-item-name {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.selected-item-id {
+  font-family: ui-monospace, monospace;
+  font-size: var(--fs-sm);
+  opacity: 0.9;
+  margin-bottom: var(--sp-2);
+}
+.selected-item-meta {
+  display: flex; flex-wrap: wrap; gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  opacity: 0.9;
+}
+.selected-item-meta-item {
+  display: inline-flex; align-items: center; gap: 4px;
+}
+
+/* Empty state on layer 2 */
+.scan-empty {
+  text-align: center;
+  padding: var(--sp-5) var(--sp-3);
+  color: var(--text-muted);
+}
+.scan-empty p { font-size: var(--fs-sm); margin-top: var(--sp-2); }
+
+/* Status bar small */
+.scan-status-strip {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: var(--sp-2) var(--sp-3);
+  padding-bottom: calc(var(--sp-2) + var(--safe-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 25;
+}
+.scan-status-strip strong { color: var(--text); font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body>
+
+<!-- App container (di-render oleh JS) -->
+<div id="scan-root"></div>
+
+<!-- Global UI elements -->
+<div class="toast-container" id="toast-container"></div>
+<div class="loading-overlay" id="loading-overlay"><div class="spinner"></div></div>
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Title</div>
+      <button class="modal-close" id="modal-close" aria-label="Tutup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<script src="shared/core.js"></script>
+<script>
+'use strict';
+
+/* ============================================================
+   SCAN APP — Scanner Aplikasi (3 Layer)
+   Layer 0: Login
+   Layer 1: Menu pilihan (Obat/BMHP/ATK)
+   Layer 2: Scanner + Form
+   ============================================================ */
+const ScanApp = {
+  session: null,
+  master: null,
+  currentLayer: 'login', // 'login' | 'menu' | 'scan'
+  selectedGroup: null,   // 'obat' | 'bmhp' | 'atk'
+  selectedItem: null,
+  availableBatches: [],
+  history: [],
+  _submitting: false,
+
+  async init() {
+    // Cek session
+    const session = Store.getSession();
+    if (session && session.token) {
+      // Verify session masih valid
+      try {
+        const res = await Api.whoAmI();
+        if (res.code === 200) {
+          this.session = {
+            token: session.token,
+            id_petugas: res.data.id_petugas,
+            username: res.data.username,
+            nama: res.data.nama,
+            role: res.data.role,
+            wilayah_binaan: res.data.wilayah_binaan || '',
+            expiry: res.data.expiry
+          };
+          Store.setSession(this.session);
+          // Cek role
+          if (this.session.role === 'Scanner' || true) {
+            // Semua role bisa akses scan page
+            await this._loadMaster();
+            this.showMenu();
+            return;
+          }
+        }
+      } catch (err) {
+        // session invalid, fall through to login
+        Store.clearSession();
+      }
+    }
+    this.showLogin();
+  },
+
+  async _loadMaster() {
+    let master = Store.getMaster();
+    if (!master) {
+      try {
+        const res = await Api.getMasterData();
+        master = res.data;
+        Store.setMaster(master);
+      } catch (err) {
+        Toast.error('Gagal memuat data master: ' + err.message);
+        return;
+      }
+    }
+    this.master = master;
+  },
+
+  // ============== LAYER 0: LOGIN ==============
+  showLogin() {
+    this.currentLayer = 'login';
+    const root = U.$('#scan-root');
+    LoginForm.mount(root, (session) => {
+      this.session = session;
+      // Setelah login, load master lalu ke menu
+      this._onLoginSuccess();
+    });
+  },
+
+  async _onLoginSuccess() {
+    await this._loadMaster();
+    this.showMenu();
+  },
+
+  // ============== LAYER 1: MENU ==============
+  showMenu() {
+    this.currentLayer = 'menu';
+    this.selectedGroup = null;
+    this.selectedItem = null;
+    this.availableBatches = [];
+
+    const root = U.$('#scan-root');
+    root.innerHTML = this._renderMenu();
+
+    // Attach listeners
+    U.$$('.scan-menu-card', root).forEach(card => {
+      card.addEventListener('click', () => {
+        const group = card.dataset.group;
+        this.showScanner(group);
+      });
+    });
+
+    U.$('#btn-logout', root).addEventListener('click', () => {
+      Modal.confirm('Keluar', 'Yakin ingin keluar?', () => this.logout(), 'Ya, Keluar', true);
+    });
+
+    U.$('#btn-go-admin', root)?.addEventListener('click', () => {
+      location.href = 'index.html';
+    });
+
+    this._renderHistoryPreview();
+  },
+
+  _renderMenu() {
+    const s = this.session;
+    const isAdmin = ['SuperAdmin','Apoteker','Gudang','Bidan_Desa'].indexOf(s.role) !== -1;
+
+    return '' +
+      '<div class="scan-app">' +
+        '<header class="scan-topbar">' +
+          '<div class="scan-topbar-brand">' +
+            '<div class="scan-topbar-logo">PKM</div>' +
+            '<div class="scan-topbar-title">Scanner</div>' +
+          '</div>' +
+          '<div class="scan-topbar-actions">' +
+            (isAdmin ? '<button class="scan-icon-btn" id="btn-go-admin" title="Menu Utama">' + U.icon('home', 20) + '</button>' : '') +
+            '<button class="scan-icon-btn" id="btn-logout" title="Keluar">' + U.icon('logout', 20) + '</button>' +
+          '</div>' +
+        '</header>' +
+
+        '<main class="scan-main">' +
+          '<div class="scan-welcome">' +
+            '<div class="scan-welcome-greeting">Selamat datang,</div>' +
+            '<div class="scan-welcome-name">' + U.escapeHtml(s.nama || s.username) + '</div>' +
+            '<span class="scan-welcome-role">' + U.escapeHtml(s.role) + '</span>' +
+          '</div>' +
+
+          '<div class="scan-menu-title">Pilih jenis barang yang akan Anda scan:</div>' +
+
+          '<div class="scan-menu-cards">' +
+            '<button class="scan-menu-card" data-group="obat">' +
+              '<div class="scan-menu-card-icon obat">💊</div>' +
+              '<div class="scan-menu-card-body">' +
+                '<div class="scan-menu-card-title">Scan Obat</div>' +
+                '<div class="scan-menu-card-desc">Batch, ED, VVM, golongan</div>' +
+              '</div>' +
+              '<div class="scan-menu-card-arrow">' + U.icon('chevronRight', 20) + '</div>' +
+            '</button>' +
+
+            '<button class="scan-menu-card" data-group="bmhp">' +
+              '<div class="scan-menu-card-icon bmhp">🩹</div>' +
+              '<div class="scan-menu-card-body">' +
+                '<div class="scan-menu-card-title">Scan BMHP</div>' +
+                '<div class="scan-menu-card-desc">Masker, kasa, cairan medis</div>' +
+              '</div>' +
+              '<div class="scan-menu-card-arrow">' + U.icon('chevronRight', 20) + '</div>' +
+            '</button>' +
+
+            '<button class="scan-menu-card" data-group="atk">' +
+              '<div class="scan-menu-card-icon atk">📄</div>' +
+              '<div class="scan-menu-card-body">' +
+                '<div class="scan-menu-card-title">Scan ATK</div>' +
+                '<div class="scan-menu-card-desc">Kertas, alat tulis, kebersihan</div>' +
+              '</div>' +
+              '<div class="scan-menu-card-arrow">' + U.icon('chevronRight', 20) + '</div>' +
+            '</button>' +
+          '</div>' +
+
+          '<div class="scan-history-preview" id="history-preview"></div>' +
+        '</main>' +
+
+        '<div class="scan-status-strip">' +
+          '<span>Mode: <strong>Menu</strong></span>' +
+          '<span id="online-indicator"></span>' +
+        '</div>' +
+      '</div>';
+  },
+
+  async _renderHistoryPreview() {
+    const el = U.$('#history-preview');
+    if (!el) return;
+    try {
+      const res = await Api.getMyScanHistory(20);
+      const total = res.data.total || 0;
+      const items = res.data.items || [];
+
+      let html = '' +
+        '<div class="scan-history-preview-header">' +
+          '<div class="scan-history-preview-title">Riwayat Hari Ini</div>' +
+          '<span class="badge badge-primary">' + total + ' item</span>' +
+        '</div>';
+
+      if (items.length === 0) {
+        html += '<div class="text-muted text-center" style="font-size:12px;padding:8px">Belum ada scan hari ini.</div>';
+      } else {
+        html += '<div class="scan-history">';
+        items.slice(0, 5).forEach(it => {
+          html += '<div class="scan-history-item">' +
+            '<span class="check">' + U.icon('check', 15) + '</span>' +
+            '<span class="text"><strong>' + U.escapeHtml(it.id_barang) + '</strong> — ' +
+              U.escapeHtml(it.tipe_mutasi) + ' ' + it.qty + '</span>' +
+            '<span class="time">' + U.formatDateTime(it.timestamp) + '</span>' +
+          '</div>';
+        });
+        html += '</div>';
+        if (items.length > 5) {
+          html += '<div class="text-muted text-center mt-2" style="font-size:12px">+ ' +
+            (items.length - 5) + ' lainnya</div>';
+        }
+      }
+      el.innerHTML = html;
+    } catch (err) {
+      el.innerHTML = '<div class="text-muted text-center" style="font-size:12px;padding:8px">Riwayat tidak tersedia.</div>';
+    }
+  },
+
+  // ============== LAYER 2: SCANNER ==============
+  showScanner(group) {
+    this.currentLayer = 'scan';
+    this.selectedGroup = group;
+    this.selectedItem = null;
+    this.availableBatches = [];
+
+    const root = U.$('#scan-root');
+    root.innerHTML = this._renderScanner();
+
+    const groupLabel = group === 'obat' ? 'Obat' : group === 'bmhp' ? 'BMHP' : 'ATK';
+    U.$('#mode-indicator').textContent = groupLabel;
+
+    // Attach listeners
+    U.$('#btn-back', root).addEventListener('click', () => {
+      this._stopScanner();
+      this.showMenu();
+    });
+
+    U.$('#btn-start-scan', root).addEventListener('click', () => this._startScanner());
+    U.$('#btn-manual', root).addEventListener('click', () => this._showManualInput());
+    U.$('#btn-stop', root).addEventListener('click', () => this._stopScanner());
+    U.$('#btn-flash', root).addEventListener('click', async () => {
+      const on = await QRScanner.toggleFlash();
+      Toast.info(on ? 'Flash aktif' : 'Flash mati');
+    });
+
+    this._renderFormArea();
+  },
+
+  _renderScanner() {
+    const groupLabel = this.selectedGroup === 'obat' ? 'Obat' :
+                       this.selectedGroup === 'bmhp' ? 'BMHP' : 'ATK';
+    return '' +
+      '<div class="scan-app">' +
+        '<header class="scan-topbar">' +
+          '<button class="scan-icon-btn" id="btn-back" title="Ganti">' + U.icon('arrowLeft', 20) + '</button>' +
+          '<div class="scan-topbar-brand">' +
+            '<div class="scan-header-mode ' + this.selectedGroup + '" id="mode-indicator">' + groupLabel + '</div>' +
+          '</div>' +
+          '<div class="scan-topbar-actions">' +
+            '<button class="scan-icon-btn" id="btn-flash" title="Flash">' + U.icon('zap', 20) + '</button>' +
+          '</div>' +
+        '</header>' +
+
+        '<main class="scan-main">' +
+          '<div class="scanner-box">' +
+            '<div class="scanner-placeholder" id="scanner-placeholder">' +
+              U.icon('camera', 42) +
+              '<p style="margin-top:8px">Kamera belum aktif</p>' +
+            '</div>' +
+            '<video id="scanner-video" style="display:none" playsinline muted></video>' +
+            '<div class="scanner-frame" id="scanner-frame" style="display:none"></div>' +
+            '<div class="scanner-mode-badge in" id="mode-badge" style="display:none">SCAN</div>' +
+            '<div class="scanner-controls" id="scanner-controls" style="display:none">' +
+              '<button id="btn-stop">' + U.icon('x', 15) + ' Stop</button>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="flex gap-2 flex-wrap mb-3">' +
+            '<button class="btn btn-primary" id="btn-start-scan">' + U.icon('camera', 16) + ' Mulai Scan</button>' +
+            '<button class="btn btn-secondary" id="btn-manual">' + U.icon('keyboard', 16) + ' Input Manual</button>' +
+          '</div>' +
+
+          '<div id="form-area"></div>' +
+        '</main>' +
+
+        '<div class="scan-status-strip">' +
+          '<span>Mode: <strong>' + groupLabel + '</strong></span>' +
+          '<span id="scan-counter">0 scan</span>' +
+        '</div>' +
+      '</div>';
+  },
+
+  async _startScanner() {
+    const video = U.$('#scanner-video');
+    const placeholder = U.$('#scanner-placeholder');
+    const frame = U.$('#scanner-frame');
+    const badge = U.$('#mode-badge');
+    const controls = U.$('#scanner-controls');
+
+    video.style.display = 'block';
+    placeholder.style.display = 'none';
+    frame.style.display = 'block';
+    badge.style.display = 'block';
+    controls.style.display = 'flex';
+
+    await QRScanner.start(video, (text) => {
+      U.vibrate(50);
+      U.beepSuccess();
+      this._stopScanner();
+      this._handleScannedCode(text);
+    }, (err) => {
+      Toast.error('Kamera tidak bisa diakses: ' + err.message);
+      this._stopScanner();
+    });
+  },
+
+  _stopScanner() {
+    QRScanner.stop();
+    const video = U.$('#scanner-video');
+    if (video) video.style.display = 'none';
+    const p = U.$('#scanner-placeholder');
+    if (p) p.style.display = 'flex';
+    ['#scanner-frame','#mode-badge','#scanner-controls'].forEach(sel => {
+      const el = U.$(sel); if (el) el.style.display = 'none';
+    });
+  },
+
+  _showManualInput() {
+    Modal.open({
+      title: 'Input ID Barang Manual',
+      body: '<div class="field">' +
+              '<label class="field-label">ID Barang <span class="required">*</span></label>' +
+              '<input class="input" id="manual-id" placeholder="contoh: ' +
+                (this.selectedGroup === 'obat' ? 'OBT-0001' :
+                 this.selectedGroup === 'bmhp' ? 'BMP-0001' : 'ATK-0001') +
+                '" autofocus autocomplete="off">' +
+              '<div class="field-hint">Pastikan prefix sesuai dengan mode aktif (' +
+                (this.selectedGroup === 'obat' ? 'OBT-' :
+                 this.selectedGroup === 'bmhp' ? 'BMP-' : 'ATK-') + ')</div>' +
+            '</div>',
+      actions: [
+        { label: 'Batal', class: 'btn-secondary' },
+        { label: 'Lanjut', class: 'btn-primary', close: false,
+          onClick: () => {
+            const val = U.$('#manual-id').value.trim().toUpperCase();
+            if (!val) { Toast.error('ID wajib diisi'); return; }
+            const prefix = this.selectedGroup === 'obat' ? 'OBT-' :
+                           this.selectedGroup === 'bmhp' ? 'BMP-' : 'ATK-';
+            if (val.indexOf(prefix) !== 0) {
+              Toast.error('ID harus diawali ' + prefix);
+              return;
+            }
+            if (!/^(OBT|BMP|ATK)-\d+$/.test(val)) {
+              Toast.error('Format ID tidak valid');
+              return;
+            }
+            Modal.close();
+            this._handleScannedCode(val);
+          }
+        }
+      ]
+    });
+    setTimeout(() => U.$('#manual-id').focus(), 100);
+  },
+
+  async _handleScannedCode(code) {
+    if (!code) return;
+
+    // Validasi prefix sesuai mode aktif
+    const expectedPrefix = this.selectedGroup === 'obat' ? 'OBT-' :
+                           this.selectedGroup === 'bmhp' ? 'BMP-' : 'ATK-';
+    if (code.indexOf(expectedPrefix) !== 0) {
+      const actualGroup = code.indexOf('OBT-') === 0 ? 'Obat' :
+                          code.indexOf('BMP-') === 0 ? 'BMHP' :
+                          code.indexOf('ATK-') === 0 ? 'ATK' : 'Unknown';
+      Toast.error('QR ini adalah "' + actualGroup + '". Silakan ganti mode scan.');
+      U.vibrate([100, 50, 100]);
+      return;
+    }
+
+    const master = this.master;
+    if (!master) { Toast.error('Data master belum dimuat'); return; }
+
+    let item = null;
+    if (this.selectedGroup === 'obat') {
+      item = (master.obat || []).find(o => o.ID_Obat === code);
+    } else if (this.selectedGroup === 'bmhp') {
+      item = (master.bmhp || []).find(o => o.ID_BMHP === code);
+    } else {
+      item = (master.atk || []).find(o => o.ID_ATK === code);
+    }
+
+    if (!item) { Toast.error('Barang tidak ditemukan: ' + code); return; }
+    if (item.Status_Aktif === 'Nonaktif') { Toast.error('Barang dinonaktifkan'); return; }
+
+    this.selectedItem = item;
+    this.availableBatches = [];
+
+    // Untuk Obat, ambil batch tersedia (jika Scan Keluar)
+    if (this.selectedGroup === 'obat') {
+      try {
+        const res = await Api.getAvailableBatches(code);
+        this.availableBatches = (res.data && res.data.batches) || [];
+      } catch (err) {
+        // silent — batch akan kosong, user pakai form default
+      }
+    }
+
+    this._renderFormArea();
+  },
+
+  _renderFormArea() {
+    const area = U.$('#form-area');
+    if (!area) return;
+
+    if (!this.selectedItem) {
+      area.innerHTML = '' +
+        '<div class="card">' +
+          '<div class="scan-empty">' +
+            U.icon('qr', 42) +
+            '<h3 style="color:var(--text);margin-top:8px;font-size:var(--fs-md)">Belum ada item</h3>' +
+            '<p>Scan QR atau input ID manual untuk memulai.</p>' +
+          '</div>' +
+        '</div>';
+      return;
+    }
+
+    const item = this.selectedItem;
+    const group = this.selectedGroup;
+
+    const idField = group === 'obat' ? 'ID_Obat' : group === 'bmhp' ? 'ID_BMHP' : 'ID_ATK';
+    const nameField = group === 'obat' ? 'Nama_Obat' : 'Nama_Barang';
+
+    // Selected item card
+    let html = '' +
+      '<div class="selected-item-card">' +
+        '<div class="selected-item-name">' + U.escapeHtml(item[nameField] || '-') + '</div>' +
+        '<div class="selected-item-id">' + U.escapeHtml(item[idField]) + '</div>' +
+        '<div class="selected-item-meta">' +
+          '<span class="selected-item-meta-item">' + U.icon('package', 14) + ' ' + U.escapeHtml(item.Satuan || '-') + '</span>' +
+          '<span class="selected-item-meta-item">' + U.icon('mapPin', 14) + ' ' + U.escapeHtml(item.Lokasi_Rak || '-') + '</span>' +
+        '</div>' +
+      '</div>';
+
+    // Form
+    html += '<form class="card" id="scan-form">';
+
+    // Tipe Mutasi (Masuk/Keluar) — toggle
+    html += '' +
+      '<div class="field">' +
+        '<label class="field-label">Tipe <span class="required">*</span></label>' +
+        '<div class="field-row">' +
+          '<button type="button" class="btn btn-secondary" data-tipe="Masuk" style="width:100%">' +
+            U.icon('arrowDown', 16) + ' Masuk' +
+          '</button>' +
+          '<button type="button" class="btn btn-secondary" data-tipe="Keluar" style="width:100%">' +
+            U.icon('arrowUp', 16) + ' Keluar' +
+          '</button>' +
+        '</div>' +
+        '<input type="hidden" id="f-tipe" value="Masuk">' +
+      '</div>';
+
+    // Qty
+    html += '' +
+      '<div class="field">' +
+        '<label class="field-label">Qty <span class="required">*</span></label>' +
+        '<input type="number" class="input" id="f-qty" min="1" step="1" required inputmode="numeric" autofocus>' +
+      '</div>';
+
+    // Group-specific fields
+    if (group === 'obat') {
+      html += this._renderObatFields(item);
+    } else if (group === 'bmhp') {
+      html += this._renderBmhpFields(item);
+    }
+    // ATK tidak butuh field tambahan
+
+    // Common fields
+    const master = this.master;
+    const supplierOptions = (master.supplier || []).map(s =>
+      '<option value="' + U.escapeHtml(s.ID_Supplier) + '">' + U.escapeHtml(s.Nama_Perusahaan) + '</option>'
+    ).join('');
+    const unitOptions = (master.unit || []).map(u =>
+      '<option value="' + U.escapeHtml(u.ID_Unit) + '">' + U.escapeHtml(u.Nama_Unit) + '</option>'
+    ).join('');
+    const sumberOptions = ['JKN','BOK','APBD','Dropping_Dinkes','Lainnya'].map(s =>
+      '<option value="' + s + '">' + s + '</option>'
+    ).join('');
+
+    // Sumber Dana (selalu ada)
+    html += '' +
+      '<div class="field">' +
+        '<label class="field-label">Sumber Dana</label>' +
+        '<select class="select" id="f-sumber">' +
+          '<option value="">— Pilih —</option>' + sumberOptions +
+        '</select>' +
+      '</div>';
+
+    // Supplier (untuk Masuk) — dinamis akan di-show/hide
+    html += '' +
+      '<div class="field" id="field-supplier" style="display:none">' +
+        '<label class="field-label">Supplier <span class="required">*</span></label>' +
+        '<select class="select" id="f-supplier">' +
+          '<option value="">— Pilih —</option>' + supplierOptions +
+        '</select>' +
+      '</div>';
+
+    // Unit Tujuan (untuk Keluar) — dinamis akan di-show/hide
+    html += '' +
+      '<div class="field" id="field-unit" style="display:none">' +
+        '<label class="field-label">Unit Tujuan <span class="required">*</span></label>' +
+        '<select class="select" id="f-unit">' +
+          '<option value="">— Pilih —</option>' + unitOptions +
+        '</select>' +
+      '</div>';
+
+    // No Dokumen
+    html += '' +
+      '<div class="field">' +
+        '<label class="field-label">No. Dokumen</label>' +
+        '<input type="text" class="input" id="f-dok" placeholder="Faktur / SJ / Resep">' +
+      '</div>';
+
+    // Keterangan
+    html += '' +
+      '<div class="field">' +
+        '<label class="field-label">Keterangan</label>' +
+        '<textarea class="textarea" id="f-ket" rows="2"></textarea>' +
+      '</div>';
+
+    // Actions
+    html += '' +
+      '<div class="flex gap-2 flex-wrap mt-3">' +
+        '<button type="button" class="btn btn-secondary" id="btn-cancel">Batal</button>' +
+        '<button type="submit" class="btn btn-primary" id="btn-submit" style="flex:1">' +
+          U.icon('check', 16) + ' Simpan' +
+        '</button>' +
+      '</div>';
+
+    html += '</form>';
+
+    area.innerHTML = html;
+
+    // Attach listeners
+    U.$$('[data-tipe]', area).forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tipe = btn.dataset.tipe;
+        U.$('#f-tipe', area).value = tipe;
+        U.$$('[data-tipe]', area).forEach(b => {
+          b.classList.toggle('btn-primary', b.dataset.tipe === tipe);
+          b.classList.toggle('btn-secondary', b.dataset.tipe !== tipe);
+        });
+        this._updateConditionalFields();
+      });
+    });
+
+    // Set default tipe = Masuk
+    this._updateConditionalFields();
+
+    U.$('#btn-cancel', area).addEventListener('click', () => {
+      this.selectedItem = null;
+      this._renderFormArea();
+    });
+
+    U.$('#scan-form', area).addEventListener('submit', (e) => {
+      e.preventDefault();
+      this._submit();
+    });
+  },
+
+  _updateConditionalFields() {
+    const tipe = U.$('#f-tipe').value;
+    const isMasuk = tipe === 'Masuk';
+    U.$('#field-supplier').style.display = isMasuk ? 'block' : 'none';
+    U.$('#field-unit').style.display = isMasuk ? 'none' : 'block';
+
+    // Batch dropdown only show saat Keluar (untuk Obat)
+    if (this.selectedGroup === 'obat') {
+      const batchFieldKeluar = U.$('#field-batch-keluar');
+      const batchFieldMasuk = U.$('#field-batch-masuk');
+      if (batchFieldKeluar) batchFieldKeluar.style.display = isMasuk ? 'none' : 'block';
+      if (batchFieldMasuk) batchFieldMasuk.style.display = isMasuk ? 'block' : 'none';
+    }
+  },
+
+  _renderObatFields(item) {
+    const needVVM = String(item.Wajib_VVM) === 'Ya';
+
+    // Masuk: input batch & ED manual
+    // Keluar: pilih batch dari dropdown FEFO
+    let html = '';
+
+    // Batch field for Masuk
+    html += '' +
+      '<div id="field-batch-masuk">' +
+        '<div class="field-row">' +
+          '<div class="field">' +
+            '<label class="field-label">No. Batch <span class="required">*</span></label>' +
+            '<input type="text" class="input" id="f-batch" placeholder="contoh: B2026-X9">' +
+          '</div>' +
+          '<div class="field">' +
+            '<label class="field-label">Exp. Date <span class="required">*</span></label>' +
+            '<input type="date" class="input" id="f-ed">' +
+          '</div>' +
+        '</div>' +
+        (needVVM ? '' +
+          '<div class="field">' +
+            '<label class="field-label">Status VVM <span class="required">*</span></label>' +
+            '<select class="select" id="f-vvm">' +
+              '<option value="">— Pilih —</option>' +
+              '<option value="A">A (Baik)</option>' +
+              '<option value="B">B (Baik)</option>' +
+              '<option value="C">C (Rusak — karantina)</option>' +
+              '<option value="D">D (Rusak — karantina)</option>' +
+            '</select>' +
+          '</div>'
+        : '') +
+      '</div>';
+
+    // Batch field for Keluar — dropdown FEFO
+    html += '<div id="field-batch-keluar" style="display:none">';
+    if (this.availableBatches.length === 0) {
+      html += '' +
+        '<div class="field">' +
+          '<label class="field-label">Batch yang Diambil <span class="required">*</span></label>' +
+          '<div class="input" style="background:var(--warning-bg);border-color:var(--warning);color:var(--warning);font-weight:600;display:flex;align-items:center">' +
+            U.icon('alert', 16) + '<span style="margin-left:6px">Tidak ada batch tersedia</span>' +
+          '</div>' +
+          '<div class="field-hint">Belum ada batch dengan stok. Lakukan penerimaan (Scan Masuk) terlebih dulu.</div>' +
+        '</div>';
+    } else {
+      html += '' +
+        '<div class="field">' +
+          '<label class="field-label">Batch yang Diambil <span class="required">*</span></label>' +
+          '<select class="select" id="f-batch-out">' +
+            '<option value="">— Pilih batch —</option>' +
+            this.availableBatches.map((b, idx) => {
+              const isFEFO = idx === 0;
+              const isNearEd = b.status_ed === 'near_expired';
+              const isExpired = b.status_ed === 'expired';
+              let label = b.no_batch + ' — sisa ' + b.sisa_stok;
+              if (b.exp_date) label += ' — ED ' + b.exp_date;
+              if (b.days_to_ed !== null && b.days_to_ed >= 0) label += ' (' + b.days_to_ed + ' hr)';
+              if (isFEFO) label += ' ⭐ FEFO';
+              if (isExpired) label += ' ⚠️ EXPIRED';
+              else if (isNearEd) label += ' ⚠️ ED DEKAT';
+              return '<option value="' + U.escapeHtml(b.no_batch) + '"' +
+                     (isExpired ? ' disabled' : '') + '>' + U.escapeHtml(label) + '</option>';
+            }).join('') +
+          '</select>' +
+          '<div class="field-hint">' +
+            'Pilih batch yang benar-benar Anda ambil dari rak. ' +
+            'Batch teratas disarankan (FEFO — ED terdekat).' +
+          '</div>' +
+        '</div>';
+    }
+    html += '</div>';
+
+    return html;
+  },
+
+  _renderBmhpFields(item) {
+    const needED = String(item.Wajib_ED) === 'Ya';
+    if (!needED) return '';
+    return '' +
+      '<div class="field">' +
+        '<label class="field-label">Exp. Date <span class="required">*</span></label>' +
+        '<input type="date" class="input" id="f-ed">' +
+        '<div class="field-hint">Item ini wajib menyertakan tanggal kedaluwarsa.</div>' +
+      '</div>';
+  },
+
+  async _submit() {
+    if (this._submitting) return;
+    this._submitting = true;
+
+    const item = this.selectedItem;
+    if (!item) { this._submitting = false; return; }
+    const group = this.selectedGroup;
+    const idField = group === 'obat' ? 'ID_Obat' : group === 'bmhp' ? 'ID_BMHP' : 'ID_ATK';
+
+    const tipe = U.$('#f-tipe').value;
+    const qty = Number(U.$('#f-qty').value);
+    const sumber = U.$('#f-sumber').value;
+    const dok = U.$('#f-dok').value.trim();
+    const ket = U.$('#f-ket').value.trim();
+
+    if (!qty || qty <= 0) { Toast.error('Qty harus > 0'); this._submitting = false; return; }
+
+    const payload = {
+      id_barang: item[idField],
+      tipe_mutasi: tipe,
+      qty: qty,
+      sumber_dana: sumber,
+      no_dokumen: dok,
+      keterangan: ket
+    };
+
+    if (tipe === 'Masuk') {
+      const sup = U.$('#f-supplier').value;
+      if (!sup) { Toast.error('Supplier wajib untuk barang masuk'); this._submitting = false; return; }
+      payload.id_supplier = sup;
+    } else {
+      const unit = U.$('#f-unit').value;
+      if (!unit) { Toast.error('Unit tujuan wajib untuk barang keluar'); this._submitting = false; return; }
+      payload.id_unit = unit;
+    }
+
+    // Group-specific
+    if (group === 'obat') {
+      if (tipe === 'Masuk') {
+        const batch = U.$('#f-batch').value.trim();
+        const ed = U.$('#f-ed').value;
+        if (!batch) { Toast.error('No. Batch wajib'); this._submitting = false; return; }
+        if (!ed) { Toast.error('Exp. Date wajib'); this._submitting = false; return; }
+        payload.no_batch = batch;
+        payload.exp_date = ed;
+        const vvmEl = U.$('#f-vvm');
+        if (vvmEl) {
+          if (!vvmEl.value) { Toast.error('Status VVM wajib'); this._submitting = false; return; }
+          payload.status_vvm = vvmEl.value;
+        }
+      } else {
+        const batchOut = U.$('#f-batch-out');
+        if (!batchOut || !batchOut.value) {
+          Toast.error('Pilih batch yang diambil');
+          this._submitting = false;
+          return;
+        }
+        payload.no_batch = batchOut.value;
+      }
+    } else if (group === 'bmhp') {
+      const edEl = U.$('#f-ed');
+      if (edEl) {
+        if (!edEl.value) { Toast.error('Exp. Date wajib'); this._submitting = false; return; }
+        payload.exp_date = edEl.value;
+      }
+    }
+
+    const btn = U.$('#btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
+
+    try {
+      const res = await Api.simpanTransaksi(payload);
+      U.vibrate([50, 50, 50]);
+      U.beepSuccess();
+
+      const isPending = res.data && res.data.status_approval === 'Pending';
+      Toast.success('Berhasil: ' + res.data.id_transaksi +
+                    (isPending ? ' (menunggu approval)' : ''));
+
+      // Reset
+      this.selectedItem = null;
+      this.availableBatches = [];
+      this._renderFormArea();
+      this._updateCounter();
+    } catch (err) {
+      Toast.error('Gagal: ' + err.message);
+
+      if (err.code === 'STOK_KURANG' || err.code === 'STOK_BATCH_KURANG') {
+        const isApprover = ['SuperAdmin','Apoteker'].indexOf(this.session.role) !== -1;
+        const prompt = err.message + '\n\n' +
+          (isApprover ? 'Lanjutkan sebagai pengeluaran darurat?'
+                      : 'Lanjutkan sebagai pengeluaran darurat?\n\n(Butuh approval Apoteker)');
+        Modal.confirm('Stok Tidak Mencukupi', prompt,
+          async () => {
+            payload.is_emergency = true;
+            try {
+              const res2 = await Api.simpanTransaksi(payload);
+              const pending = res2.data && res2.data.status_approval === 'Pending';
+              Toast.success('Pengeluaran darurat: ' + res2.data.id_transaksi +
+                            (pending ? ' (menunggu approval)' : ''));
+              this.selectedItem = null;
+              this.availableBatches = [];
+              this._renderFormArea();
+              this._updateCounter();
+            } catch (err2) {
+              Toast.error('Gagal: ' + err2.message);
+            }
+          }, 'Ya, Darurat', true);
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = U.icon('check', 16) + ' Simpan';
+      }
+    } finally {
+      this._submitting = false;
+    }
+  },
+
+  _updateCounter() {
+    const el = U.$('#scan-counter');
+    if (el) el.textContent = this.history.length + ' scan';
+  },
+
+  async logout() {
+    try { await Api.logout(); } catch (e) {}
+    Store.clearSession();
+    Store.clearMaster();
+    this.session = null;
+    this.master = null;
+    this.selectedItem = null;
+    this.availableBatches = [];
+    Toast.info('Anda telah keluar.');
+    this.showLogin();
+  }
+};
+
+// ============================================================
+// BOOT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  ScanApp.init();
+  console.log('[SCAN] v' + CONFIG.APP_VERSION + ' booted');
+});
+</script>
+</body>
+</html>scan.html
