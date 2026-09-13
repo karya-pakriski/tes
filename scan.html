@@ -4,14 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0d7377">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Scanner Gudang Puskesmas Sanden">
 <title>Scanner — Puskesmas Sanden</title>
 
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%B7%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="preconnect" href="https://script.googleapis.com" crossorigin>
-
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="shared/core.css">
 
 <style>
@@ -108,6 +111,31 @@
 }
 
 /* ============================================================
+   MASTER STATUS BANNER
+   ============================================================ */
+.master-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: var(--warning-bg);
+  border: 1px solid var(--warning);
+  border-radius: var(--r-md);
+  color: var(--warning-dark, var(--warning));
+  font-size: var(--fs-sm);
+  margin-bottom: var(--sp-3);
+}
+.master-banner svg { width: 16px; height: 16px; flex-shrink: 0; }
+.master-banner.error {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.master-banner .spinner {
+  width: 14px; height: 14px;
+  border-width: 2px;
+  color: currentColor;
+}
+
+/* ============================================================
    MENU CARDS (Layer 1)
    ============================================================ */
 .scan-menu-title {
@@ -139,6 +167,11 @@
   box-shadow: var(--shadow-md);
 }
 .scan-menu-card:active { transform: scale(0.99); }
+.scan-menu-card[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 .scan-menu-card-icon {
   width: 52px; height: 52px;
   border-radius: var(--r-md);
@@ -197,6 +230,18 @@
   font-size: var(--fs-md); color: var(--text); margin-bottom: 4px;
 }
 .scan-empty p { font-size: var(--fs-sm); }
+
+/* ============================================================
+   INLINE LOADER
+   ============================================================ */
+.scan-inline-loader {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.scan-inline-loader .spinner {
+  width: 12px; height: 12px; border-width: 2px;
+}
 </style>
 </head>
 <body>
@@ -223,9 +268,241 @@
 <script defer>
 'use strict';
 
+/* ============================================================
+   SMART SCANNER — BarcodeDetector native + jsQR fallback
+   Menggantikan QRScanner dari core.js (yang hanya native).
+   Dipakai hanya di halaman ini.
+   ============================================================ */
+const SmartScanner = {
+  _stream: null,
+  _videoEl: null,
+  _rafId: null,
+  _detector: null,      // BarcodeDetector instance
+  _jsQR: null,          // jsQR function
+  _canvas: null,
+  _ctx: null,
+  _mode: null,          // 'native' | 'jsqr' | null
+  _running: false,
+  _lastText: '',
+  _lastTime: 0,
+  _onDetected: null,
+  _lastDetectTime: 0,
+  _detectIntervalMs: 100, // detect ~10x/detik
+  _useNative: false,
+
+  async start(videoEl, onDetected, onError) {
+    this.stop();
+    this._videoEl = videoEl;
+    this._onDetected = onDetected;
+    this._running = true;
+    this._lastDetectTime = 0;
+
+    // Buka kamera — resolusi 960×540 (hemat CPU/baterai)
+    try {
+      const constraints = {
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 960 },
+          height: { ideal: 540 }
+        }
+      };
+      this._stream = await navigator.mediaDevices.getUserMedia(constraints);
+      videoEl.srcObject = this._stream;
+      videoEl.setAttribute('playsinline', '');
+      videoEl.muted = true;
+      await videoEl.play();
+    } catch (err) {
+      this._running = false;
+      if (onError) onError(new Error('Kamera tidak dapat diakses: ' + err.message));
+      return;
+    }
+
+    // Coba native BarcodeDetector
+    if ('BarcodeDetector' in window) {
+      try {
+        this._detector = new BarcodeDetector({ formats: ['qr_code'] });
+        this._mode = 'native';
+        this._useNative = true;
+        dbg('Scanner: pakai BarcodeDetector native');
+      } catch (e) {
+        dbgWarn('BarcodeDetector init gagal:', e.message);
+        this._detector = null;
+      }
+    }
+
+    // Fallback ke jsQR
+    if (!this._detector) {
+      try {
+        await this._loadJsQR();
+        this._canvas = document.createElement('canvas');
+        this._ctx = this._canvas.getContext('2d', { willReadFrequently: true });
+        this._mode = 'jsqr';
+        this._useNative = false;
+        dbg('Scanner: pakai jsQR fallback');
+      } catch (err) {
+        this._running = false;
+        // Tutup kamera karena tidak bisa dipakai
+        if (this._stream) {
+          this._stream.getTracks().forEach(t => t.stop());
+          this._stream = null;
+        }
+        if (onError) onError(new Error(
+          'Browser ini tidak mendukung pemindaian QR otomatis. ' +
+          'Gunakan tombol "Manual" untuk input kode barang, ' +
+          'atau buka halaman ini di Chrome / Edge terbaru.'
+        ));
+        return;
+      }
+    }
+
+    this._loop();
+  },
+
+  _loadJsQR() {
+    if (window.jsQR) {
+      this._jsQR = window.jsQR;
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-lib="jsqr"]');
+      if (existing) {
+        existing.addEventListener('load', () => {
+          if (window.jsQR) { this._jsQR = window.jsQR; resolve(); }
+          else reject(new Error('jsQR tidak tersedia'));
+        });
+        existing.addEventListener('error', () => reject(new Error('Gagal load jsQR')));
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+      script.async = true;
+      script.setAttribute('data-lib', 'jsqr');
+      script.onload = () => {
+        if (window.jsQR) { this._jsQR = window.jsQR; resolve(); }
+        else reject(new Error('jsQR tidak tersedia'));
+      };
+      script.onerror = () => reject(new Error('Gagal load jsQR dari CDN'));
+      document.head.appendChild(script);
+    });
+  },
+
+  _loop() {
+    if (!this._running) return;
+
+    const now = performance.now();
+    if (now - this._lastDetectTime >= this._detectIntervalMs) {
+      this._lastDetectTime = now;
+      if (this._mode === 'native') {
+        this._detectNative();
+      } else if (this._mode === 'jsqr') {
+        this._detectJsQR();
+      }
+    }
+
+    this._rafId = requestAnimationFrame(() => this._loop());
+  },
+
+  async _detectNative() {
+    const video = this._videoEl;
+    if (!video || video.readyState !== 4 || !this._detector) return;
+    try {
+      const codes = await this._detector.detect(video);
+      if (codes && codes.length > 0) {
+        this._handle(codes[0].rawValue);
+      }
+    } catch (e) { /* ignore per-frame */ }
+  },
+
+  _detectJsQR() {
+    const video = this._videoEl;
+    if (!video || video.readyState !== 4 || !this._jsQR) return;
+    const w = video.videoWidth;
+    const h = video.videoHeight;
+    if (!w || !h) return;
+
+    // Downscale ke max 640px agar cepat
+    const maxDim = 640;
+    let cw = w, ch = h;
+    if (w > maxDim || h > maxDim) {
+      if (w > h) { ch = Math.round(h * maxDim / w); cw = maxDim; }
+      else { cw = Math.round(w * maxDim / h); ch = maxDim; }
+    }
+
+    if (this._canvas.width !== cw) this._canvas.width = cw;
+    if (this._canvas.height !== ch) this._canvas.height = ch;
+
+    try {
+      this._ctx.drawImage(video, 0, 0, cw, ch);
+      const imgData = this._ctx.getImageData(0, 0, cw, ch);
+      const code = this._jsQR(imgData.data, cw, ch, {
+        inversionAttempts: 'dontInvert'
+      });
+      if (code && code.data) {
+        this._handle(code.data);
+      }
+    } catch (e) { /* ignore */ }
+  },
+
+  _handle(text) {
+    if (!text) return;
+    const now = Date.now();
+    if (text === this._lastText && (now - this._lastTime) < 2000) return;
+    this._lastText = text;
+    this._lastTime = now;
+    if (this._onDetected) this._onDetected(text);
+  },
+
+  stop() {
+    this._running = false;
+    if (this._rafId) { cancelAnimationFrame(this._rafId); this._rafId = null; }
+    if (this._stream) {
+      this._stream.getTracks().forEach(t => t.stop());
+      this._stream = null;
+    }
+    if (this._videoEl) {
+      try { this._videoEl.srcObject = null; } catch (e) {}
+    }
+    this._detector = null;
+    this._jsQR = null;
+    this._canvas = null;
+    this._ctx = null;
+    this._mode = null;
+  },
+
+  async toggleFlash() {
+    if (!this._stream) return false;
+    const track = this._stream.getVideoTracks()[0];
+    if (!track) return false;
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    if (!caps.torch) return false;
+    const newTorch = !track.getSettings().torch;
+    try {
+      await track.applyConstraints({ advanced: [{ torch: newTorch }] });
+      return newTorch;
+    } catch (e) { return false; }
+  },
+
+  getMode() { return this._mode; }
+};
+
+/* ============================================================
+   DISABLE Api.warmup() — hemat request Apps Script
+   (LoginForm.mount di core.js memanggil Api.warmup().)
+   ============================================================ */
+function disableWarmup() {
+  if (typeof Api !== 'undefined' && Api.warmup) {
+    Api.warmup = function() { /* no-op untuk scan.html */ };
+  }
+}
+
+/* ============================================================
+   SCAN APP
+   ============================================================ */
 const ScanApp = {
   session: null,
   master: null,
+  masterStatus: 'idle', // 'idle' | 'loading' | 'ready' | 'error'
+  masterError: null,
   currentLayer: 'login',
   selectedGroup: null,
   selectedItem: null,
@@ -233,33 +510,39 @@ const ScanApp = {
   stockInfo: { total_stok: 0, batches: [], is_obat: false },
   currentTipe: 'Masuk',
   _submitting: false,
+  _masterLoadPromise: null,
 
-  // ============================================================
-  // INIT
-  // ============================================================
+  /* -------------------------------------------------- INIT */
   async init() {
     dbg('ScanApp init');
+    disableWarmup();
+
     const session = Store.getSession();
 
     if (session && session.token) {
       dbg('Ada session, verifikasi...');
       try {
         const res = await Api.whoAmI();
-        if (res && res.code === 200) {
-          this.session = {
-            token: session.token,
-            id_petugas: res.data.id_petugas,
-            username: res.data.username,
-            nama: res.data.nama,
-            role: res.data.role,
-            wilayah_binaan: res.data.wilayah_binaan || '',
-            expiry: res.data.expiry
-          };
-          Store.setSession(this.session);
-          await this._loadMaster();
-          this._hideBootSplash();
-          this.showMenu();
-          return;
+        if (res && res.code === 200 && res.data) {
+          if (res.data.role === 'Ruang') {
+            // Role Ruang tidak boleh di scan.html
+            Store.clearSession();
+          } else {
+            this.session = {
+              token: session.token,
+              id_petugas: res.data.id_petugas,
+              username: res.data.username,
+              nama: res.data.nama,
+              role: res.data.role,
+              wilayah_binaan: res.data.wilayah_binaan || '',
+              expiry: res.data.expiry
+            };
+            Store.setSession(this.session);
+            this._hideBootSplash();
+            this.showMenu();
+            this._startMasterLoad();
+            return;
+          }
         }
       } catch (err) {
         dbgWarn('whoAmI gagal:', err.message);
@@ -267,7 +550,6 @@ const ScanApp = {
       }
     }
 
-    dbg('Tampilkan login');
     this._hideBootSplash();
     this.showLogin();
   },
@@ -281,36 +563,90 @@ const ScanApp = {
     }, 300);
   },
 
-  async _loadMaster() {
-    let master = Store.getMaster();
-    if (master) {
-      dbg('Master dari cache');
-      this.master = master;
-      return;
+  /* -------------------------------------------------- MASTER LOADER (non-blocking) */
+  _startMasterLoad() {
+    if (this.masterStatus === 'loading' || this.masterStatus === 'ready') {
+      return this._masterLoadPromise;
     }
-    dbg('Fetch master...');
-    try {
-      const res = await Api.getMasterData();
-      master = res.data;
-      Store.setMaster(master);
-      this.master = master;
-      dbg('Master loaded:', {
-        obat: (master.obat || []).length,
-        bmhp: (master.bmhp || []).length,
-        atk: (master.atk || []).length
-      });
-    } catch (err) {
-      dbgWarn('Gagal load master:', err.message);
-      Toast.warning('Data master belum termuat.');
-      this.master = { obat: [], bmhp: [], atk: [], supplier: [], unit: [], rak: [] };
+
+    // Cache check (sync)
+    const cached = Store.getMaster();
+    if (cached) {
+      dbg('Master dari cache lokal');
+      this.master = cached;
+      this.masterStatus = 'ready';
+      this._updateMenuCards();
+      return Promise.resolve();
+    }
+
+    this.masterStatus = 'loading';
+    this.masterError = null;
+    this._updateMasterBanner();
+
+    this._masterLoadPromise = (async () => {
+      dbg('Fetch master dari server...');
+      try {
+        const res = await Api.getMasterData();
+        this.master = res.data;
+        Store.setMaster(this.master);
+        this.masterStatus = 'ready';
+        dbg('Master loaded:', {
+          obat: (this.master.obat || []).length,
+          bmhp: (this.master.bmhp || []).length,
+          atk: (this.master.atk || []).length
+        });
+      } catch (err) {
+        dbgWarn('Gagal load master:', err.message);
+        this.masterStatus = 'error';
+        this.masterError = err.message || 'Gagal memuat data';
+        this.master = { obat: [], bmhp: [], atk: [], supplier: [], unit: [], rak: [] };
+      } finally {
+        this._updateMenuCards();
+        this._updateMasterBanner();
+      }
+    })();
+
+    return this._masterLoadPromise;
+  },
+
+  _updateMasterBanner() {
+    const banner = U.$('#master-banner');
+    if (!banner) return;
+
+    if (this.masterStatus === 'loading') {
+      banner.className = 'master-banner';
+      banner.style.display = 'flex';
+      banner.innerHTML =
+        '<span class="spinner"></span>' +
+        '<span>Memuat data barang... (scan aktif setelah selesai)</span>';
+    } else if (this.masterStatus === 'error') {
+      banner.className = 'master-banner error';
+      banner.style.display = 'flex';
+      banner.innerHTML = U.icon('alertCircle', 16) +
+        '<span>Gagal memuat data barang. Coba refresh halaman. ' +
+        U.escapeHtml(this.masterError || '') + '</span>';
+    } else {
+      banner.style.display = 'none';
     }
   },
 
-  // ============================================================
-  // LAYER 0 — LOGIN
-  // ============================================================
+  _updateMenuCards() {
+    const ready = this.masterStatus === 'ready';
+    U.$$('.scan-menu-card').forEach(card => {
+      if (ready) {
+        card.removeAttribute('disabled');
+      } else {
+        card.setAttribute('disabled', 'true');
+      }
+    });
+  },
+
+  /* -------------------------------------------------- LAYER 0 — LOGIN */
   showLogin() {
     this.currentLayer = 'login';
+    this.master = null;
+    this.masterStatus = 'idle';
+
     const root = U.$('#scan-root');
     LoginForm.mount(root, (session) => {
       this.session = session;
@@ -318,15 +654,13 @@ const ScanApp = {
     }, { variant: 'compact' });
   },
 
-  async _onLoginSuccess() {
-    dbg('Login sukses, load master di background');
-    try { await this._loadMaster(); } catch (e) { /* handled */ }
+  _onLoginSuccess() {
+    dbg('Login sukses, tampilkan menu & load master di background');
     this.showMenu();
+    this._startMasterLoad();
   },
 
-  // ============================================================
-  // LAYER 1 — MENU
-  // ============================================================
+  /* -------------------------------------------------- LAYER 1 — MENU */
   showMenu() {
     this.currentLayer = 'menu';
     this.selectedGroup = null;
@@ -339,6 +673,10 @@ const ScanApp = {
 
     U.$$('.scan-menu-card', root).forEach(card => {
       card.addEventListener('click', () => {
+        if (this.masterStatus !== 'ready') {
+          Toast.warning('Data barang masih dimuat. Tunggu sebentar...');
+          return;
+        }
         this.showScanner(card.dataset.group);
       });
     });
@@ -357,6 +695,8 @@ const ScanApp = {
       adminBtn.addEventListener('click', () => { location.href = 'index.html'; });
     }
 
+    this._updateMenuCards();
+    this._updateMasterBanner();
     this._renderHistoryPreview();
   },
 
@@ -376,9 +716,11 @@ const ScanApp = {
           '</div>' +
           '<div class="app-topbar-actions">' +
             (isAdmin
-              ? '<button class="app-icon-btn" id="btn-go-admin" title="Menu Utama">' + U.icon('home', 20) + '</button>'
+              ? '<button class="app-icon-btn" id="btn-go-admin" title="Menu Utama">' +
+                U.icon('home', 20) + '</button>'
               : '') +
-            '<button class="app-icon-btn danger" id="btn-logout" title="Keluar">' + U.icon('logout', 20) + '</button>' +
+            '<button class="app-icon-btn danger" id="btn-logout" title="Keluar">' +
+              U.icon('logout', 20) + '</button>' +
           '</div>' +
         '</header>' +
 
@@ -389,6 +731,8 @@ const ScanApp = {
               '<div class="scan-welcome-name">' + U.escapeHtml(s.nama || s.username) + '</div>' +
               '<span class="scan-welcome-role">' + U.escapeHtml(s.role) + '</span>' +
             '</div>' +
+
+            '<div id="master-banner" class="master-banner" style="display:none"></div>' +
 
             '<div class="scan-menu-title">Pilih jenis barang yang akan Anda scan:</div>' +
 
@@ -428,8 +772,9 @@ const ScanApp = {
     if (!el) return;
     try {
       const res = await Api.getMyScanHistory(20);
-      const total = res.data.total || 0;
-      const items = res.data.items || [];
+      const data = (res && res.data) || { total: 0, items: [] };
+      const total = data.total || 0;
+      const items = data.items || [];
 
       let html = '<div class="scan-history-preview-header">' +
         '<div class="scan-history-preview-title">Riwayat Hari Ini</div>' +
@@ -459,9 +804,7 @@ const ScanApp = {
     }
   },
 
-  // ============================================================
-  // LAYER 2 — SCANNER
-  // ============================================================
+  /* -------------------------------------------------- LAYER 2 — SCANNER */
   showScanner(group) {
     this.currentLayer = 'scan';
     this.selectedGroup = group;
@@ -478,7 +821,7 @@ const ScanApp = {
       this.showMenu();
     });
     U.$('#btn-flash', root).addEventListener('click', async () => {
-      const on = await QRScanner.toggleFlash();
+      const on = await SmartScanner.toggleFlash();
       Toast.info(on ? 'Flash aktif' : 'Flash mati');
     });
     U.$('#btn-start-scan', root).addEventListener('click', () => this._startScanner());
@@ -550,19 +893,20 @@ const ScanApp = {
     badge.style.display = 'block';
     controls.style.display = 'flex';
 
-    await QRScanner.start(video, (text) => {
+    await SmartScanner.start(video, (text) => {
       U.vibrate(50);
       U.beepSuccess();
       this._stopScanner();
       this._handleScannedCode(text, false);
     }, (err) => {
-      Toast.error('Kamera tidak bisa diakses: ' + err.message);
+      Toast.error(err.message || 'Kamera tidak bisa diakses');
       this._stopScanner();
+      this._showManualInput();
     });
   },
 
   _stopScanner() {
-    QRScanner.stop();
+    SmartScanner.stop();
     const v = U.$('#scanner-video');
     if (v) v.style.display = 'none';
     const p = U.$('#scanner-placeholder');
@@ -599,9 +943,8 @@ const ScanApp = {
       actions: [
         { label: 'Batal', class: 'btn-secondary' },
         {
-          label: 'Lanjut', class: 'btn-primary', close: false,
-          icon: 'arrowRight',
-          onClick: async (btn) => {
+          label: 'Lanjut', class: 'btn-primary', close: true, icon: 'arrowRight',
+          onClick: () => {
             const inputEl = U.$('#manual-id');
             const val = inputEl.value.trim().toUpperCase();
 
@@ -620,20 +963,28 @@ const ScanApp = {
               return;
             }
 
-            Btn.setLoading(btn, 'Memuat...');
-
-            try {
-              const found = await self._handleScannedCode(val, true);
-              if (found === false) {
-                Btn.stopLoading(btn, 'Lanjut', 'arrowRight');
-                FormError.set(inputEl, 'Barang tidak ditemukan di master');
-                return;
-              }
-              Modal.close();
-            } catch (err) {
-              Btn.stopLoading(btn, 'Lanjut', 'arrowRight');
-              FormError.set(inputEl, 'Gagal memuat: ' + err.message);
+            // Validasi master (memory, instan)
+            const master = self.master || {};
+            let item = null;
+            if (self.selectedGroup === 'obat') {
+              item = (master.obat || []).find(o => o.ID_Obat === val);
+            } else if (self.selectedGroup === 'bmhp') {
+              item = (master.bmhp || []).find(o => o.ID_BMHP === val);
+            } else {
+              item = (master.atk || []).find(o => o.ID_ATK === val);
             }
+            if (!item) {
+              FormError.set(inputEl, 'Barang tidak ditemukan di master');
+              return;
+            }
+            if (item.Status_Aktif === 'Nonaktif') {
+              FormError.set(inputEl, 'Barang dinonaktifkan');
+              return;
+            }
+
+            // Modal close otomatis karena close: true
+            // Beri jeda kecil supaya transisi halus
+            setTimeout(() => self._handleScannedCode(val, true), 100);
           }
         }
       ]
@@ -645,7 +996,7 @@ const ScanApp = {
     }, 200);
   },
 
-  async _handleScannedCode(code, fromModal) {
+  _handleScannedCode(code, fromModal) {
     if (!code) return false;
 
     const expectedPrefix = this.selectedGroup === 'obat' ? 'OBT-' :
@@ -666,9 +1017,13 @@ const ScanApp = {
     }
 
     let item = null;
-    if (this.selectedGroup === 'obat') item = (master.obat || []).find(o => o.ID_Obat === code);
-    else if (this.selectedGroup === 'bmhp') item = (master.bmhp || []).find(o => o.ID_BMHP === code);
-    else item = (master.atk || []).find(o => o.ID_ATK === code);
+    if (this.selectedGroup === 'obat') {
+      item = (master.obat || []).find(o => o.ID_Obat === code);
+    } else if (this.selectedGroup === 'bmhp') {
+      item = (master.bmhp || []).find(o => o.ID_BMHP === code);
+    } else {
+      item = (master.atk || []).find(o => o.ID_ATK === code);
+    }
 
     if (!item) {
       Toast.error('Barang tidak ditemukan: ' + code);
@@ -683,21 +1038,34 @@ const ScanApp = {
     this.availableBatches = [];
     this.stockInfo = { total_stok: 0, batches: [], is_obat: false };
 
-    if (!fromModal) {
-      this._renderFormAreaWithLoading();
-    }
+    // Render form dengan loading state (batch info di-fetch background)
+    this._renderFormAreaWithLoading();
 
-    // Fetch stock info
+    // Fetch stock info di background
+    this._fetchStockInfo(code);
+
+    return true;
+  },
+
+  async _fetchStockInfo(code) {
+    const group = this.selectedGroup;
     try {
       const res = await Api.getAvailableBatches(code);
-      this.stockInfo = res.data || this.stockInfo;
+      // Cek masih di item yang sama
+      if (!this.selectedItem) return;
+      const idField = group === 'obat' ? 'ID_Obat' : group === 'bmhp' ? 'ID_BMHP' : 'ID_ATK';
+      if (this.selectedItem[idField] !== code) return;
+
+      this.stockInfo = res.data || { total_stok: 0, batches: [], is_obat: false };
       this.availableBatches = this.stockInfo.batches || [];
+      this._renderFormArea();
     } catch (err) {
       dbgWarn('Fetch stock info gagal:', err.message);
+      if (!this.selectedItem) return;
+      const idField = group === 'obat' ? 'ID_Obat' : group === 'bmhp' ? 'ID_BMHP' : 'ID_ATK';
+      if (this.selectedItem[idField] !== code) return;
+      this._renderFormArea();
     }
-
-    this._renderFormArea();
-    return true;
   },
 
   _renderFormAreaWithLoading() {
@@ -715,9 +1083,10 @@ const ScanApp = {
         '<div class="selected-item-id">' + U.escapeHtml(item[idField]) + '</div>' +
       '</div>' +
       '<div class="card">' +
-        '<div class="skeleton skeleton-card"></div>' +
-        '<div class="skeleton skeleton-line long"></div>' +
-        '<div class="skeleton skeleton-line medium"></div>' +
+        '<div class="scan-inline-loader" style="justify-content:center;padding:20px">' +
+          '<span class="spinner"></span>' +
+          '<span>Memuat info stok...</span>' +
+        '</div>' +
       '</div>';
   },
 
@@ -751,8 +1120,10 @@ const ScanApp = {
         '<div class="selected-item-name">' + U.escapeHtml(item[nameField] || '-') + '</div>' +
         '<div class="selected-item-id">' + U.escapeHtml(item[idField]) + '</div>' +
         '<div class="selected-item-meta">' +
-          '<span class="selected-item-meta-item">' + U.icon('package', 13) + ' ' + U.escapeHtml(satuan || '-') + '</span>' +
-          '<span class="selected-item-meta-item">' + U.icon('mapPin', 13) + ' ' + U.escapeHtml(item.Lokasi_Rak || '-') + '</span>' +
+          '<span class="selected-item-meta-item">' + U.icon('package', 13) + ' ' +
+            U.escapeHtml(satuan || '-') + '</span>' +
+          '<span class="selected-item-meta-item">' + U.icon('mapPin', 13) + ' ' +
+            U.escapeHtml(item.Lokasi_Rak || '-') + '</span>' +
         '</div>' +
       '</div>';
 
@@ -797,12 +1168,14 @@ const ScanApp = {
     if (group === 'obat') html += this._renderObatFields(item);
     else if (group === 'bmhp') html += this._renderBmhpFields(item);
 
-    const master = this.master;
+    const master = this.master || {};
     const supplierOptions = (master.supplier || []).map(s =>
-      '<option value="' + U.escapeHtml(s.ID_Supplier) + '">' + U.escapeHtml(s.Nama_Perusahaan) + '</option>'
+      '<option value="' + U.escapeHtml(s.ID_Supplier) + '">' +
+        U.escapeHtml(s.Nama_Perusahaan) + '</option>'
     ).join('');
     const unitOptions = (master.unit || []).map(u =>
-      '<option value="' + U.escapeHtml(u.ID_Unit) + '">' + U.escapeHtml(u.Nama_Unit) + '</option>'
+      '<option value="' + U.escapeHtml(u.ID_Unit) + '">' +
+        U.escapeHtml(u.Nama_Unit) + '</option>'
     ).join('');
     const sumberOptions = ['JKN', 'BOK', 'APBD', 'Dropping_Dinkes', 'Lainnya'].map(s =>
       '<option value="' + s + '">' + s + '</option>'
@@ -955,7 +1328,8 @@ const ScanApp = {
       html += '' +
         '<div class="field">' +
           '<label class="field-label">Batch yang Diambil <span class="required">*</span></label>' +
-          '<div class="input" style="background:var(--warning-bg);border-color:var(--warning);color:var(--warning);font-weight:600;display:flex;align-items:center;gap:8px">' +
+          '<div class="input" style="background:var(--warning-bg);border-color:var(--warning);' +
+            'color:var(--warning);font-weight:600;display:flex;align-items:center;gap:8px">' +
             U.icon('alert', 16) + '<span>Tidak ada batch tersedia</span>' +
           '</div>' +
           '<div class="field-hint">Belum ada batch dengan stok. Lakukan penerimaan dulu.</div>' +
@@ -1118,15 +1492,14 @@ const ScanApp = {
     }
   },
 
-  // ============================================================
-  // LOGOUT
-  // ============================================================
+  /* -------------------------------------------------- LOGOUT */
   async logout() {
     try { await Api.logout(); } catch (e) { /* silent */ }
     Store.clearSession();
     Store.clearMaster();
     this.session = null;
     this.master = null;
+    this.masterStatus = 'idle';
     this.selectedItem = null;
     this.availableBatches = [];
     this.stockInfo = { total_stok: 0, batches: [], is_obat: false };
@@ -1135,15 +1508,31 @@ const ScanApp = {
   }
 };
 
+/* ============================================================
+   BOOT
+   ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
   dbg('DOM ready, boot ScanApp');
+
+  if (typeof U === 'undefined' || typeof Api === 'undefined') {
+    const el = document.getElementById('boot-splash');
+    if (el) el.classList.add('hide');
+    document.getElementById('scan-root').innerHTML =
+      '<div style="padding:32px;text-align:center;color:#d32f2f">' +
+        '<h2>Gagal memuat sistem</h2>' +
+        '<p>File <code>shared/core.js</code> tidak ditemukan.</p>' +
+        '<p>Pastikan <code>scan.html</code> dan folder <code>shared/</code> sejajar.</p>' +
+      '</div>';
+    return;
+  }
+
   ScanApp.init().catch(err => {
     dbgErr('ScanApp init fatal:', err);
     const splash = document.getElementById('boot-splash');
     if (splash) splash.classList.add('hide');
     Toast.error('Gagal memuat aplikasi: ' + err.message);
   });
-  dbg('[SCAN] v' + CONFIG.APP_VERSION + ' booted');
+  dbg('[SCAN] v5.0 booted');
 });
 </script>
 </body>
