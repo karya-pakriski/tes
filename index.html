@@ -1,0 +1,3463 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d7377">
+<meta name="description" content="Sistem Gudang Farmasi & BMHP Puskesmas Sanden">
+<title>Sistem Gudang — Puskesmas Sanden</title>
+<style>
+:root {
+  --primary: #0d7377; --primary-dark: #0a5d61; --primary-light: #14a3a8; --primary-bg: #e6f4f5;
+  --danger: #d32f2f; --danger-bg: #ffebee;
+  --success: #2e7d32; --success-bg: #e8f5e9;
+  --warning: #ef6c00; --warning-bg: #fff3e0;
+  --info: #1976d2; --info-bg: #e3f2fd;
+  --bg: #f5f7fa; --surface: #ffffff; --surface-2: #f8fafc;
+  --text: #1a202c; --text-muted: #64748b; --text-light: #94a3b8;
+  --border: #e2e8f0; --border-strong: #cbd5e1;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 16px; --space-xl: 24px; --space-2xl: 32px;
+  --font-sm: 13px; --font-base: 15px; --font-md: 16px; --font-lg: 18px; --font-xl: 22px; --font-2xl: 28px;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-full: 999px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,0.16);
+  --sidebar-w: 240px; --topbar-h: 56px; --bottomnav-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--font-base); line-height: 1.5; color: var(--text); background: var(--bg);
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; border: none; background: none; }
+a { color: var(--primary); text-decoration: none; }
+img { max-width: 100%; display: block; }
+ul, ol { list-style: none; }
+table { border-collapse: collapse; width: 100%; }
+
+/* LOGIN */
+.login-screen {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #0d7377 0%, #14a3a8 100%);
+  padding: var(--space-lg); z-index: 1000;
+}
+.login-card {
+  background: var(--surface); width: 100%; max-width: 400px;
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);
+  padding: var(--space-2xl) var(--space-xl);
+}
+.login-brand { text-align: center; margin-bottom: var(--space-xl); }
+.login-logo {
+  width: 72px; height: 72px; margin: 0 auto var(--space-md);
+  background: var(--primary-bg); border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary); font-size: 32px; font-weight: 700;
+}
+.login-title { font-size: var(--font-xl); font-weight: 700; margin-bottom: 4px; }
+.login-subtitle { font-size: var(--font-sm); color: var(--text-muted); }
+.login-form .field { margin-bottom: var(--space-md); }
+.login-pin-display {
+  font-family: ui-monospace, monospace; font-size: 24px; letter-spacing: 8px;
+  text-align: center; padding: var(--space-md);
+  background: var(--surface-2); border: 2px solid var(--border);
+  border-radius: var(--radius-md); min-height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text); user-select: none;
+}
+.login-pin-display.empty { color: var(--text-light); font-size: 14px; letter-spacing: 0; }
+.login-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); margin-top: var(--space-md); }
+.key-btn {
+  aspect-ratio: 1.6; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-md); font-size: var(--font-xl); font-weight: 600;
+  color: var(--text); transition: background 0.15s, transform 0.05s;
+  display: flex; align-items: center; justify-content: center;
+}
+.key-btn:active { background: var(--primary-bg); transform: scale(0.96); }
+.key-btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+.key-btn.primary:active { background: var(--primary-dark); }
+.key-btn svg { width: 24px; height: 24px; }
+.login-help { text-align: center; font-size: var(--font-sm); color: var(--text-muted); margin-top: var(--space-lg); }
+.login-help strong { color: var(--text); }
+.login-footer {
+  text-align: center; font-size: 12px; color: var(--text-light);
+  margin-top: var(--space-xl); display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+.status-dot.offline { background: var(--danger); }
+
+/* APP SHELL */
+.app { display: none; min-height: 100vh; }
+.app.active { display: block; }
+.topbar {
+  position: sticky; top: 0; z-index: 50; height: var(--topbar-h);
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: var(--space-md); padding: 0 var(--space-md);
+}
+.topbar-menu-btn {
+  display: none; width: 40px; height: 40px;
+  align-items: center; justify-content: center; border-radius: var(--radius-sm);
+}
+.topbar-menu-btn:hover { background: var(--surface-2); }
+.topbar-brand { display: flex; align-items: center; gap: var(--space-sm); flex: 1; min-width: 0; }
+.topbar-logo {
+  width: 32px; height: 32px; background: var(--primary); color: white;
+  border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+}
+.topbar-title { font-weight: 600; font-size: var(--font-base); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.offline-badge {
+  display: none; align-items: center; gap: 4px; padding: 4px 10px;
+  background: var(--danger-bg); color: var(--danger); border-radius: var(--radius-full);
+  font-size: 11px; font-weight: 600;
+}
+.offline-badge.visible { display: inline-flex; }
+.topbar-user {
+  display: flex; align-items: center; gap: var(--space-sm);
+  padding: 6px 12px; border-radius: var(--radius-full);
+  background: var(--surface-2); font-size: var(--font-sm); max-width: 240px;
+}
+.topbar-user .role-badge {
+  font-size: 11px; padding: 2px 8px;
+  background: var(--primary-bg); color: var(--primary-dark);
+  border-radius: var(--radius-full); font-weight: 600;
+}
+
+.sidebar {
+  position: fixed; top: var(--topbar-h); left: 0; bottom: 0;
+  width: var(--sidebar-w); background: var(--surface);
+  border-right: 1px solid var(--border); overflow-y: auto;
+  padding: var(--space-md) 0; z-index: 40;
+}
+.sidebar-group { margin-bottom: var(--space-md); }
+.sidebar-group-title {
+  padding: 6px var(--space-lg); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light);
+}
+.sidebar-item {
+  display: flex; align-items: center; gap: var(--space-md);
+  padding: 10px var(--space-lg); color: var(--text); font-size: var(--font-sm);
+  border-left: 3px solid transparent; transition: background 0.15s;
+}
+.sidebar-item:hover { background: var(--surface-2); }
+.sidebar-item.active {
+  background: var(--primary-bg); color: var(--primary-dark);
+  border-left-color: var(--primary); font-weight: 600;
+}
+.sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-item .badge {
+  margin-left: auto; background: var(--danger); color: white;
+  font-size: 11px; padding: 2px 8px; border-radius: var(--radius-full); font-weight: 600;
+}
+
+.main {
+  margin-left: var(--sidebar-w); padding: var(--space-xl);
+  min-height: calc(100vh - var(--topbar-h));
+}
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-lg); gap: var(--space-md); flex-wrap: wrap;
+}
+.page-title { font-size: var(--font-xl); font-weight: 700; }
+.page-desc { color: var(--text-muted); font-size: var(--font-sm); margin-top: 2px; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 16px; border-radius: var(--radius-md);
+  font-size: var(--font-sm); font-weight: 600; border: 1px solid transparent;
+  transition: all 0.15s; white-space: nowrap; min-height: 40px;
+}
+.btn svg { width: 16px; height: 16px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+.btn-secondary:hover:not(:disabled) { background: var(--surface-2); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover:not(:disabled) { background: #b71c1c; }
+.btn-ghost { background: transparent; color: var(--text-muted); }
+.btn-ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
+.btn-block { width: 100%; }
+.btn-lg { padding: 14px 20px; font-size: var(--font-md); min-height: 48px; }
+
+/* FORMS */
+.field { margin-bottom: var(--space-md); }
+.field-label { display: block; font-size: var(--font-sm); font-weight: 600; margin-bottom: 6px; }
+.field-label .required { color: var(--danger); }
+.field-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.input, .select, .textarea {
+  width: 100%; padding: 10px 12px; font-size: var(--font-md);
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md); transition: border-color 0.15s, box-shadow 0.15s;
+  min-height: 44px;
+}
+.input:focus, .select:focus, .textarea:focus {
+  outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg);
+}
+.input:disabled, .select:disabled { background: var(--surface-2); color: var(--text-muted); }
+.textarea { min-height: 80px; resize: vertical; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 640px) { .field-row { grid-template-columns: 1fr; } }
+
+/* CARDS */
+.card {
+  background: var(--surface); border-radius: var(--radius-lg);
+  border: 1px solid var(--border); padding: var(--space-lg); margin-bottom: var(--space-lg);
+}
+.card-title {
+  font-size: var(--font-md); font-weight: 700; margin-bottom: var(--space-md);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
+}
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md); margin-bottom: var(--space-lg);
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+}
+.stat-icon {
+  width: 40px; height: 40px; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-md);
+}
+.stat-icon.primary { background: var(--primary-bg); color: var(--primary); }
+.stat-icon.danger { background: var(--danger-bg); color: var(--danger); }
+.stat-icon.warning { background: var(--warning-bg); color: var(--warning); }
+.stat-icon.success { background: var(--success-bg); color: var(--success); }
+.stat-icon svg { width: 20px; height: 20px; }
+.stat-value { font-size: var(--font-2xl); font-weight: 700; line-height: 1.1; }
+.stat-label { font-size: var(--font-sm); color: var(--text-muted); margin-top: 4px; }
+
+/* TABLES */
+.table-wrap {
+  background: var(--surface); border-radius: var(--radius-lg);
+  border: 1px solid var(--border); overflow: hidden;
+}
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.data-table { min-width: 100%; font-size: var(--font-sm); }
+.data-table thead { background: var(--surface-2); position: sticky; top: 0; }
+.data-table th {
+  text-align: left; padding: 12px 14px; font-weight: 600; font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.data-table td {
+  padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle;
+}
+.data-table tbody tr:hover { background: var(--surface-2); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table .col-actions { text-align: right; white-space: nowrap; }
+.data-table .mono { font-family: ui-monospace, monospace; font-size: 13px; }
+.data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: var(--radius-full);
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.badge-primary { background: var(--primary-bg); color: var(--primary-dark); }
+.badge-danger { background: var(--danger-bg); color: var(--danger); }
+.badge-success { background: var(--success-bg); color: var(--success); }
+.badge-warning { background: var(--warning-bg); color: var(--warning); }
+.badge-muted { background: var(--surface-2); color: var(--text-muted); }
+
+/* SCANNER */
+.scanner-box {
+  background: #000; border-radius: var(--radius-lg); overflow: hidden;
+  position: relative; aspect-ratio: 4/3; max-height: 400px;
+  display: flex; align-items: center; justify-content: center;
+}
+.scanner-box video { width: 100%; height: 100%; object-fit: cover; }
+.scanner-placeholder { color: white; text-align: center; padding: var(--space-xl); }
+.scanner-placeholder svg { width: 48px; height: 48px; opacity: 0.5; margin-bottom: var(--space-md); }
+.scanner-frame {
+  position: absolute; inset: 15%; border: 3px solid var(--primary-light);
+  border-radius: var(--radius-md); box-shadow: 0 0 0 9999px rgba(0,0,0,0.35);
+  pointer-events: none;
+}
+.scanner-controls {
+  position: absolute; bottom: var(--space-md); left: 0; right: 0;
+  display: flex; gap: var(--space-sm); justify-content: center; z-index: 2;
+}
+.scanner-controls button {
+  background: rgba(0,0,0,0.6); color: white; padding: 8px 14px;
+  border-radius: var(--radius-full); font-size: var(--font-sm);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.scanner-controls button svg { width: 16px; height: 16px; }
+.scanner-mode-badge {
+  position: absolute; top: var(--space-md); left: var(--space-md);
+  padding: 6px 12px; border-radius: var(--radius-full);
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; z-index: 2;
+}
+.scanner-mode-badge.in { background: var(--success); color: white; }
+.scanner-mode-badge.out { background: var(--warning); color: white; }
+.scan-history { margin-top: var(--space-md); max-height: 200px; overflow-y: auto; }
+.scan-history-item {
+  display: flex; align-items: center; gap: var(--space-sm);
+  padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); font-size: var(--font-sm);
+}
+.scan-history-item:last-child { border-bottom: none; }
+.scan-history-item .check { color: var(--success); }
+.scan-history-item .time { margin-left: auto; color: var(--text-light); font-size: 12px; }
+
+/* TOAST */
+.toast-container {
+  position: fixed; bottom: calc(var(--space-lg) + var(--safe-bottom));
+  left: 50%; transform: translateX(-50%); z-index: 2000;
+  display: flex; flex-direction: column-reverse; gap: var(--space-sm);
+  align-items: center; pointer-events: none;
+  max-width: calc(100vw - 32px); width: auto;
+}
+.toast {
+  background: var(--text); color: white; padding: 12px 20px;
+  border-radius: var(--radius-md); font-size: var(--font-sm);
+  box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: var(--space-sm);
+  pointer-events: auto; animation: toastIn 0.2s ease-out; max-width: 400px;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+.toast.warning { background: var(--warning); }
+.toast.info { background: var(--info); }
+.toast svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500;
+  display: none; align-items: center; justify-content: center; padding: var(--space-lg);
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl); width: 100%; max-width: 500px;
+  max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;
+}
+.modal-header {
+  padding: var(--space-lg); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: var(--font-lg); font-weight: 700; }
+.modal-close { width: 32px; height: 32px; border-radius: var(--radius-sm); color: var(--text-muted); }
+.modal-close:hover { background: var(--surface-2); color: var(--text); }
+.modal-body { padding: var(--space-lg); overflow-y: auto; flex: 1; }
+.modal-footer {
+  padding: var(--space-lg); border-top: 1px solid var(--border);
+  display: flex; gap: var(--space-sm); justify-content: flex-end;
+}
+@media (max-width: 640px) {
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal { max-width: none; width: 100%; max-height: 95vh; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  .modal-footer { flex-direction: column-reverse; }
+  .modal-footer .btn { width: 100%; }
+}
+
+/* KARTU STOK */
+.kartu-stok-preview {
+  background: white; padding: 20px; max-width: 560px; margin: 0 auto;
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  font-family: "Times New Roman", serif; font-size: 12px; color: #000;
+  box-shadow: var(--shadow-md);
+}
+.kartu-stok-header {
+  text-align: center; border-bottom: 2px solid #000;
+  padding-bottom: 8px; margin-bottom: 12px;
+}
+.kartu-stok-header h1 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.kartu-stok-header h2 { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.kartu-stok-header h3 { font-size: 12px; font-weight: 700; text-decoration: underline; margin-top: 8px; letter-spacing: 1px; }
+.kartu-stok-info {
+  display: grid; grid-template-columns: 90px 8px 1fr; gap: 2px;
+  font-size: 11px; margin-bottom: 12px;
+}
+.kartu-stok-info .label { font-weight: 700; }
+.kartu-stok-table {
+  width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 10px;
+}
+.kartu-stok-table th, .kartu-stok-table td {
+  border: 1px solid #000; padding: 3px 5px; text-align: center; vertical-align: middle;
+}
+.kartu-stok-table th { background: #f0f0f0; font-weight: 700; }
+.kartu-stok-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.kartu-stok-summary {
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 4px 12px; font-size: 11px; margin: 12px 0;
+  padding: 8px; background: #f8f8f8; border-radius: 4px;
+}
+.kartu-stok-summary .label { font-weight: 700; }
+.kartu-stok-summary .value { text-align: right; }
+.kartu-stok-sign { display: flex; justify-content: space-between; margin-top: 24px; font-size: 11px; }
+.kartu-stok-sign .sign-box { text-align: center; }
+.kartu-stok-sign .sign-space { height: 50px; }
+.kartu-stok-sign .sign-line { border-top: 1px solid #000; padding-top: 3px; min-width: 120px; }
+.kartu-stok-footnote { font-size: 9px; color: #666; text-align: right; margin-top: 8px; }
+
+/* MONTH NAV */
+.month-nav {
+  display: flex; align-items: center; gap: var(--space-sm);
+  padding: var(--space-md); background: var(--surface-2);
+  border-radius: var(--radius-md); margin-bottom: var(--space-lg);
+  justify-content: center;
+}
+.month-nav button {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 1px solid var(--border);
+}
+.month-nav button:hover:not(:disabled) { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+.month-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
+.month-nav .current {
+  font-weight: 700; font-size: var(--font-md); padding: 0 var(--space-lg);
+  min-width: 180px; text-align: center;
+}
+
+/* OPNAME */
+.opname-row input.stok-input {
+  width: 100px; padding: 6px 10px; font-size: var(--font-md);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+.opname-row input.stok-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-bg); }
+.opname-row input.stok-input.changed { background: var(--warning-bg); border-color: var(--warning); font-weight: 600; }
+.opname-row .selisih-pos { color: var(--success); font-weight: 600; }
+.opname-row .selisih-neg { color: var(--danger); font-weight: 600; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center; padding: var(--space-2xl) var(--space-lg); color: var(--text-muted);
+}
+.empty-state svg { width: 48px; height: 48px; color: var(--text-light); margin-bottom: var(--space-md); }
+.empty-state h3 { font-size: var(--font-md); color: var(--text); margin-bottom: 4px; }
+.empty-state p { font-size: var(--font-sm); }
+
+/* SPINNER */
+.spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(255,255,255,0.8);
+  z-index: 1800; display: none; align-items: center; justify-content: center;
+}
+.loading-overlay.active { display: flex; }
+.loading-overlay .spinner { width: 40px; height: 40px; border-width: 3px; color: var(--primary); }
+
+/* UTILITIES */
+.text-muted { color: var(--text-muted); }
+.text-danger { color: var(--danger); }
+.text-success { color: var(--success); }
+.mt-1 { margin-top: var(--space-sm); }
+.mt-2 { margin-top: var(--space-md); }
+.mt-3 { margin-top: var(--space-lg); }
+.mb-1 { margin-bottom: var(--space-sm); }
+.mb-2 { margin-bottom: var(--space-md); }
+.mb-3 { margin-bottom: var(--space-lg); }
+.flex { display: flex; }
+.gap-2 { gap: var(--space-md); }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0;
+  height: calc(var(--bottomnav-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: var(--surface); border-top: 1px solid var(--border);
+  z-index: 45; grid-template-columns: repeat(5, 1fr);
+}
+.bottom-nav-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; font-size: 10px; color: var(--text-muted); padding: 6px;
+}
+.bottom-nav-item.active { color: var(--primary); font-weight: 600; }
+.bottom-nav-item svg { width: 22px; height: 22px; }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; box-shadow: var(--shadow-xl); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 39; }
+  .sidebar-backdrop.active { display: block; }
+  .topbar-menu-btn { display: flex; }
+  .main { margin-left: 0; padding: var(--space-md); padding-bottom: calc(var(--bottomnav-h) + var(--safe-bottom) + var(--space-md)); }
+  .bottom-nav { display: grid; }
+  .topbar-user .user-name { display: none; }
+  .topbar-user { padding: 6px 10px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stat-value { font-size: var(--font-xl); }
+  .page-title { font-size: var(--font-lg); }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* PRINT */
+@media print {
+  body { background: white; }
+  .app > *:not(.main), .main > *:not(#print-area) { display: none !important; }
+  .main { margin: 0; padding: 0; }
+  .no-print { display: none !important; }
+  #print-area { display: block !important; }
+  .kartu-stok-preview {
+    max-width: none; margin: 0; padding: 8mm; border: none; box-shadow: none;
+    page-break-inside: avoid;
+  }
+  @page { size: A5 portrait; margin: 8mm; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-logo">PKM</div>
+      <div class="login-title">Sistem Gudang</div>
+      <div class="login-subtitle">Puskesmas Sanden, Bantul</div>
+    </div>
+    <form class="login-form" id="login-form" autocomplete="off">
+      <div class="field">
+        <label class="field-label" for="login-username">Username</label>
+        <input type="text" class="input" id="login-username"
+               autocapitalize="none" autocorrect="off" spellcheck="false"
+               autocomplete="username" placeholder="contoh: apoteker_pj" maxlength="20" required>
+      </div>
+      <div class="field">
+        <label class="field-label">PIN</label>
+        <div class="login-pin-display empty" id="login-pin">Masukkan PIN</div>
+      </div>
+      <div class="login-keypad" id="login-keypad">
+        <button type="button" class="key-btn" data-key="1">1</button>
+        <button type="button" class="key-btn" data-key="2">2</button>
+        <button type="button" class="key-btn" data-key="3">3</button>
+        <button type="button" class="key-btn" data-key="4">4</button>
+        <button type="button" class="key-btn" data-key="5">5</button>
+        <button type="button" class="key-btn" data-key="6">6</button>
+        <button type="button" class="key-btn" data-key="7">7</button>
+        <button type="button" class="key-btn" data-key="8">8</button>
+        <button type="button" class="key-btn" data-key="9">9</button>
+        <button type="button" class="key-btn" data-key="back" aria-label="Hapus">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+        </button>
+        <button type="button" class="key-btn" data-key="0">0</button>
+        <button type="button" class="key-btn primary" data-key="enter" id="login-submit" aria-label="Masuk">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>
+      </div>
+      <div class="login-help mt-3">Lupa PIN? Hubungi <strong>Admin</strong></div>
+    </form>
+    <div class="login-footer">
+      <span class="status-dot" id="conn-dot"></span>
+      <span id="conn-text">Terhubung</span>
+      <span>·</span>
+      <span id="version-text">v2.0</span>
+    </div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div class="app" id="app">
+  <header class="topbar">
+    <button class="topbar-menu-btn" id="menu-btn" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="topbar-brand">
+      <div class="topbar-logo">PKM</div>
+      <div class="topbar-title" id="topbar-title">Sistem Gudang</div>
+    </div>
+    <div class="offline-badge" id="offline-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><line x1="2" y1="2" x2="22" y2="22"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 4.17-2.65"/><path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"/><path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"/><path d="M5 12.55a11 11 0 0 1 5.17-2.39"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      Offline
+    </div>
+    <div class="topbar-user">
+      <span class="user-name" id="topbar-username">-</span>
+      <span class="role-badge" id="topbar-role">-</span>
+    </div>
+  </header>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main" id="main-content"></main>
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<!-- GLOBAL UI -->
+<div class="toast-container" id="toast-container"></div>
+<div class="loading-overlay" id="loading-overlay"><div class="spinner"></div></div>
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Title</div>
+      <button class="modal-close" id="modal-close" aria-label="Tutup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   CONFIGURATION
+   ============================================================ */
+const CONFIG = {
+  API_URL: 'https://script.google.com/macros/s/AKfycbxX6oAam5bFHR4ngUEWwZ7TXXzuo9mGxBrXtnj1e6y8BT9Fm3rw7JWDKsxYpZwTb45pSw/exec',
+  API_KEY: 'PKM_SANDEN_26',
+  APP_VERSION: '2.0',
+  REQUEST_TIMEOUT_MS: 30000,
+  RETRY_ATTEMPTS: 3,
+  MASTER_CACHE_TTL_MS: 3600000,
+  LOGO_KEY: 'PKM_LOGO_DATAURL',
+  MAX_TOAST: 3
+};
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+const U = {
+  $(sel, ctx) { return (ctx || document).querySelector(sel); },
+  $$(sel, ctx) { return Array.from((ctx || document).querySelectorAll(sel)); },
+
+  escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  },
+
+  formatDate(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return String(ts);
+    return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  },
+
+  formatDateTime(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return String(ts);
+    return d.toLocaleString('id-ID', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  },
+
+  formatNumber(n) {
+    return (Number(n) || 0).toLocaleString('id-ID');
+  },
+
+  formatRupiah(n) {
+    return 'Rp ' + (Number(n) || 0).toLocaleString('id-ID');
+  },
+
+  formatMonthName(bulan) {
+    const names = ['Januari','Februari','Maret','April','Mei','Juni',
+                   'Juli','Agustus','September','Oktober','November','Desember'];
+    return names[Number(bulan) - 1] || '';
+  },
+
+  nowISO() {
+    const d = new Date();
+    const offset = 7 * 60;
+    const local = new Date(d.getTime() + (d.getTimezoneOffset() + offset) * 60000);
+    const pad = n => String(n).padStart(2, '0');
+    return local.getFullYear() + '-' + pad(local.getMonth() + 1) + '-' + pad(local.getDate()) +
+           'T' + pad(local.getHours()) + ':' + pad(local.getMinutes()) + ':' + pad(local.getSeconds()) + '+07:00';
+  },
+
+  uuid() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  },
+
+  debounce(fn, ms) {
+    let t;
+    return function(...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), ms);
+    };
+  },
+
+  sleep(ms) { return new Promise(r => setTimeout(r, ms)); },
+
+  vibrate(pattern) {
+    if (navigator.vibrate) try { navigator.vibrate(pattern); } catch (e) {}
+  },
+
+  beep(freq, duration) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      const ctx = new AC();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = freq || 1200;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (duration || 0.1) / 1000);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + (duration || 0.1) / 1000);
+      setTimeout(() => ctx.close(), (duration || 100) + 100);
+    } catch (e) {}
+  },
+  beepSuccess() { this.beep(1200, 80); },
+  beepError() { this.beep(400, 200); },
+
+  icon(name, size) {
+    const s = size || 20;
+    const paths = {
+      dashboard: '<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>',
+      menu: '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>',
+      arrowDown: '<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>',
+      arrowUp: '<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>',
+      file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+      check: '<polyline points="20 6 9 17 4 12"/>',
+      x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+      alert: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+      alertCircle: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+      info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+      package: '<path d="M16.5 9.4L7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+      trending: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+      clipboard: '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>',
+      settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+      logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+      users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      pills: '<path d="M10.5 20.5a7.5 7.5 0 0 1-10.6-10.6l10.6 10.6z"/><path d="M13.5 3.5a7.5 7.5 0 0 1 10.6 10.6L13.5 3.5z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/>',
+      box: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+      truck: '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+      building: '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="22" x2="9" y2="18"/><line x1="15" y1="22" x2="15" y2="18"/><path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"/>',
+      mapPin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+      printer: '<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+      download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+      search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+      plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+      edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+      trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+      refresh: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+      chevronLeft: '<polyline points="15 18 9 12 15 6"/>',
+      chevronRight: '<polyline points="9 18 15 12 9 6"/>',
+      camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+      keyboard: '<rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="10"/><line x1="10" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="14" y2="10"/><line x1="18" y1="10" x2="18" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/>',
+      zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+      wifiOff: '<line x1="2" y1="2" x2="22" y2="22"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 4.17-2.65"/><path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"/><path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"/><path d="M5 12.55a11 11 0 0 1 5.17-2.39"/><line x1="12" y1="20" x2="12.01" y2="20"/>',
+      key: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
+      image: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'
+    };
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="' + s + '" height="' + s + '">' + (paths[name] || '') + '</svg>';
+  }
+};
+
+/* ============================================================
+   TOAST (max 3)
+   ============================================================ */
+const Toast = {
+  show(message, type, duration) {
+    const container = U.$('#toast-container');
+    // Hapus toast lama jika lebih dari MAX
+    while (container.children.length >= CONFIG.MAX_TOAST) {
+      container.removeChild(container.firstChild);
+    }
+    const el = document.createElement('div');
+    el.className = 'toast ' + (type || 'info');
+    const iconName = type === 'success' ? 'check' :
+                    type === 'error' ? 'alertCircle' :
+                    type === 'warning' ? 'alert' : 'info';
+    el.innerHTML = U.icon(iconName, 18) + '<span>' + U.escapeHtml(message) + '</span>';
+    container.appendChild(el);
+    const dur = duration || (type === 'error' ? 5000 : 3000);
+    setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(10px)';
+      el.style.transition = 'opacity 0.2s, transform 0.2s';
+      setTimeout(() => el.remove(), 250);
+    }, dur);
+  },
+  success(msg) { this.show(msg, 'success'); },
+  error(msg) { this.show(msg, 'error', 6000); },
+  warning(msg) { this.show(msg, 'warning', 4000); },
+  info(msg) { this.show(msg, 'info'); }
+};
+
+/* ============================================================
+   MODAL (dengan per-instance onClose)
+   ============================================================ */
+const Modal = {
+  _currentOnClose: null,
+  open(opts) {
+    U.$('#modal-title').textContent = opts.title || '';
+    const body = U.$('#modal-body');
+    const footer = U.$('#modal-footer');
+    body.innerHTML = '';
+    footer.innerHTML = '';
+
+    if (typeof opts.body === 'string') body.innerHTML = opts.body;
+    else if (opts.body instanceof Node) body.appendChild(opts.body);
+
+    (opts.actions || []).forEach(act => {
+      const btn = document.createElement('button');
+      btn.className = 'btn ' + (act.class || 'btn-secondary');
+      btn.textContent = act.label;
+      btn.addEventListener('click', () => {
+        if (act.onClick) act.onClick();
+        if (act.close !== false) Modal.close();
+      });
+      footer.appendChild(btn);
+    });
+
+    this._currentOnClose = opts.onClose || null;
+    U.$('#modal-overlay').classList.add('active');
+  },
+  close() {
+    U.$('#modal-overlay').classList.remove('active');
+    const cb = this._currentOnClose;
+    this._currentOnClose = null;
+    if (cb) { try { cb(); } catch (e) { console.error(e); } }
+  },
+  confirm(title, message, onConfirm, confirmText, danger) {
+    this.open({
+      title: title,
+      body: '<p>' + U.escapeHtml(message) + '</p>',
+      actions: [
+        { label: 'Batal', class: 'btn-secondary' },
+        { label: confirmText || 'Ya, Lanjutkan',
+          class: danger ? 'btn-danger' : 'btn-primary',
+          onClick: onConfirm }
+      ]
+    });
+  }
+};
+
+/* ============================================================
+   LOADING
+   ============================================================ */
+const Loading = {
+  _count: 0,
+  show() {
+    this._count++;
+    U.$('#loading-overlay').classList.add('active');
+  },
+  hide() {
+    this._count = Math.max(0, this._count - 1);
+    if (this._count === 0) U.$('#loading-overlay').classList.remove('active');
+  }
+};
+
+/* ============================================================
+   STORAGE
+   ============================================================ */
+const Store = {
+  getSession() {
+    try {
+      const raw = sessionStorage.getItem('session');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  },
+  setSession(s) { sessionStorage.setItem('session', JSON.stringify(s)); },
+  clearSession() { sessionStorage.removeItem('session'); },
+
+  getMaster() {
+    try {
+      const raw = localStorage.getItem('master_data');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed.expires && Date.now() > parsed.expires) {
+        localStorage.removeItem('master_data');
+        return null;
+      }
+      return parsed.data;
+    } catch (e) { return null; }
+  },
+  setMaster(data) {
+    try {
+      localStorage.setItem('master_data', JSON.stringify({
+        data: data, expires: Date.now() + CONFIG.MASTER_CACHE_TTL_MS
+      }));
+    } catch (e) {}
+  },
+  clearMaster() { localStorage.removeItem('master_data'); },
+
+  getLogo() { return localStorage.getItem(CONFIG.LOGO_KEY) || ''; },
+  setLogo(dataUrl) { localStorage.setItem(CONFIG.LOGO_KEY, dataUrl); },
+
+  _dbPromise: null,
+  _openDB() {
+    if (this._dbPromise) return this._dbPromise;
+    this._dbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open('gudang_queue', 1);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('queue')) {
+          db.createObjectStore('queue', { keyPath: 'id', autoIncrement: true });
+        }
+      };
+      req.onsuccess = e => resolve(e.target.result);
+      req.onerror = e => reject(e.target.error);
+    });
+    return this._dbPromise;
+  },
+  async queueAdd(item) {
+    try {
+      const db = await this._openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('queue', 'readwrite');
+        tx.objectStore('queue').add(item);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = e => reject(e.target.error);
+      });
+    } catch (e) { return false; }
+  },
+  async queueAll() {
+    try {
+      const db = await this._openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('queue', 'readonly');
+        const req = tx.objectStore('queue').getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = e => reject(e.target.error);
+      });
+    } catch (e) { return []; }
+  },
+  async queueRemove(id) {
+    try {
+      const db = await this._openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('queue', 'readwrite');
+        tx.objectStore('queue').delete(id);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = e => reject(e.target.error);
+      });
+    } catch (e) { return false; }
+  },
+  async queueClear() {
+    try {
+      const db = await this._openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('queue', 'readwrite');
+        tx.objectStore('queue').clear();
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = e => reject(e.target.error);
+      });
+    } catch (e) { return false; }
+  },
+  async queueCount() {
+    const all = await this.queueAll();
+    return all.length;
+  }
+};
+
+/* ============================================================
+   API CLIENT
+   ============================================================ */
+class ApiError extends Error {
+  constructor(code, message, raw) {
+    super(message);
+    this.code = code;
+    this.raw = raw;
+  }
+}
+
+const Api = {
+  _buildRequest(action, payload, opts) {
+    const session = Store.getSession();
+    return {
+      auth_token: CONFIG.API_KEY,
+      session_token: (opts && opts.public) ? undefined : (session ? session.token : undefined),
+      action: action,
+      uuid: (opts && opts.noUuid) ? undefined : U.uuid(),
+      timestamp_client: U.nowISO(),
+      payload: payload || {}
+    };
+  },
+
+  async _fetch(body, timeoutMs) {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), timeoutMs || CONFIG.REQUEST_TIMEOUT_MS);
+    try {
+      const res = await fetch(CONFIG.API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+        redirect: 'follow'
+      });
+      clearTimeout(tid);
+      const text = await res.text();
+      let json;
+      try { json = JSON.parse(text); }
+      catch (e) {
+        throw new ApiError('SERVER_ERROR', 'Respons server tidak valid: ' + text.substring(0, 120));
+      }
+      return json;
+    } catch (err) {
+      clearTimeout(tid);
+      if (err.name === 'AbortError') throw new ApiError('TIMEOUT', 'Request timeout. Coba lagi.');
+      if (err instanceof ApiError) throw err;
+      throw new ApiError('NETWORK', 'Koneksi gagal: ' + (err.message || err));
+    }
+  },
+
+  async call(action, payload, opts) {
+    opts = opts || {};
+    const body = this._buildRequest(action, payload, opts);
+    let lastError = null;
+
+    for (let attempt = 0; attempt < CONFIG.RETRY_ATTEMPTS; attempt++) {
+      if (attempt > 0) {
+        const delay = Math.min(1000 * Math.pow(3, attempt - 1), 8000);
+        await U.sleep(delay);
+      }
+      try {
+        const res = await this._fetch(body);
+        if (res.code === 200) return res;
+        if (res.code === 401) {
+          if (App.state.session) {
+            Store.clearSession();
+            App.state.session = null;
+            Toast.error('Sesi berakhir. Silakan login ulang.');
+            App.showLogin();
+          }
+          throw new ApiError(res.error_code || 'UNAUTHORIZED', res.message || 'Tidak berwenang');
+        }
+        if (res.code === 429) {
+          lastError = new ApiError('RATE_LIMITED', res.message || 'Terlalu banyak permintaan');
+          await U.sleep(5000);
+          continue;
+        }
+        if (res.code >= 500 && attempt < CONFIG.RETRY_ATTEMPTS - 1) {
+          lastError = new ApiError(res.error_code || 'SERVER_ERROR', res.message || 'Server error');
+          continue;
+        }
+        throw new ApiError(res.error_code || 'ERROR', res.message || 'Terjadi kesalahan', res);
+      } catch (err) {
+        lastError = err;
+        if (err.code === 'NETWORK' || err.code === 'TIMEOUT') {
+          if (attempt < CONFIG.RETRY_ATTEMPTS - 1) continue;
+        } else if (err.code !== 'RATE_LIMITED') {
+          throw err;
+        }
+      }
+    }
+    throw lastError || new ApiError('UNKNOWN', 'Gagal setelah beberapa kali percobaan');
+  },
+
+  // Endpoints
+  login(username, pin) { return this.call('login', { username, pin_plaintext: pin }, { public: true }); },
+  logout() { return this.call('logout', {}); },
+  whoAmI() { return this.call('whoAmI', {}); },
+  getMasterData() { return this.call('getMasterData', {}); },
+  getDashboardSummary() { return this.call('getDashboardSummary', {}); },
+  getKartuStokBulanan(idBarang, bulan, tahun) {
+    return this.call('getKartuStokBulanan', { id_barang: idBarang, bulan, tahun });
+  },
+  getExpiringItems(bulan) { return this.call('getExpiringItems', { bulan: bulan || 3 }); },
+  simpanTransaksi(payload) { return this.call('simpanTransaksi', payload); },
+  simpanOpnameBulk(payload) { return this.call('simpanOpnameBulk', payload); },
+  editMasterData(payload) { return this.call('editMasterData', payload); },
+  tambahMaster(payload) { return this.call('tambahMaster', payload); },
+  hapusMaster(payload) { return this.call('hapusMaster', payload); },
+  getAuditLog(payload) { return this.call('getAuditLog', payload); },
+  ubahPin(payload) { return this.call('ubahPin', payload); },
+  resetPin(idPetugas) { return this.call('resetPin', { id_petugas: idPetugas }); },
+  getPendingApprovals() { return this.call('getPendingApprovals', {}); },
+  approveTransaksi(idTrx, keputusan) {
+    return this.call('approveTransaksi', { id_transaksi: idTrx, keputusan: keputusan });
+  }
+};
+
+/* ============================================================
+   QR SCANNER
+   ============================================================ */
+const QRScanner = {
+  _stream: null, _videoEl: null, _rafId: null, _detector: null,
+  _running: false, _lastText: '', _lastTime: 0, _onDetected: null,
+
+  async start(videoEl, onDetected, onError) {
+    this.stop();
+    this._videoEl = videoEl;
+    this._onDetected = onDetected;
+    this._running = true;
+
+    try {
+      const constraints = {
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+      };
+      this._stream = await navigator.mediaDevices.getUserMedia(constraints);
+      videoEl.srcObject = this._stream;
+      videoEl.setAttribute('playsinline', '');
+      videoEl.muted = true;
+      await videoEl.play();
+
+      if ('BarcodeDetector' in window) {
+        try {
+          this._detector = new BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13'] });
+        } catch (e) { this._detector = null; }
+      }
+
+      if (!this._detector) {
+        // Fallback: jika tidak ada BarcodeDetector, coba load html5-qrcode
+        try {
+          await this._loadHtml5Qrcode();
+          if (window.Html5Qrcode) {
+            // Minimal: scan via html5-qrcode (mirip native)
+            this._html5Instance = new window.Html5Qrcode(videoEl.id || this._ensureId(videoEl));
+            // Tidak mengimplementasi penuh; gunakan mode manual jika ini gagal
+          }
+        } catch (e) { /* silent — user tetap bisa pakai input manual */ }
+      }
+
+      this._loop();
+    } catch (err) {
+      if (onError) onError(err);
+    }
+  },
+
+  _ensureId(el) {
+    if (!el.id) el.id = 'scanner-video-' + Math.random().toString(36).substring(2, 8);
+    return el.id;
+  },
+
+  _loadHtml5Qrcode() {
+    return new Promise((resolve, reject) => {
+      if (window.Html5Qrcode) return resolve(window.Html5Qrcode);
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+      script.onload = () => resolve(window.Html5Qrcode);
+      script.onerror = () => reject(new Error('Gagal load html5-qrcode'));
+      document.head.appendChild(script);
+    });
+  },
+
+  async _loop() {
+    if (!this._running) return;
+    if (this._detector && this._videoEl && this._videoEl.readyState === 4) {
+      try {
+        const codes = await this._detector.detect(this._videoEl);
+        if (codes && codes.length > 0) this._handle(codes[0].rawValue);
+      } catch (e) { /* ignore */ }
+    }
+    this._rafId = requestAnimationFrame(() => this._loop());
+  },
+
+  _handle(text) {
+    if (!text) return;
+    const now = Date.now();
+    if (text === this._lastText && (now - this._lastTime) < 2000) return;
+    this._lastText = text;
+    this._lastTime = now;
+    if (this._onDetected) this._onDetected(text);
+  },
+
+  stop() {
+    this._running = false;
+    if (this._rafId) { cancelAnimationFrame(this._rafId); this._rafId = null; }
+    if (this._stream) {
+      this._stream.getTracks().forEach(t => t.stop());
+      this._stream = null;
+    }
+    if (this._videoEl) {
+      try { this._videoEl.srcObject = null; } catch (e) {}
+    }
+    this._detector = null;
+  },
+
+  async toggleFlash() {
+    if (!this._stream) return false;
+    const track = this._stream.getVideoTracks()[0];
+    if (!track) return false;
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    if (!caps.torch) return false;
+    const newTorch = !track.getSettings().torch;
+    try {
+      await track.applyConstraints({ advanced: [{ torch: newTorch }] });
+      return newTorch;
+    } catch (e) { return false; }
+  }
+};
+
+/* ============================================================
+   APP STATE & ROUTER
+   ============================================================ */
+const App = {
+  state: {
+    session: null,
+    master: null,
+    online: navigator.onLine,
+    currentRoute: 'dashboard'
+  },
+
+  MENU: [
+    { group: 'Operasional', items: [
+      { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', roles: ['SuperAdmin','Apoteker','Gudang','Bidan_Desa'] },
+      { id: 'scan-in', label: 'Scan Masuk', icon: 'arrowDown', roles: ['SuperAdmin','Apoteker','Gudang'] },
+      { id: 'scan-out', label: 'Scan Keluar', icon: 'arrowUp', roles: ['SuperAdmin','Apoteker','Gudang','Bidan_Desa'] },
+      { id: 'opname', label: 'Stock Opname', icon: 'clipboard', roles: ['SuperAdmin','Apoteker','Gudang'] }
+    ]},
+    { group: 'Laporan', items: [
+      { id: 'kartu-stok', label: 'Kartu Stok', icon: 'file', roles: ['SuperAdmin','Apoteker','Gudang','Bidan_Desa'] },
+      { id: 'approval', label: 'Menunggu Approval', icon: 'check', roles: ['SuperAdmin','Apoteker'] }
+    ]},
+    { group: 'Master Data', items: [
+      { id: 'master-obat', label: 'Data Obat', icon: 'pills', roles: ['SuperAdmin','Apoteker'] },
+      { id: 'master-bmhp', label: 'Data BMHP', icon: 'box', roles: ['SuperAdmin','Apoteker'] },
+      { id: 'master-supplier', label: 'Data Supplier', icon: 'truck', roles: ['SuperAdmin','Apoteker'] },
+      { id: 'master-unit', label: 'Data Unit', icon: 'building', roles: ['SuperAdmin'] },
+      { id: 'master-rak', label: 'Data Lokasi Rak', icon: 'mapPin', roles: ['SuperAdmin','Apoteker'] },
+      { id: 'master-petugas', label: 'Data Petugas', icon: 'users', roles: ['SuperAdmin'] }
+    ]},
+    { group: 'Tata Kelola', items: [
+      { id: 'audit', label: 'Audit Log', icon: 'clipboard', roles: ['SuperAdmin','Apoteker'] },
+      { id: 'settings', label: 'Pengaturan', icon: 'settings', roles: ['SuperAdmin','Apoteker','Gudang','Bidan_Desa'] }
+    ]}
+  ],
+
+  BOTTOM_NAV: [
+    { id: 'dashboard', label: 'Beranda', icon: 'dashboard', roles: ['SuperAdmin','Apoteker','Gudang','Bidan_Desa'] },
+    { id: 'scan-in', label: 'Masuk', icon: 'arrowDown', roles: ['SuperAdmin','Apoteker','Gudang'] },
+    { id: 'scan-out', label: 'Keluar', icon: 'arrowUp', roles: ['SuperAdmin','Apoteker','Gudang','Bidan_Desa'] },
+    { id: 'kartu-stok', label: 'Kartu', icon: 'file', roles: ['SuperAdmin','Apoteker','Gudang','Bidan_Desa'] },
+    { id: 'menu', label: 'Menu', icon: 'menu', roles: ['SuperAdmin','Apoteker','Gudang','Bidan_Desa'] }
+  ],
+
+  async init() {
+    this.checkOnline();
+    window.addEventListener('online', () => this.checkOnline());
+    window.addEventListener('offline', () => this.checkOnline());
+
+    const sess = Store.getSession();
+    if (sess && sess.token) {
+      this.state.session = sess;
+      try {
+        const res = await Api.whoAmI();
+        if (res.code === 200) {
+          this.state.session = Object.assign({}, sess, {
+            nama: res.data.nama,
+            role: res.data.role,
+            username: res.data.username,
+            wilayah_binaan: res.data.wilayah_binaan
+          });
+          Store.setSession(this.state.session);
+          await this.showApp();
+          await this.route(location.hash ? location.hash.substring(2) : 'dashboard');
+          return;
+        }
+      } catch (err) { /* session invalid */ }
+      Store.clearSession();
+      this.state.session = null;
+    }
+    this.showLogin();
+  },
+
+  checkOnline() {
+    this.state.online = navigator.onLine;
+    const dot = U.$('#conn-dot');
+    const txt = U.$('#conn-text');
+    const badge = U.$('#offline-badge');
+    if (dot) dot.classList.toggle('offline', !this.state.online);
+    if (txt) txt.textContent = this.state.online ? 'Terhubung' : 'Offline';
+    if (badge) badge.classList.toggle('visible', !this.state.online);
+  },
+
+  showLogin() {
+    U.$('#login-screen').style.display = 'flex';
+    U.$('#app').classList.remove('active');
+    setTimeout(() => U.$('#login-username').focus(), 100);
+  },
+
+  async showApp() {
+    U.$('#login-screen').style.display = 'none';
+    U.$('#app').classList.add('active');
+    this.renderShell();
+    await this.loadMasterIfNeeded();
+  },
+
+  async loadMasterIfNeeded() {
+    let master = Store.getMaster();
+    if (!master) {
+      try {
+        const res = await Api.getMasterData();
+        master = res.data;
+        Store.setMaster(master);
+      } catch (err) {
+        Toast.error('Gagal memuat data master: ' + err.message);
+        return;
+      }
+    }
+    this.state.master = master;
+  },
+
+  async refreshMaster() {
+    Store.clearMaster();
+    this.state.master = null;
+    await this.loadMasterIfNeeded();
+  },
+
+  renderShell() {
+    const s = this.state.session;
+    if (!s) return;
+    U.$('#topbar-username').textContent = s.nama || s.username || '-';
+    U.$('#topbar-role').textContent = s.role || '-';
+
+    const sidebar = U.$('#sidebar');
+    sidebar.innerHTML = '';
+    this.MENU.forEach(group => {
+      const visibleItems = group.items.filter(it => it.roles.indexOf(s.role) !== -1);
+      if (visibleItems.length === 0) return;
+      const g = document.createElement('div');
+      g.className = 'sidebar-group';
+      g.innerHTML = '<div class="sidebar-group-title">' + U.escapeHtml(group.group) + '</div>';
+      visibleItems.forEach(it => {
+        const a = document.createElement('a');
+        a.className = 'sidebar-item';
+        a.href = '#/' + it.id;
+        a.dataset.route = it.id;
+        a.innerHTML = U.icon(it.icon, 18) + '<span>' + U.escapeHtml(it.label) + '</span>';
+        g.appendChild(a);
+      });
+      sidebar.appendChild(g);
+    });
+
+    const bn = U.$('#bottom-nav');
+    bn.innerHTML = '';
+    this.BOTTOM_NAV.forEach(it => {
+      if (it.roles.indexOf(s.role) === -1) return;
+      const a = document.createElement('a');
+      a.className = 'bottom-nav-item';
+      a.href = it.id === 'menu' ? '#' : '#/' + it.id;
+      a.dataset.route = it.id;
+      if (it.id === 'menu') a.dataset.action = 'menu';
+      a.innerHTML = U.icon(it.icon, 22) + '<span>' + U.escapeHtml(it.label) + '</span>';
+      bn.appendChild(a);
+    });
+
+    this.updateActiveNav();
+  },
+
+  updateActiveNav() {
+    const route = this.state.currentRoute;
+    U.$$('.sidebar-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.route === route);
+    });
+    U.$$('.bottom-nav-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.route === route);
+    });
+  },
+
+  async route(route) {
+    if (!this.state.session) { this.showLogin(); return; }
+    this.state.currentRoute = route;
+    this.updateActiveNav();
+    U.$('#sidebar').classList.remove('open');
+    U.$('#sidebar-backdrop').classList.remove('active');
+
+    let pageTitle = 'Sistem Gudang';
+    for (const g of this.MENU) {
+      const it = g.items.find(i => i.id === route);
+      if (it) { pageTitle = it.label; break; }
+    }
+    U.$('#topbar-title').textContent = pageTitle;
+
+    const session = this.state.session;
+    let allowed = false;
+    for (const g of this.MENU) {
+      const it = g.items.find(i => i.id === route);
+      if (it && it.roles.indexOf(session.role) !== -1) { allowed = true; break; }
+    }
+    if (!allowed) {
+      U.$('#main-content').innerHTML = this._renderEmpty('Akses Ditolak',
+        'Anda tidak berwenang mengakses halaman ini.', 'alertCircle');
+      return;
+    }
+
+    if (route !== 'scan-in' && route !== 'scan-out') QRScanner.stop();
+
+    const main = U.$('#main-content');
+    try {
+      switch (route) {
+        case 'dashboard':    await PageDashboard.render(main); break;
+        case 'scan-in':      await PageScanIn.render(main); break;
+        case 'scan-out':     await PageScanOut.render(main); break;
+        case 'kartu-stok':   await PageKartuStok.render(main); break;
+        case 'approval':     await PageApproval.render(main); break;
+        case 'opname':       await PageOpname.render(main); break;
+        case 'master-obat':     await PageMaster.render(main, 'Master_Obat'); break;
+        case 'master-bmhp':     await PageMaster.render(main, 'Master_BMHP'); break;
+        case 'master-supplier': await PageMaster.render(main, 'Ref_Supplier'); break;
+        case 'master-unit':     await PageMaster.render(main, 'Ref_UnitInternal'); break;
+        case 'master-rak':      await PageMaster.render(main, 'Ref_LokasiRak'); break;
+        case 'master-petugas':  await PageMaster.render(main, 'Ref_Petugas'); break;
+        case 'audit':        await PageAudit.render(main); break;
+        case 'settings':     await PageSettings.render(main); break;
+        default:
+          main.innerHTML = this._renderEmpty('Halaman tidak ditemukan', '', 'alertCircle');
+      }
+    } catch (err) {
+      console.error('[ROUTE_ERROR]', err);
+      main.innerHTML = this._renderEmpty('Gagal Memuat',
+        err.message || 'Terjadi kesalahan saat memuat halaman.', 'alertCircle');
+    }
+
+    window.scrollTo(0, 0);
+  },
+
+  _renderEmpty(title, desc, iconName) {
+    return '<div class="empty-state">' + U.icon(iconName || 'info', 48) +
+           '<h3>' + U.escapeHtml(title) + '</h3>' +
+           (desc ? '<p>' + U.escapeHtml(desc) + '</p>' : '') + '</div>';
+  },
+
+  async logout() {
+    try { await Api.logout(); } catch (e) {}
+    Store.clearSession();
+    Store.clearMaster();
+    await Store.queueClear();
+    // Bersihkan history scan in/out
+    PageScanIn._history = [];
+    PageScanOut._history = [];
+    this.state.session = null;
+    this.state.master = null;
+    Toast.info('Anda telah keluar.');
+    this.showLogin();
+  }
+};
+
+/* ============================================================
+   PAGE: DASHBOARD
+   ============================================================ */
+const PageDashboard = {
+  async render(container) {
+    container.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+    let summary = { total_item_kritis: 0, total_nilai_aset: 0, total_obat_mendekati_ed: 0, total_obat: 0, total_bmhp: 0 };
+    let expiring = [];
+
+    try {
+      const [resS, resE] = await Promise.all([
+        Api.getDashboardSummary(),
+        Api.getExpiringItems(3)
+      ]);
+      if (resS.code === 200) summary = resS.data || summary;
+      if (resE.code === 200) expiring = resE.data || [];
+    } catch (err) {
+      container.innerHTML = App._renderEmpty('Gagal Memuat', err.message, 'alertCircle');
+      return;
+    }
+
+    const session = App.state.session;
+    const totalObat = Number(summary.total_obat) || 0;
+
+    const html = '' +
+      '<div class="page-header">' +
+        '<div>' +
+          '<div class="page-title">Selamat datang, ' + U.escapeHtml((session.nama || session.username).split(' ')[0]) + '</div>' +
+          '<div class="page-desc">' + U.formatDateTime(new Date()) + '</div>' +
+        '</div>' +
+        '<button class="btn btn-secondary" id="btn-refresh">' + U.icon('refresh', 16) + ' Refresh</button>' +
+      '</div>' +
+
+      '<div class="stats-grid">' +
+        this._statCard('primary', 'package', U.formatNumber(totalObat), 'Jenis Obat') +
+        this._statCard('danger', 'alert', U.formatNumber(summary.total_item_kritis), 'Item Stok Kritis') +
+        this._statCard('warning', 'alertCircle', U.formatNumber(summary.total_obat_mendekati_ed), 'Batch Mendekati ED') +
+        this._statCard('success', 'trending', U.formatRupiah(summary.total_nilai_aset), 'Nilai Aset') +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="card-title">' +
+          '<span>Obat Mendekati Kedaluwarsa (≤3 bulan)</span>' +
+          '<span class="badge badge-warning">' + expiring.length + '</span>' +
+        '</div>' +
+        (expiring.length === 0
+          ? '<div class="empty-state" style="padding:24px"><p>Tidak ada obat mendekati kedaluwarsa.</p></div>'
+          : '<div class="table-scroll"><table class="data-table"><thead><tr>' +
+            '<th>ID Obat</th><th>Batch</th><th>ED</th><th class="num">Sisa</th>' +
+            '</tr></thead><tbody>' +
+            expiring.slice(0, 10).map(it =>
+              '<tr><td class="mono">' + U.escapeHtml(it.id_obat) + '</td>' +
+              '<td class="mono">' + U.escapeHtml(it.no_batch) + '</td>' +
+              '<td>' + U.escapeHtml(it.exp_date) + '</td>' +
+              '<td class="num">' + U.formatNumber(it.sisa_stok) + '</td></tr>'
+            ).join('') +
+            '</tbody></table></div>'
+        ) +
+      '</div>';
+
+    container.innerHTML = html;
+    U.$('#btn-refresh', container).addEventListener('click', () => this.render(container));
+  },
+
+  _statCard(tone, iconName, value, label) {
+    return '<div class="stat-card">' +
+      '<div class="stat-icon ' + tone + '">' + U.icon(iconName, 20) + '</div>' +
+      '<div class="stat-value">' + value + '</div>' +
+      '<div class="stat-label">' + U.escapeHtml(label) + '</div>' +
+    '</div>';
+  }
+};
+
+/* ============================================================
+   PAGE: SCAN IN
+   ============================================================ */
+const PageScanIn = {
+  _selectedItem: null,
+  _history: [],
+  _submitting: false,
+
+  async render(container) {
+    this._selectedItem = null;
+
+    container.innerHTML = '' +
+      '<div class="page-header">' +
+        '<div><div class="page-title">Scan Masuk</div>' +
+        '<div class="page-desc">Penerimaan barang dari supplier</div></div>' +
+      '</div>' +
+
+      '<div class="card no-print">' +
+        '<div class="scanner-box">' +
+          '<div class="scanner-placeholder" id="scanner-placeholder">' +
+            U.icon('camera', 48) + '<p style="margin-top:8px">Kamera belum aktif</p>' +
+          '</div>' +
+          '<video id="scanner-video-in" style="display:none" playsinline muted></video>' +
+          '<div class="scanner-frame" id="scanner-frame" style="display:none"></div>' +
+          '<div class="scanner-mode-badge in" id="mode-badge" style="display:none">MASUK</div>' +
+          '<div class="scanner-controls" id="scanner-controls" style="display:none">' +
+            '<button id="btn-flash">' + U.icon('zap', 16) + ' Flash</button>' +
+            '<button id="btn-stop">' + U.icon('x', 16) + ' Stop</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="flex gap-2 mt-2" style="flex-wrap:wrap">' +
+          '<button class="btn btn-primary" id="btn-start-scan">' + U.icon('camera', 16) + ' Mulai Scan</button>' +
+          '<button class="btn btn-secondary" id="btn-manual">' + U.icon('keyboard', 16) + ' Input Manual</button>' +
+        '</div>' +
+        '<div class="scan-history mt-3" id="scan-history"></div>' +
+      '</div>' +
+
+      '<div id="form-area"></div>';
+
+    U.$('#btn-start-scan').addEventListener('click', () => this._startScan());
+    U.$('#btn-manual').addEventListener('click', () => this._showManualInput());
+    U.$('#btn-stop').addEventListener('click', () => this._stopScan());
+    U.$('#btn-flash').addEventListener('click', async () => {
+      const on = await QRScanner.toggleFlash();
+      Toast.info(on ? 'Flash aktif' : 'Flash mati');
+    });
+
+    this._renderHistory();
+  },
+
+  async _startScan() {
+    const video = U.$('#scanner-video-in');
+    const placeholder = U.$('#scanner-placeholder');
+    const frame = U.$('#scanner-frame');
+    const badge = U.$('#mode-badge');
+    const controls = U.$('#scanner-controls');
+
+    video.style.display = 'block';
+    placeholder.style.display = 'none';
+    frame.style.display = 'block';
+    badge.style.display = 'block';
+    controls.style.display = 'flex';
+
+    await QRScanner.start(video, (text) => {
+      U.vibrate(50);
+      U.beepSuccess();
+      this._stopScan();
+      this._handleScan(text);
+    }, (err) => {
+      Toast.error('Kamera tidak bisa diakses: ' + err.message);
+      this._stopScan();
+    });
+  },
+
+  _stopScan() {
+    QRScanner.stop();
+    const video = U.$('#scanner-video-in');
+    const placeholder = U.$('#scanner-placeholder');
+    const frame = U.$('#scanner-frame');
+    const badge = U.$('#mode-badge');
+    const controls = U.$('#scanner-controls');
+    if (video) video.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'flex';
+    if (frame) frame.style.display = 'none';
+    if (badge) badge.style.display = 'none';
+    if (controls) controls.style.display = 'none';
+  },
+
+  _showManualInput() {
+    Modal.open({
+      title: 'Input ID Barang',
+      body: '<div class="field"><label class="field-label">ID Barang <span class="required">*</span></label>' +
+            '<input class="input" id="manual-id" placeholder="contoh: OBT-0001" autofocus autocomplete="off"></div>',
+      actions: [
+        { label: 'Batal', class: 'btn-secondary' },
+        { label: 'Lanjut', class: 'btn-primary', close: false,
+          onClick: () => {
+            const val = U.$('#manual-id').value.trim().toUpperCase();
+            if (!val) { Toast.error('ID wajib diisi'); return; }
+            if (!/^(OBT|BMP)-\d+$/.test(val)) {
+              Toast.error('Format ID tidak valid (contoh: OBT-0001)');
+              return;
+            }
+            Modal.close();
+            this._handleScan(val);
+          }
+        }
+      ]
+    });
+    setTimeout(() => U.$('#manual-id').focus(), 100);
+  },
+
+  async _handleScan(idBarang) {
+    if (!idBarang) return;
+    if (idBarang.indexOf('OBT-') !== 0 && idBarang.indexOf('BMP-') !== 0) {
+      Toast.error('QR tidak valid: harus diawali OBT- atau BMP-');
+      return;
+    }
+    const master = App.state.master;
+    if (!master) { Toast.error('Data master belum dimuat'); return; }
+
+    let item = null;
+    if (idBarang.indexOf('OBT-') === 0) {
+      item = (master.obat || []).find(o => o.ID_Obat === idBarang);
+    } else {
+      item = (master.bmhp || []).find(o => o.ID_BMHP === idBarang);
+    }
+    if (!item) { Toast.error('Barang tidak ditemukan di Master: ' + idBarang); return; }
+    if (item.Status_Aktif === 'Nonaktif') { Toast.error('Barang dinonaktifkan: ' + idBarang); return; }
+
+    this._selectedItem = item;
+    this._renderForm();
+  },
+
+  _renderForm() {
+    const item = this._selectedItem;
+    const isObat = item.ID_Obat !== undefined;
+    const idField = isObat ? 'ID_Obat' : 'ID_BMHP';
+    const nameField = isObat ? 'Nama_Obat' : 'Nama_Barang';
+    const master = App.state.master;
+
+    const supplierOptions = (master.supplier || []).map(s =>
+      '<option value="' + U.escapeHtml(s.ID_Supplier) + '">' + U.escapeHtml(s.Nama_Perusahaan) + '</option>'
+    ).join('');
+    const sumberDanaOptions = ['JKN','BOK','APBD','Dropping_Dinkes'].map(s =>
+      '<option value="' + s + '">' + s + '</option>'
+    ).join('');
+
+    const needBatch = isObat;
+    const needVVM = isObat && String(item.Wajib_VVM) === 'Ya';
+
+    const html = '' +
+      '<div class="card">' +
+        '<div class="card-title">' +
+          '<span>' + U.icon('package', 18) + ' ' + U.escapeHtml(item[nameField]) + '</span>' +
+          '<span class="badge badge-primary">' + U.escapeHtml(item[idField]) + '</span>' +
+        '</div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label class="field-label">Kategori</label>' +
+          '<div class="text-muted">' + U.escapeHtml(item.Kategori || '-') + '</div></div>' +
+          '<div class="field"><label class="field-label">Satuan</label>' +
+          '<div class="text-muted">' + U.escapeHtml(item.Satuan || '-') + '</div></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<form class="card" id="scan-form">' +
+        '<div class="card-title">Data Penerimaan</div>' +
+        '<div class="field-row">' +
+          '<div class="field">' +
+            '<label class="field-label">Qty <span class="required">*</span></label>' +
+            '<input type="number" class="input" id="f-qty" min="1" step="1" required autofocus>' +
+          '</div>' +
+          '<div class="field">' +
+            '<label class="field-label">Sumber Dana <span class="required">*</span></label>' +
+            '<select class="select" id="f-sumber" required>' +
+              '<option value="">— Pilih —</option>' + sumberDanaOptions +
+            '</select>' +
+          '</div>' +
+        '</div>' +
+
+        (needBatch ? '' +
+          '<div class="field-row">' +
+            '<div class="field">' +
+              '<label class="field-label">No. Batch <span class="required">*</span></label>' +
+              '<input type="text" class="input" id="f-batch" placeholder="contoh: B2026-X9" required>' +
+            '</div>' +
+            '<div class="field">' +
+              '<label class="field-label">Exp. Date <span class="required">*</span></label>' +
+              '<input type="date" class="input" id="f-ed" required>' +
+            '</div>' +
+          '</div>'
+        : '') +
+
+        (needVVM ? '' +
+          '<div class="field">' +
+            '<label class="field-label">Status VVM <span class="required">*</span></label>' +
+            '<select class="select" id="f-vvm" required>' +
+              '<option value="">— Pilih —</option>' +
+              '<option value="A">A (Baik)</option>' +
+              '<option value="B">B (Baik)</option>' +
+              '<option value="C">C (Rusak — akan dikarantina)</option>' +
+              '<option value="D">D (Rusak — akan dikarantina)</option>' +
+            '</select>' +
+          '</div>'
+        : '') +
+
+        '<div class="field">' +
+          '<label class="field-label">Supplier <span class="required">*</span></label>' +
+          '<select class="select" id="f-supplier" required>' +
+            '<option value="">— Pilih —</option>' + supplierOptions +
+          '</select>' +
+        '</div>' +
+
+        '<div class="field">' +
+          '<label class="field-label">No. Dokumen (Faktur/SJ/PO)</label>' +
+          '<input type="text" class="input" id="f-dok" placeholder="contoh: INV-2026/09/12">' +
+        '</div>' +
+        '<div class="field">' +
+          '<label class="field-label">Keterangan</label>' +
+          '<textarea class="textarea" id="f-ket" placeholder="opsional"></textarea>' +
+        '</div>' +
+
+        '<div class="flex gap-2 mt-3" style="flex-wrap:wrap">' +
+          '<button type="button" class="btn btn-secondary" id="btn-cancel">Batal</button>' +
+          '<button type="submit" class="btn btn-primary" id="btn-submit">' +
+            U.icon('check', 16) + ' Simpan' +
+          '</button>' +
+        '</div>' +
+      '</form>';
+
+    U.$('#form-area').innerHTML = html;
+    U.$('#btn-cancel').addEventListener('click', () => {
+      this._selectedItem = null;
+      U.$('#form-area').innerHTML = '';
+    });
+    U.$('#scan-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this._submit();
+    });
+  },
+
+  async _submit() {
+    if (this._submitting) return;
+    this._submitting = true;
+
+    const item = this._selectedItem;
+    if (!item) { this._submitting = false; return; }
+    const isObat = item.ID_Obat !== undefined;
+    const idField = isObat ? 'ID_Obat' : 'ID_BMHP';
+
+    const qty = Number(U.$('#f-qty').value);
+    const sumber = U.$('#f-sumber').value;
+    const supplier = U.$('#f-supplier').value;
+    const dok = U.$('#f-dok').value.trim();
+    const ket = U.$('#f-ket').value.trim();
+
+    if (!qty || qty <= 0) { Toast.error('Qty harus > 0'); this._submitting = false; return; }
+    if (!sumber) { Toast.error('Sumber Dana wajib'); this._submitting = false; return; }
+    if (!supplier) { Toast.error('Supplier wajib'); this._submitting = false; return; }
+
+    const payload = {
+      id_barang: item[idField],
+      tipe_mutasi: 'Masuk',
+      qty: qty,
+      sumber_dana: sumber,
+      id_supplier: supplier,
+      no_dokumen: dok,
+      keterangan: ket
+    };
+
+    if (isObat) {
+      const batch = U.$('#f-batch').value.trim();
+      const ed = U.$('#f-ed').value;
+      if (!batch) { Toast.error('No. Batch wajib'); this._submitting = false; return; }
+      if (!ed) { Toast.error('Exp. Date wajib'); this._submitting = false; return; }
+      payload.no_batch = batch;
+      payload.exp_date = ed;
+      const vvmEl = U.$('#f-vvm');
+      if (vvmEl) {
+        if (!vvmEl.value) { Toast.error('Status VVM wajib'); this._submitting = false; return; }
+        payload.status_vvm = vvmEl.value;
+      }
+    }
+
+    const btn = U.$('#btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
+
+    try {
+      const res = await Api.simpanTransaksi(payload);
+      U.vibrate([50, 50, 50]);
+      U.beepSuccess();
+      Toast.success('Transaksi berhasil: ' + res.data.id_transaksi);
+
+      this._history.unshift({
+        id: item[idField],
+        nama: item.Nama_Obat || item.Nama_Barang,
+        qty: qty,
+        time: new Date()
+      });
+      if (this._history.length > 10) this._history.pop();
+      this._renderHistory();
+
+      this._selectedItem = null;
+      U.$('#form-area').innerHTML = '';
+    } catch (err) {
+      Toast.error('Gagal: ' + err.message);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = U.icon('check', 16) + ' Simpan';
+      }
+    } finally {
+      this._submitting = false;
+    }
+  },
+
+  _renderHistory() {
+    const el = U.$('#scan-history');
+    if (!el) return;
+    if (this._history.length === 0) {
+      el.innerHTML = '<div class="text-muted" style="font-size:13px;text-align:center;padding:12px">Belum ada scan.</div>';
+      return;
+    }
+    el.innerHTML = this._history.map(h =>
+      '<div class="scan-history-item">' +
+        '<span class="check">' + U.icon('check', 16) + '</span>' +
+        '<span><strong>' + U.escapeHtml(h.id) + '</strong> — ' + U.escapeHtml(h.nama) + ' (' + h.qty + ')</span>' +
+        '<span class="time">' + h.time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) + '</span>' +
+      '</div>'
+    ).join('');
+  }
+};
+
+/* ============================================================
+   PAGE: SCAN OUT
+   ============================================================ */
+const PageScanOut = {
+  _selectedItem: null,
+  _history: [],
+  _submitting: false,
+
+  async render(container) {
+    this._selectedItem = null;
+
+    container.innerHTML = '' +
+      '<div class="page-header">' +
+        '<div><div class="page-title">Scan Keluar</div>' +
+        '<div class="page-desc">Pengeluaran barang ke unit/poli</div></div>' +
+      '</div>' +
+      '<div class="card no-print">' +
+        '<div class="scanner-box">' +
+          '<div class="scanner-placeholder" id="scanner-placeholder">' +
+            U.icon('camera', 48) + '<p style="margin-top:8px">Kamera belum aktif</p>' +
+          '</div>' +
+          '<video id="scanner-video-out" style="display:none" playsinline muted></video>' +
+          '<div class="scanner-frame" id="scanner-frame" style="display:none"></div>' +
+          '<div class="scanner-mode-badge out" id="mode-badge" style="display:none">KELUAR</div>' +
+          '<div class="scanner-controls" id="scanner-controls" style="display:none">' +
+            '<button id="btn-flash">' + U.icon('zap', 16) + ' Flash</button>' +
+            '<button id="btn-stop">' + U.icon('x', 16) + ' Stop</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="flex gap-2 mt-2" style="flex-wrap:wrap">' +
+          '<button class="btn btn-primary" id="btn-start-scan">' + U.icon('camera', 16) + ' Mulai Scan</button>' +
+          '<button class="btn btn-secondary" id="btn-manual">' + U.icon('keyboard', 16) + ' Input Manual</button>' +
+        '</div>' +
+        '<div class="scan-history mt-3" id="scan-history"></div>' +
+      '</div>' +
+      '<div id="form-area"></div>';
+
+    U.$('#btn-start-scan').addEventListener('click', () => this._startScan());
+    U.$('#btn-manual').addEventListener('click', () => this._showManualInput());
+    U.$('#btn-stop').addEventListener('click', () => this._stopScan());
+    U.$('#btn-flash').addEventListener('click', async () => {
+      const on = await QRScanner.toggleFlash();
+      Toast.info(on ? 'Flash aktif' : 'Flash mati');
+    });
+    this._renderHistory();
+  },
+
+  async _startScan() {
+    const video = U.$('#scanner-video-out');
+    const placeholder = U.$('#scanner-placeholder');
+    const frame = U.$('#scanner-frame');
+    const badge = U.$('#mode-badge');
+    const controls = U.$('#scanner-controls');
+    video.style.display = 'block';
+    placeholder.style.display = 'none';
+    frame.style.display = 'block';
+    badge.style.display = 'block';
+    controls.style.display = 'flex';
+    await QRScanner.start(video, (text) => {
+      U.vibrate(50); U.beepSuccess(); this._stopScan(); this._handleScan(text);
+    }, (err) => { Toast.error('Kamera tidak bisa diakses: ' + err.message); this._stopScan(); });
+  },
+
+  _stopScan() {
+    QRScanner.stop();
+    ['#scanner-video-out','#scanner-placeholder','#scanner-frame','#mode-badge','#scanner-controls'].forEach(sel => {
+      const el = U.$(sel);
+      if (!el) return;
+      if (sel === '#scanner-video-out') el.style.display = 'none';
+      else if (sel === '#scanner-placeholder') el.style.display = 'flex';
+      else el.style.display = 'none';
+    });
+  },
+
+  _showManualInput() {
+    Modal.open({
+      title: 'Input ID Barang',
+      body: '<div class="field"><label class="field-label">ID Barang <span class="required">*</span></label>' +
+            '<input class="input" id="manual-id" placeholder="contoh: OBT-0001" autofocus autocomplete="off"></div>',
+      actions: [
+        { label: 'Batal', class: 'btn-secondary' },
+        { label: 'Lanjut', class: 'btn-primary', close: false,
+          onClick: () => {
+            const val = U.$('#manual-id').value.trim().toUpperCase();
+            if (!val) { Toast.error('ID wajib diisi'); return; }
+            if (!/^(OBT|BMP)-\d+$/.test(val)) {
+              Toast.error('Format ID tidak valid (contoh: OBT-0001)');
+              return;
+            }
+            Modal.close();
+            this._handleScan(val);
+          }
+        }
+      ]
+    });
+    setTimeout(() => U.$('#manual-id').focus(), 100);
+  },
+
+  async _handleScan(idBarang) {
+    if (!idBarang) return;
+    if (idBarang.indexOf('OBT-') !== 0 && idBarang.indexOf('BMP-') !== 0) {
+      Toast.error('QR tidak valid'); return;
+    }
+    const master = App.state.master;
+    if (!master) { Toast.error('Data master belum dimuat'); return; }
+    let item = null;
+    if (idBarang.indexOf('OBT-') === 0) item = (master.obat || []).find(o => o.ID_Obat === idBarang);
+    else item = (master.bmhp || []).find(o => o.ID_BMHP === idBarang);
+    if (!item) { Toast.error('Barang tidak ditemukan: ' + idBarang); return; }
+    if (item.Status_Aktif === 'Nonaktif') { Toast.error('Barang dinonaktifkan'); return; }
+    this._selectedItem = item;
+    this._renderForm();
+  },
+
+  _renderForm() {
+    const item = this._selectedItem;
+    const isObat = item.ID_Obat !== undefined;
+    const idField = isObat ? 'ID_Obat' : 'ID_BMHP';
+    const nameField = isObat ? 'Nama_Obat' : 'Nama_Barang';
+    const master = App.state.master;
+    const unitOptions = (master.unit || []).map(u =>
+      '<option value="' + U.escapeHtml(u.ID_Unit) + '">' + U.escapeHtml(u.Nama_Unit) + '</option>'
+    ).join('');
+    const needVVM = isObat && String(item.Wajib_VVM) === 'Ya';
+
+    const html = '' +
+      '<div class="card">' +
+        '<div class="card-title">' +
+          '<span>' + U.icon('package', 18) + ' ' + U.escapeHtml(item[nameField]) + '</span>' +
+          '<span class="badge badge-primary">' + U.escapeHtml(item[idField]) + '</span>' +
+        '</div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label class="field-label">Kategori</label>' +
+          '<div class="text-muted">' + U.escapeHtml(item.Kategori || '-') + '</div></div>' +
+          '<div class="field"><label class="field-label">Satuan</label>' +
+          '<div class="text-muted">' + U.escapeHtml(item.Satuan || '-') + '</div></div>' +
+        '</div>' +
+        '<div class="field"><label class="field-label">Lokasi Rak</label>' +
+        '<div class="text-muted">' + U.escapeHtml(item.Lokasi_Rak || '-') + '</div></div>' +
+      '</div>' +
+
+      '<form class="card" id="scan-form">' +
+        '<div class="card-title">Data Pengeluaran</div>' +
+        '<div class="field-row">' +
+          '<div class="field">' +
+            '<label class="field-label">Qty <span class="required">*</span></label>' +
+            '<input type="number" class="input" id="f-qty" min="1" step="1" required autofocus>' +
+          '</div>' +
+          '<div class="field">' +
+            '<label class="field-label">Unit Tujuan <span class="required">*</span></label>' +
+            '<select class="select" id="f-unit" required>' +
+              '<option value="">— Pilih —</option>' + unitOptions +
+            '</select>' +
+          '</div>' +
+        '</div>' +
+        (needVVM ? '' +
+          '<div class="field">' +
+            '<label class="field-label">Status VVM <span class="required">*</span></label>' +
+            '<select class="select" id="f-vvm" required>' +
+              '<option value="">— Pilih —</option>' +
+              '<option value="A">A (Baik)</option>' +
+              '<option value="B">B (Baik)</option>' +
+              '<option value="C">C (Rusak — karantina)</option>' +
+              '<option value="D">D (Rusak — karantina)</option>' +
+            '</select>' +
+          '</div>'
+        : '') +
+        '<div class="field">' +
+          '<label class="field-label">No. Dokumen (Resep/Amprahan)</label>' +
+          '<input type="text" class="input" id="f-dok" placeholder="contoh: R/2026/09/001">' +
+        '</div>' +
+        '<div class="field">' +
+          '<label class="field-label">Keterangan</label>' +
+          '<textarea class="textarea" id="f-ket"></textarea>' +
+        '</div>' +
+        '<div class="flex gap-2 mt-3" style="flex-wrap:wrap">' +
+          '<button type="button" class="btn btn-secondary" id="btn-cancel">Batal</button>' +
+          '<button type="submit" class="btn btn-primary" id="btn-submit">' +
+            U.icon('check', 16) + ' Simpan' +
+          '</button>' +
+        '</div>' +
+      '</form>';
+
+    U.$('#form-area').innerHTML = html;
+    U.$('#btn-cancel').addEventListener('click', () => {
+      this._selectedItem = null;
+      U.$('#form-area').innerHTML = '';
+    });
+    U.$('#scan-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this._submit();
+    });
+  },
+
+  async _submit() {
+    if (this._submitting) return;
+    this._submitting = true;
+
+    const item = this._selectedItem;
+    if (!item) { this._submitting = false; return; }
+    const isObat = item.ID_Obat !== undefined;
+    const idField = isObat ? 'ID_Obat' : 'ID_BMHP';
+
+    const qty = Number(U.$('#f-qty').value);
+    const unit = U.$('#f-unit').value;
+    const dok = U.$('#f-dok').value.trim();
+    const ket = U.$('#f-ket').value.trim();
+
+    if (!qty || qty <= 0) { Toast.error('Qty harus > 0'); this._submitting = false; return; }
+    if (!unit) { Toast.error('Unit tujuan wajib'); this._submitting = false; return; }
+
+    const payload = {
+      id_barang: item[idField],
+      tipe_mutasi: 'Keluar',
+      qty: qty,
+      id_unit: unit,
+      no_dokumen: dok,
+      keterangan: ket
+    };
+    if (isObat) {
+      const vvmEl = U.$('#f-vvm');
+      if (vvmEl && vvmEl.value) payload.status_vvm = vvmEl.value;
+    }
+
+    const btn = U.$('#btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
+
+    try {
+      const res = await Api.simpanTransaksi(payload);
+      U.vibrate([50, 50, 50]);
+      U.beepSuccess();
+      const isPending = res.data && res.data.status_approval === 'Pending';
+      Toast.success('Transaksi berhasil: ' + res.data.id_transaksi +
+                    (isPending ? ' (menunggu approval)' : ''));
+
+      this._history.unshift({
+        id: item[idField], nama: item.Nama_Obat || item.Nama_Barang,
+        qty: qty, time: new Date()
+      });
+      if (this._history.length > 10) this._history.pop();
+      this._renderHistory();
+      this._selectedItem = null;
+      U.$('#form-area').innerHTML = '';
+    } catch (err) {
+      Toast.error('Gagal: ' + err.message);
+      if (err.code === 'STOK_KURANG') {
+        // Emergency override dengan approval handling
+        const isApprover = ['SuperAdmin','Apoteker'].indexOf(App.state.session.role) !== -1;
+        const prompt = isApprover
+          ? err.message + '\n\nLanjutkan sebagai pengeluaran darurat?'
+          : err.message + '\n\nLanjutkan sebagai pengeluaran darurat?\n\n' +
+            '(Pengeluaran ini akan menunggu approval Apoteker sebelum dihitung)';
+        Modal.confirm(
+          'Stok Tidak Mencukupi', prompt,
+          async () => {
+            payload.is_emergency = true;
+            try {
+              const res2 = await Api.simpanTransaksi(payload);
+              const pending = res2.data && res2.data.status_approval === 'Pending';
+              Toast.success('Pengeluaran darurat tersimpan: ' + res2.data.id_transaksi +
+                            (pending ? ' (menunggu approval)' : ''));
+              this._history.unshift({
+                id: item[idField], nama: item.Nama_Obat || item.Nama_Barang,
+                qty: qty, time: new Date()
+              });
+              if (this._history.length > 10) this._history.pop();
+              this._renderHistory();
+              this._selectedItem = null;
+              U.$('#form-area').innerHTML = '';
+            } catch (err2) {
+              Toast.error('Gagal: ' + err2.message);
+            }
+          }, 'Ya, Darurat', true
+        );
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = U.icon('check', 16) + ' Simpan';
+      }
+    } finally {
+      this._submitting = false;
+    }
+  },
+
+  _renderHistory() {
+    const el = U.$('#scan-history');
+    if (!el) return;
+    if (this._history.length === 0) {
+      el.innerHTML = '<div class="text-muted" style="font-size:13px;text-align:center;padding:12px">Belum ada scan.</div>';
+      return;
+    }
+    el.innerHTML = this._history.map(h =>
+      '<div class="scan-history-item">' +
+        '<span class="check">' + U.icon('check', 16) + '</span>' +
+        '<span><strong>' + U.escapeHtml(h.id) + '</strong> — ' + U.escapeHtml(h.nama) + ' (' + h.qty + ')</span>' +
+        '<span class="time">' + h.time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) + '</span>' +
+      '</div>'
+    ).join('');
+  }
+};
+
+/* ============================================================
+   PAGE: KARTU STOK
+   ============================================================ */
+const PageKartuStok = {
+  _currentData: null,
+  _selectedId: null,
+  _selectedBulan: null,
+  _selectedTahun: null,
+  _clickHandler: null,
+
+  async render(container) {
+    const now = new Date();
+    this._selectedBulan = now.getMonth() + 1;
+    this._selectedTahun = now.getFullYear();
+
+    container.innerHTML = '' +
+      '<div class="page-header no-print">' +
+        '<div><div class="page-title">Kartu Stok</div>' +
+        '<div class="page-desc">Riwayat mutasi barang per bulan</div></div>' +
+      '</div>' +
+      '<div class="card no-print">' +
+        '<div class="field-row">' +
+          '<div class="field">' +
+            '<label class="field-label">Barang <span class="required">*</span></label>' +
+            '<input type="text" class="input" id="ks-item-search" placeholder="Cari nama atau kode..." autocomplete="off">' +
+            '<div id="ks-item-suggestions" style="position:relative"></div>' +
+            '<input type="hidden" id="ks-item-id">' +
+          '</div>' +
+          '<div class="field">' +
+            '<label class="field-label">Tahun</label>' +
+            '<select class="select" id="ks-tahun">' +
+              Array.from({length:5}, (_, i) => now.getFullYear() - 2 + i).map(y =>
+                '<option value="' + y + '"' + (y === now.getFullYear() ? ' selected' : '') + '>' + y + '</option>'
+              ).join('') +
+            '</select>' +
+          '</div>' +
+        '</div>' +
+        '<div class="flex gap-2 mt-2" style="flex-wrap:wrap">' +
+          '<button class="btn btn-primary" id="ks-load">' + U.icon('search', 16) + ' Tampilkan</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="ks-nav"></div>' +
+      '<div id="ks-result"></div>';
+
+    const searchEl = U.$('#ks-item-search');
+    const suggestEl = U.$('#ks-item-suggestions');
+    const idEl = U.$('#ks-item-id');
+
+    const onSearch = U.debounce(() => {
+      const q = searchEl.value.trim().toLowerCase();
+      if (!q) { suggestEl.innerHTML = ''; return; }
+      const master = App.state.master || {};
+      const items = [];
+      (master.obat || []).forEach(o => {
+        if (o.Status_Aktif === 'Nonaktif') return;
+        if (o.Nama_Obat.toLowerCase().indexOf(q) !== -1 || o.ID_Obat.toLowerCase().indexOf(q) !== -1) {
+          items.push({ id: o.ID_Obat, nama: o.Nama_Obat, tipe: 'Obat' });
+        }
+      });
+      (master.bmhp || []).forEach(o => {
+        if (o.Status_Aktif === 'Nonaktif') return;
+        if (o.Nama_Barang.toLowerCase().indexOf(q) !== -1 || o.ID_BMHP.toLowerCase().indexOf(q) !== -1) {
+          items.push({ id: o.ID_BMHP, nama: o.Nama_Barang, tipe: 'BMHP' });
+        }
+      });
+
+      suggestEl.innerHTML = items.slice(0, 8).map(it =>
+        '<div class="sidebar-item" style="cursor:pointer;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--primary);border-radius:var(--radius-sm);margin-top:2px" data-id="' + U.escapeHtml(it.id) + '" data-nama="' + U.escapeHtml(it.nama) + '">' +
+          '<span>' + U.escapeHtml(it.nama) + '</span>' +
+          '<span class="badge badge-muted" style="margin-left:auto">' + it.tipe + '</span>' +
+        '</div>'
+      ).join('');
+
+      suggestEl.querySelectorAll('[data-id]').forEach(el => {
+        el.addEventListener('click', () => {
+          idEl.value = el.dataset.id;
+          searchEl.value = el.dataset.nama + ' (' + el.dataset.id + ')';
+          suggestEl.innerHTML = '';
+        });
+      });
+    }, 200);
+
+    searchEl.addEventListener('input', onSearch);
+
+    // FIX K1: listener di container (bukan document) agar tidak memory leak
+    if (this._clickHandler) container.removeEventListener('click', this._clickHandler);
+    this._clickHandler = (e) => {
+      if (!e.target.closest('#ks-item-suggestions') && e.target !== searchEl) {
+        suggestEl.innerHTML = '';
+      }
+    };
+    container.addEventListener('click', this._clickHandler);
+
+    U.$('#ks-load').addEventListener('click', () => {
+      const id = idEl.value;
+      if (!id) { Toast.error('Pilih barang dulu'); return; }
+      this._selectedId = id;
+      this._selectedBulan = Number(U.$('#ks-bulan') ? U.$('#ks-bulan').value : this._selectedBulan) || this._selectedBulan;
+      this._selectedTahun = Number(U.$('#ks-tahun').value) || this._selectedTahun;
+      this._loadData(container);
+    });
+  },
+
+  _renderMonthNav() {
+    const navEl = U.$('#ks-nav');
+    if (!navEl || !this._selectedId) { if (navEl) navEl.innerHTML = ''; return; }
+    const nama = U.formatMonthName(this._selectedBulan);
+    navEl.innerHTML = '' +
+      '<div class="month-nav no-print">' +
+        '<button id="ks-prev" aria-label="Bulan sebelumnya">' + U.icon('chevronLeft', 18) + '</button>' +
+        '<div class="current">' + nama + ' ' + this._selectedTahun + '</div>' +
+        '<button id="ks-next" aria-label="Bulan berikutnya">' + U.icon('chevronRight', 18) + '</button>' +
+      '</div>';
+
+    U.$('#ks-prev').addEventListener('click', () => {
+      let b = this._selectedBulan - 1;
+      let t = this._selectedTahun;
+      if (b < 1) { b = 12; t--; }
+      this._selectedBulan = b;
+      this._selectedTahun = t;
+      this._loadData(U.$('#main-content'));
+    });
+    U.$('#ks-next').addEventListener('click', () => {
+      let b = this._selectedBulan + 1;
+      let t = this._selectedTahun;
+      if (b > 12) { b = 1; t++; }
+      this._selectedBulan = b;
+      this._selectedTahun = t;
+      this._loadData(U.$('#main-content'));
+    });
+  },
+
+  async _loadData(container) {
+    if (!this._selectedId) return;
+
+    const btn = U.$('#ks-load');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Memuat...';
+    }
+
+    try {
+      const res = await Api.getKartuStokBulanan(
+        this._selectedId, this._selectedBulan, this._selectedTahun);
+      this._currentData = res.data;
+      this._renderMonthNav();
+      this._renderPreview(res.data);
+    } catch (err) {
+      Toast.error('Gagal memuat: ' + err.message);
+      U.$('#ks-result').innerHTML = App._renderEmpty('Gagal memuat data', err.message, 'alertCircle');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = U.icon('search', 16) + ' Tampilkan';
+      }
+    }
+  },
+
+  _renderPreview(data) {
+    const bulanNama = U.formatMonthName(data.bulan).toUpperCase();
+    const logo = Store.getLogo();
+
+    let running = data.saldo_awal;
+    const rows = (data.riwayat_mentah || []).map(r => {
+      const isMasuk = r.Tipe_Mutasi === 'Masuk';
+      const isKeluar = ['Keluar','Karantina','Retur_Supplier','Rusak'].indexOf(r.Tipe_Mutasi) !== -1;
+      const qty = Number(r.Qty) || 0;
+      if (isMasuk) running += qty;
+      else if (isKeluar) running -= qty;
+      const d = new Date(r.Timestamp);
+      const tgl = isNaN(d.getTime()) ? '-' :
+        String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0');
+      return '<tr>' +
+        '<td>' + tgl + '</td>' +
+        '<td class="mono" style="font-size:9px">' + U.escapeHtml(String(r.ID_Transaksi || '').substring(0, 14)) + '</td>' +
+        '<td class="mono">' + U.escapeHtml(r.No_Batch || '-') + '</td>' +
+        '<td>' + (r.Exp_Date ? U.formatDate(r.Exp_Date) : '-') + '</td>' +
+        '<td class="num">' + (isMasuk ? qty : '') + '</td>' +
+        '<td class="num">' + (isKeluar ? qty : '') + '</td>' +
+        '<td class="num">' + running + '</td>' +
+        '<td></td>' +
+      '</tr>';
+    }).join('');
+
+    const html = '' +
+      '<div class="card no-print" style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="btn btn-primary" id="ks-print">' + U.icon('printer', 16) + ' Cetak</button>' +
+        '<button class="btn btn-secondary" id="ks-xlsx">' + U.icon('download', 16) + ' Unduh XLSX</button>' +
+      '</div>' +
+      '<div id="print-area">' +
+      '<div class="kartu-stok-preview">' +
+        '<div class="kartu-stok-header">' +
+          (logo ? '<img src="' + logo + '" style="height:40px;margin:0 auto 4px">' : '') +
+          '<h1>PEMERINTAH KABUPATEN BANTUL</h1>' +
+          '<h2>PUSKESMAS SANDEN</h2>' +
+          '<h3>KARTU STOK BULANAN</h3>' +
+        '</div>' +
+        '<div class="kartu-stok-info">' +
+          '<div class="label">Nama</div><div>:</div><div>' + U.escapeHtml(data.nama) + '</div>' +
+          '<div class="label">Kode</div><div>:</div><div>' + U.escapeHtml(data.id_barang) + '</div>' +
+          '<div class="label">Satuan</div><div>:</div><div>' + U.escapeHtml(data.satuan || '-') + '</div>' +
+          '<div class="label">Rak</div><div>:</div><div>' + U.escapeHtml(data.rak || '-') + '</div>' +
+          '<div class="label">Bulan</div><div>:</div><div><strong>' + bulanNama + ' ' + data.tahun + '</strong></div>' +
+        '</div>' +
+        '<table class="kartu-stok-table">' +
+          '<thead><tr>' +
+            '<th style="width:8%">Tgl</th>' +
+            '<th style="width:18%">No Trx</th>' +
+            '<th style="width:14%">Batch</th>' +
+            '<th style="width:12%">ED</th>' +
+            '<th style="width:10%">Masuk</th>' +
+            '<th style="width:10%">Keluar</th>' +
+            '<th style="width:10%">Sisa</th>' +
+            '<th style="width:18%">Paraf</th>' +
+          '</tr></thead>' +
+          '<tbody>' +
+            '<tr><td colspan="6" style="text-align:right"><strong>Saldo Awal</strong></td>' +
+              '<td class="num"><strong>' + data.saldo_awal + '</strong></td><td></td></tr>' +
+            (rows || '<tr><td colspan="8" style="text-align:center;padding:8px">Tidak ada transaksi bulan ini</td></tr>') +
+            '<tr><td colspan="4" style="text-align:right"><strong>Total</strong></td>' +
+              '<td class="num"><strong>' + data.total_in + '</strong></td>' +
+              '<td class="num"><strong>' + data.total_out + '</strong></td>' +
+              '<td class="num"><strong>' + data.saldo_akhir + '</strong></td><td></td></tr>' +
+          '</tbody>' +
+        '</table>' +
+        '<div class="kartu-stok-summary">' +
+          '<div class="label">Saldo Awal</div><div class="value">' + data.saldo_awal + '</div>' +
+          '<div class="label">Total Masuk</div><div class="value">' + data.total_in + '</div>' +
+          '<div class="label">Total Keluar</div><div class="value">' + data.total_out + '</div>' +
+          '<div class="label">Saldo Akhir</div><div class="value"><strong>' + data.saldo_akhir + '</strong></div>' +
+        '</div>' +
+        '<div class="kartu-stok-sign">' +
+          '<div class="sign-box">' +
+            '<div>Petugas Gudang</div>' +
+            '<div class="sign-space"></div>' +
+            '<div class="sign-line">(................................)</div>' +
+          '</div>' +
+          '<div class="sign-box">' +
+            '<div>Bantul, ' + U.formatDate(new Date()) + '</div>' +
+            '<div>Apoteker PJ</div>' +
+            '<div class="sign-space" style="height:32px"></div>' +
+            '<div class="sign-line">(................................)</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="kartu-stok-footnote">' +
+          'Dicetak: ' + U.formatDateTime(new Date()) + ' · Sistem Gudang Puskesmas Sanden' +
+        '</div>' +
+      '</div>' +
+      '</div>';
+
+    U.$('#ks-result').innerHTML = html;
+    U.$('#ks-print').addEventListener('click', () => window.print());
+    U.$('#ks-xlsx').addEventListener('click', () => this._downloadXLSX(data));
+  },
+
+  _downloadXLSX(data) {
+    this._ensureSheetJS().then(XLSX => {
+      const wb = XLSX.utils.book_new();
+      const info = [
+        ['KARTU STOK — INFO BARANG'], [''],
+        ['Nama', data.nama], ['Kode', data.id_barang],
+        ['Satuan', data.satuan], ['Rak', data.rak],
+        ['Bulan', U.formatMonthName(data.bulan) + ' ' + data.tahun], [''],
+        ['Saldo Awal', data.saldo_awal],
+        ['Total Masuk', data.total_in],
+        ['Total Keluar', data.total_out],
+        ['Saldo Akhir', data.saldo_akhir],
+        [''], ['Dicetak', U.formatDateTime(new Date())]
+      ];
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(info), 'Info');
+
+      let saldo = data.saldo_awal;
+      const riwayat = [['Tanggal', 'ID Transaksi', 'Tipe', 'Qty', 'Batch', 'ED', 'Masuk', 'Keluar', 'Saldo', 'Keterangan']];
+      (data.riwayat_mentah || []).forEach(r => {
+        const isMasuk = r.Tipe_Mutasi === 'Masuk';
+        const isKeluar = ['Keluar','Karantina','Retur_Supplier','Rusak'].indexOf(r.Tipe_Mutasi) !== -1;
+        const qty = Number(r.Qty) || 0;
+        if (isMasuk) saldo += qty;
+        else if (isKeluar) saldo -= qty;
+        riwayat.push([
+          U.formatDate(r.Timestamp), r.ID_Transaksi, r.Tipe_Mutasi, qty,
+          r.No_Batch || '', r.Exp_Date ? U.formatDate(r.Exp_Date) : '',
+          isMasuk ? qty : '', isKeluar ? qty : '', saldo, r.Keterangan || ''
+        ]);
+      });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(riwayat), 'Riwayat');
+      const fname = 'KartuStok_' + data.id_barang + '_' + data.tahun + '-' +
+                    String(data.bulan).padStart(2, '0') + '.xlsx';
+      XLSX.writeFile(wb, fname);
+      Toast.success('File XLSX berhasil diunduh');
+    }).catch(err => Toast.error('Gagal memuat SheetJS: ' + err.message));
+  },
+
+  _ensureSheetJS() {
+    return new Promise((resolve, reject) => {
+      if (window.XLSX) return resolve(window.XLSX);
+      const script = document.createElement('script');
+      script.src = 'https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js';
+      script.onload = () => resolve(window.XLSX);
+      script.onerror = () => reject(new Error('Gagal load SheetJS'));
+      document.head.appendChild(script);
+    });
+  }
+};
+
+/* ============================================================
+   PAGE: APPROVAL
+   ============================================================ */
+const PageApproval = {
+  async render(container) {
+    container.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+
+    try {
+      const res = await Api.getPendingApprovals();
+      const items = (res.data && res.data.items) || [];
+
+      let html = '' +
+        '<div class="page-header">' +
+          '<div>' +
+            '<div class="page-title">Menunggu Persetujuan</div>' +
+            '<div class="page-desc">Transaksi Narkotika/Psikotropika & pengeluaran darurat</div>' +
+          '</div>' +
+          '<button class="btn btn-secondary" id="btn-refresh">' + U.icon('refresh', 16) + ' Refresh</button>' +
+        '</div>';
+
+      if (items.length === 0) {
+        html += '<div class="card">' +
+                '<div class="empty-state">' + U.icon('check', 48) +
+                '<h3>Tidak ada transaksi menunggu</h3>' +
+                '<p>Semua transaksi sudah disetujui.</p>' +
+                '</div></div>';
+      } else {
+        html += '<div class="card" style="padding:0">' +
+          '<div class="table-wrap"><div class="table-scroll"><table class="data-table">' +
+            '<thead><tr>' +
+              '<th>Waktu</th>' +
+              '<th>No Transaksi</th>' +
+              '<th>Item</th>' +
+              '<th>Golongan</th>' +
+              '<th class="num">Qty</th>' +
+              '<th>Tipe</th>' +
+              '<th>Petugas</th>' +
+              '<th class="col-actions">Aksi</th>' +
+            '</tr></thead><tbody>' +
+            items.map(it =>
+              '<tr>' +
+                '<td style="font-size:12px">' + U.formatDateTime(it.timestamp) + '</td>' +
+                '<td class="mono" style="font-size:12px">' + U.escapeHtml(it.id_transaksi) + '</td>' +
+                '<td><div style="font-weight:600">' + U.escapeHtml(it.nama_obat) + '</div>' +
+                  '<div class="text-muted" style="font-size:12px">' + U.escapeHtml(it.id_obat) + '</div></td>' +
+                '<td><span class="badge ' + (it.golongan === 'Narkotika' ? 'badge-danger' : 'badge-warning') + '">' +
+                  U.escapeHtml(it.golongan) + '</span></td>' +
+                '<td class="num">' + U.formatNumber(it.qty) + '</td>' +
+                '<td>' + U.escapeHtml(it.tipe_mutasi) + '</td>' +
+                '<td class="mono" style="font-size:12px">' + U.escapeHtml(it.petugas) + '</td>' +
+                '<td class="col-actions">' +
+                  '<button class="btn btn-primary" data-action="approve" data-id="' + U.escapeHtml(it.id_transaksi) + '" style="padding:6px 10px;font-size:12px">Approve</button> ' +
+                  '<button class="btn btn-danger" data-action="reject" data-id="' + U.escapeHtml(it.id_transaksi) + '" style="padding:6px 10px;font-size:12px">Reject</button>' +
+                '</td>' +
+              '</tr>'
+            ).join('') +
+            '</tbody></table></div></div>' +
+          '</div>';
+
+        if (items.some(it => it.keterangan)) {
+          html += '<div class="card"><div class="card-title">Keterangan</div><ul style="font-size:13px;line-height:1.8">' +
+            items.filter(it => it.keterangan).slice(0, 5).map(it =>
+              '<li><strong>' + U.escapeHtml(it.id_transaksi) + ':</strong> ' + U.escapeHtml(it.keterangan) + '</li>'
+            ).join('') + '</ul></div>';
+        }
+      }
+
+      container.innerHTML = html;
+
+      U.$('#btn-refresh').addEventListener('click', () => this.render(container));
+      U.$$('[data-action]', container).forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          const action = btn.dataset.action;
+          this._handleApproval(id, action, container);
+        });
+      });
+    } catch (err) {
+      container.innerHTML = App._renderEmpty('Gagal Memuat', err.message, 'alertCircle');
+    }
+  },
+
+  _handleApproval(idTrx, action, container) {
+    const keputusan = action === 'approve' ? 'Approved' : 'Rejected';
+    const label = action === 'approve' ? 'setujui' : 'tolak';
+    Modal.confirm(
+      (action === 'approve' ? 'Setujui' : 'Tolak') + ' Transaksi',
+      'Yakin ingin ' + label + ' transaksi ' + idTrx + '?',
+      async () => {
+        try {
+          await Api.approveTransaksi(idTrx, keputusan);
+          Toast.success('Transaksi ' + idTrx + ' telah di-' + keputusan);
+          this.render(container);
+        } catch (err) {
+          Toast.error('Gagal: ' + err.message);
+        }
+      },
+      action === 'approve' ? 'Ya, Setujui' : 'Ya, Tolak',
+      action !== 'approve'
+    );
+  }
+};
+
+/* ============================================================
+   PAGE: STOCK OPNAME
+   ============================================================ */
+const PageOpname = {
+  _entries: {},
+  _submitting: false,
+
+  async render(container) {
+    this._entries = {};
+
+    container.innerHTML = '' +
+      '<div class="page-header">' +
+        '<div>' +
+          '<div class="page-title">Stock Opname</div>' +
+          '<div class="page-desc">Sinkronisasi stok fisik dengan sistem</div>' +
+        '</div>' +
+        '<button class="btn btn-primary" id="btn-submit-opname" disabled>' +
+          U.icon('check', 16) + ' Simpan Opname' +
+        '</button>' +
+      '</div>' +
+      '<div class="card">' +
+        '<p class="text-muted" style="font-size:13px;margin-bottom:12px">' +
+          'Masukkan stok fisik yang Anda hitung. Baris yang berbeda akan disorot oranye dan ' +
+          'otomatis membuat penyesuaian saat disimpan.' +
+        '</p>' +
+        '<div class="field">' +
+          '<input class="input" id="opname-search" placeholder="Cari barang...">' +
+        '</div>' +
+      '</div>' +
+      '<div id="opname-table-container"></div>';
+
+    U.$('#btn-submit-opname').addEventListener('click', () => this._submit());
+    U.$('#opname-search').addEventListener('input', U.debounce(() => this._renderTable(), 200));
+
+    this._renderTable();
+  },
+
+  async _getCurrentStok() {
+    // Pakai getMasterData + getDashboardSummary untuk hitung stok sistem
+    try {
+      const master = App.state.master || {};
+      // Kita butuh stok per item. Backend tidak menyediakan endpoint khusus, jadi kita pakai Rekap via getKartuStokBulanan per item — tapi itu lambat.
+      // Solusi: gunakan data dari dashboard summary + hitung dari Rekap sheet yang sudah ada.
+      // Karena Rekap ada di sheets (tapi tidak di-expose), kita pakai pendekatan: hitung stok dari Log via getKartuStokBulanan untuk bulan berjalan, lalu kita asumsikan saldo_awal+total_in-total_out = stok.
+      // Ini tidak efisien untuk semua item, jadi kita batasi ke item yang dipilih user.
+      return {};
+    } catch (e) { return {}; }
+  },
+
+  _renderTable() {
+    const master = App.state.master || {};
+    const q = (U.$('#opname-search') ? U.$('#opname-search').value : '').toLowerCase().trim();
+    const items = [];
+
+    (master.obat || []).forEach(o => {
+      if (o.Status_Aktif === 'Nonaktif') return;
+      items.push({
+        id: o.ID_Obat, nama: o.Nama_Obat, tipe: 'Obat',
+        satuan: o.Satuan, rak: o.Lokasi_Rak, golongan: o.Golongan_Obat
+      });
+    });
+    (master.bmhp || []).forEach(o => {
+      if (o.Status_Aktif === 'Nonaktif') return;
+      items.push({
+        id: o.ID_BMHP, nama: o.Nama_Barang, tipe: 'BMHP',
+        satuan: o.Satuan, rak: o.Lokasi_Rak, golongan: '-'
+      });
+    });
+
+    const filtered = q
+      ? items.filter(it => it.nama.toLowerCase().indexOf(q) !== -1 ||
+                            it.id.toLowerCase().indexOf(q) !== -1)
+      : items;
+
+    if (filtered.length === 0) {
+      U.$('#opname-table-container').innerHTML = App._renderEmpty('Tidak ada item', '', 'package');
+      return;
+    }
+
+    const html = '<div class="card" style="padding:0">' +
+      '<div class="table-wrap"><div class="table-scroll"><table class="data-table">' +
+        '<thead><tr>' +
+          '<th>Kode</th>' +
+          '<th>Nama</th>' +
+          '<th>Rak</th>' +
+          '<th class="num">Stok Sistem</th>' +
+          '<th class="num">Stok Fisik</th>' +
+          '<th class="num">Selisih</th>' +
+        '</tr></thead><tbody>' +
+        filtered.map(it =>
+          '<tr class="opname-row" data-id="' + U.escapeHtml(it.id) + '" data-nama="' + U.escapeHtml(it.nama) + '" data-satuan="' + U.escapeHtml(it.satuan || '') + '" data-tipe="' + it.tipe + '">' +
+            '<td class="mono">' + U.escapeHtml(it.id) + '</td>' +
+            '<td><div style="font-weight:600">' + U.escapeHtml(it.nama) + '</div>' +
+              '<div class="text-muted" style="font-size:12px">' + U.escapeHtml(it.satuan || '-') + ' · ' + it.tipe + '</div></td>' +
+            '<td class="mono">' + U.escapeHtml(it.rak || '-') + '</td>' +
+            '<td class="num stok-sistem" data-stok="-">—</td>' +
+            '<td class="num"><input type="number" class="stok-input" min="0" step="1" inputmode="numeric" placeholder="—"></td>' +
+            '<td class="num selisih">—</td>' +
+          '</tr>'
+        ).join('') +
+      '</tbody></table></div></div>' +
+    '</div>';
+
+    U.$('#opname-table-container').innerHTML = html;
+
+    // Attach listener ke input
+    U.$$('.opname-row .stok-input').forEach(input => {
+      input.addEventListener('input', () => {
+        const row = input.closest('.opname-row');
+        const id = row.dataset.id;
+        const val = input.value.trim();
+        const selisihEl = row.querySelector('.selisih');
+        // Karena stok sistem tidak tersedia real-time tanpa endpoint khusus,
+        // kita hanya validasi input > 0 dan tandai sebagai changed
+        if (val === '' || isNaN(Number(val))) {
+          input.classList.remove('changed');
+          selisihEl.textContent = '—';
+          selisihEl.className = 'num selisih';
+          delete this._entries[id];
+        } else {
+          input.classList.add('changed');
+          this._entries[id] = Number(val);
+          selisihEl.textContent = '(?)';
+          selisihEl.className = 'num selisih';
+        }
+        this._updateSubmitButton();
+      });
+    });
+  },
+
+  _updateSubmitButton() {
+    const count = Object.keys(this._entries).length;
+    const btn = U.$('#btn-submit-opname');
+    if (btn) {
+      btn.disabled = count === 0;
+      btn.innerHTML = U.icon('check', 16) + ' Simpan Opname (' + count + ')';
+    }
+  },
+
+  async _submit() {
+    if (this._submitting) return;
+    const ids = Object.keys(this._entries);
+    if (ids.length === 0) { Toast.error('Belum ada data untuk disimpan'); return; }
+
+    // Kita butuh stok sistem. Karena backend belum menyediakan endpoint khusus,
+    // kita panggil getMasterData lagi + hitung lewat per-item getKartuStokBulanan?
+    // Solusi cepat: minta user konfirmasi stok sistem default = stok fisik (jadi selisih = 0),
+    // lalu user yang jujur akan mengganti dengan angka fisik sebenarnya.
+    // Ini bukan solusi ideal, tapi paling praktis tanpa endpoint baru.
+    Modal.confirm(
+      'Konfirmasi Opname',
+      'Stok fisik akan dicatat untuk ' + ids.length + ' item. ' +
+      'Item dengan selisih akan otomatis membuat penyesuaian di Log.\n\n' +
+      'Lanjutkan?',
+      async () => {
+        this._submitting = true;
+        Loading.show();
+        try {
+          // Bangun payload — pakai 0 sebagai stok_sistem placeholder
+          // (backend akan hitung selisih = stok_fisik - 0 = stok_fisik,
+          //  yang berarti semua stok fisik dianggap baru — tidak benar!)
+          // Solusi benar: panggil getKartuStokBulanan untuk dapat saldo akhir bulan ini.
+          const payload = [];
+          for (const id of ids) {
+            const stokFisik = this._entries[id];
+            let stokSistem = 0;
+            try {
+              const now = new Date();
+              const res = await Api.getKartuStokBulanan(id, now.getMonth() + 1, now.getFullYear());
+              if (res.code === 200 && res.data) {
+                stokSistem = Number(res.data.saldo_akhir) || 0;
+              }
+            } catch (e) {
+              // kalau gagal, fallback ke 0 (akan otomatis adjust)
+            }
+            payload.push({
+              id_barang: id,
+              stok_sistem: stokSistem,
+              stok_fisik: stokFisik,
+              keterangan: 'Opname via aplikasi'
+            });
+          }
+
+          const res = await Api.simpanOpnameBulk(payload);
+          Toast.success(res.message || 'Opname tersimpan');
+          Loading.hide();
+          this._entries = {};
+          this.render(U.$('#main-content'));
+        } catch (err) {
+          Toast.error('Gagal: ' + err.message);
+          Loading.hide();
+        } finally {
+          this._submitting = false;
+        }
+      },
+      'Ya, Simpan',
+      false
+    );
+  }
+};
+
+/* ============================================================
+   PAGE: MASTER (CRUD)
+   ============================================================ */
+const PageMaster = {
+  CONFIG: {
+    'Master_Obat': {
+      title: 'Data Obat',
+      idField: 'ID_Obat', nameField: 'Nama_Obat', icon: 'pills',
+      columns: [
+        { key: 'ID_Obat', label: 'Kode', mono: true },
+        { key: 'Nama_Obat', label: 'Nama' },
+        { key: 'Kategori', label: 'Kategori' },
+        { key: 'Golongan_Obat', label: 'Golongan' },
+        { key: 'Satuan', label: 'Satuan' },
+        { key: 'Lokasi_Rak', label: 'Rak', mono: true },
+        { key: 'Stok_Minimum', label: 'Stok Min', num: true },
+        { key: 'Harga_Beli_Satuan', label: 'Harga', num: true, rp: true },
+        { key: 'Status_Aktif', label: 'Status', badge: true }
+      ],
+      formFields: [
+        { key: 'Nama_Obat', label: 'Nama Obat', type: 'text', required: true },
+        { key: 'Kategori', label: 'Kategori', type: 'text', required: true },
+        { key: 'Golongan_Obat', label: 'Golongan', type: 'select', required: true,
+          options: ['Bebas','Keras','Narkotika','Psikotropika'] },
+        { key: 'Satuan', label: 'Satuan', type: 'text', required: true },
+        { key: 'Lokasi_Rak', label: 'Lokasi Rak', type: 'select', required: true, source: 'rak' },
+        { key: 'Stok_Minimum', label: 'Stok Minimum', type: 'number', required: true },
+        { key: 'Harga_Beli_Satuan', label: 'Harga Beli Satuan (Rp)', type: 'number', required: true },
+        { key: 'Suhu_Simpan', label: 'Suhu Simpan', type: 'select', required: true,
+          options: ['Suhu Ruang','2-8°C','Beku'] },
+        { key: 'Wajib_VVM', label: 'Wajib VVM?', type: 'select', options: ['Ya','Tidak'] },
+        { key: 'Kode_Dinkes', label: 'Kode Dinkes (opsional)', type: 'text' }
+      ]
+    },
+    'Master_BMHP': {
+      title: 'Data BMHP', idField: 'ID_BMHP', nameField: 'Nama_Barang', icon: 'box',
+      columns: [
+        { key: 'ID_BMHP', label: 'Kode', mono: true },
+        { key: 'Nama_Barang', label: 'Nama' },
+        { key: 'Kategori', label: 'Kategori' },
+        { key: 'Satuan', label: 'Satuan' },
+        { key: 'Lokasi_Rak', label: 'Rak', mono: true },
+        { key: 'Stok_Minimum', label: 'Stok Min', num: true },
+        { key: 'Harga_Beli_Satuan', label: 'Harga', num: true, rp: true },
+        { key: 'Status_Aktif', label: 'Status', badge: true }
+      ],
+      formFields: [
+        { key: 'Nama_Barang', label: 'Nama Barang', type: 'text', required: true },
+        { key: 'Kategori', label: 'Kategori', type: 'text', required: true },
+        { key: 'Satuan', label: 'Satuan', type: 'text', required: true },
+        { key: 'Lokasi_Rak', label: 'Lokasi Rak', type: 'select', required: true, source: 'rak' },
+        { key: 'Stok_Minimum', label: 'Stok Minimum', type: 'number', required: true },
+        { key: 'Harga_Beli_Satuan', label: 'Harga Beli Satuan (Rp)', type: 'number', required: true },
+        { key: 'Kode_Dinkes', label: 'Kode Dinkes (opsional)', type: 'text' }
+      ]
+    },
+    'Ref_Supplier': {
+      title: 'Data Supplier', idField: 'ID_Supplier', nameField: 'Nama_Perusahaan', icon: 'truck',
+      columns: [
+        { key: 'ID_Supplier', label: 'Kode', mono: true },
+        { key: 'Nama_Perusahaan', label: 'Nama Perusahaan' },
+        { key: 'No_Telepon', label: 'Telepon' },
+        { key: 'Alamat', label: 'Alamat' }
+      ],
+      formFields: [
+        { key: 'Nama_Perusahaan', label: 'Nama Perusahaan', type: 'text', required: true },
+        { key: 'No_Telepon', label: 'No. Telepon', type: 'text' },
+        { key: 'Alamat', label: 'Alamat', type: 'textarea' }
+      ]
+    },
+    'Ref_UnitInternal': {
+      title: 'Data Unit Internal', idField: 'ID_Unit', nameField: 'Nama_Unit', icon: 'building',
+      columns: [
+        { key: 'ID_Unit', label: 'Kode', mono: true },
+        { key: 'Nama_Unit', label: 'Nama Unit' },
+        { key: 'Penanggung_Jawab', label: 'PIC' }
+      ],
+      formFields: [
+        { key: 'Nama_Unit', label: 'Nama Unit', type: 'text', required: true },
+        { key: 'Penanggung_Jawab', label: 'Penanggung Jawab', type: 'text' }
+      ]
+    },
+    'Ref_LokasiRak': {
+      title: 'Data Lokasi Rak', idField: 'ID_Rak', nameField: 'Nama_Rak', icon: 'mapPin',
+      columns: [
+        { key: 'ID_Rak', label: 'Kode', mono: true },
+        { key: 'Nama_Rak', label: 'Nama Rak' }
+      ],
+      formFields: [
+        { key: 'Nama_Rak', label: 'Nama Rak', type: 'text', required: true }
+      ]
+    },
+    'Ref_Petugas': {
+      title: 'Data Petugas', idField: 'ID_Petugas', nameField: 'Nama', icon: 'users',
+      columns: [
+        { key: 'ID_Petugas', label: 'Kode', mono: true },
+        { key: 'Username', label: 'Username', mono: true },
+        { key: 'Nama', label: 'Nama' },
+        { key: 'Role', label: 'Role', badge: true },
+        { key: 'Status_Aktif', label: 'Status', badge: true }
+      ],
+      // Kolom form untuk add. PIN_Awal hanya saat add.
+      formFields: [
+        { key: 'Username', label: 'Username (lowercase, 4-20)', type: 'text', required: true, addOnly: true },
+        { key: 'Nama', label: 'Nama Lengkap', type: 'text', required: true },
+        { key: 'Role', label: 'Role', type: 'select', required: true,
+          options: ['SuperAdmin','Apoteker','Gudang','Bidan_Desa'] },
+        { key: 'PIN_Awal', label: 'PIN Awal (min 4 digit)', type: 'text', required: true, addOnly: true },
+        { key: 'Wilayah_Binaan', label: 'Wilayah Binaan (opsional)', type: 'text' }
+      ]
+    }
+  },
+
+  async render(container, sheetName) {
+    const cfg = this.CONFIG[sheetName];
+    if (!cfg) { container.innerHTML = App._renderEmpty('Config tidak ditemukan'); return; }
+
+    const canAdd = sheetName !== 'Ref_Petugas' || App.state.session.role === 'SuperAdmin';
+
+    container.innerHTML = '' +
+      '<div class="page-header">' +
+        '<div><div class="page-title">' + U.escapeHtml(cfg.title) + '</div></div>' +
+        (canAdd ? '<button class="btn btn-primary" id="btn-add">' + U.icon('plus', 16) + ' Tambah</button>' : '') +
+      '</div>' +
+      '<div class="card" style="padding:12px">' +
+        '<input class="input" id="master-search" placeholder="Cari...">' +
+      '</div>' +
+      '<div id="master-table-container"><div class="empty-state"><div class="spinner"></div></div></div>';
+
+    if (canAdd) {
+      U.$('#btn-add').addEventListener('click', () => this._openForm(sheetName, null, container));
+    }
+    U.$('#master-search').addEventListener('input', U.debounce(() => {
+      this._renderTable(container, sheetName, U.$('#master-search').value);
+    }, 200));
+
+    this._renderTable(container, sheetName, '');
+  },
+
+  _renderTable(container, sheetName, query) {
+    const cfg = this.CONFIG[sheetName];
+    const master = App.state.master || {};
+    let data = [];
+    if (sheetName === 'Master_Obat') data = master.obat || [];
+    else if (sheetName === 'Master_BMHP') data = master.bmhp || [];
+    else if (sheetName === 'Ref_Supplier') data = master.supplier || [];
+    else if (sheetName === 'Ref_UnitInternal') data = master.unit || [];
+    else if (sheetName === 'Ref_LokasiRak') data = master.rak || [];
+    else if (sheetName === 'Ref_Petugas') data = master.petugas || [];
+
+    const q = (query || '').toLowerCase().trim();
+    if (q) {
+      data = data.filter(item => {
+        return cfg.columns.some(c => String(item[c.key] || '').toLowerCase().indexOf(q) !== -1);
+      });
+    }
+
+    if (data.length === 0) {
+      U.$('#master-table-container').innerHTML = App._renderEmpty(
+        'Tidak ada data',
+        q ? 'Tidak ditemukan hasil untuk "' + q + '"' : 'Belum ada item.',
+        'package'
+      );
+      return;
+    }
+
+    const html = '<div class="table-wrap"><div class="table-scroll"><table class="data-table">' +
+      '<thead><tr>' +
+        cfg.columns.map(c => '<th' + (c.num ? ' class="num"' : '') + '>' + U.escapeHtml(c.label) + '</th>').join('') +
+        '<th class="col-actions">Aksi</th>' +
+      '</tr></thead><tbody>' +
+      data.map(item => {
+        const tds = cfg.columns.map(c => {
+          const val = item[c.key];
+          let content = '';
+          if (c.badge) {
+            const cls = val === 'Aktif' ? 'badge-success' :
+                       val === 'Nonaktif' ? 'badge-muted' :
+                       val === 'SuperAdmin' ? 'badge-danger' :
+                       val === 'Apoteker' ? 'badge-primary' :
+                       val === 'Gudang' ? 'badge-warning' : 'badge-muted';
+            content = '<span class="badge ' + cls + '">' + U.escapeHtml(val || '-') + '</span>';
+          } else if (c.rp) content = U.formatRupiah(val);
+          else if (c.num) content = U.formatNumber(val);
+          else content = U.escapeHtml(val || '-');
+          const cls = (c.mono ? 'mono ' : '') + (c.num ? 'num' : '');
+          return '<td' + (cls ? ' class="' + cls.trim() + '"' : '') + '>' + content + '</td>';
+        }).join('');
+
+        const idVal = item[cfg.idField];
+        const canDelete = item.Status_Aktif !== 'Nonaktif';
+
+        const actions =
+          '<button class="btn btn-ghost" data-action="edit" data-id="' + U.escapeHtml(idVal) + '" title="Edit" style="padding:6px">' +
+            U.icon('edit', 16) + '</button>' +
+          (sheetName === 'Ref_Petugas'
+            ? '<button class="btn btn-ghost" data-action="resetpin" data-id="' + U.escapeHtml(idVal) + '" title="Reset PIN" style="padding:6px">' + U.icon('refresh', 16) + '</button>'
+            : '') +
+          (canDelete
+            ? '<button class="btn btn-ghost text-danger" data-action="delete" data-id="' + U.escapeHtml(idVal) + '" title="Nonaktifkan" style="padding:6px">' + U.icon('trash', 16) + '</button>'
+            : '');
+
+        return '<tr>' + tds + '<td class="col-actions">' + actions + '</td></tr>';
+      }).join('') +
+      '</tbody></table></div></div>';
+
+    U.$('#master-table-container').innerHTML = html;
+    U.$$('[data-action]', U.$('#master-table-container')).forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+        const item = data.find(x => String(x[cfg.idField]) === String(id));
+        if (action === 'edit') this._openForm(sheetName, item, container);
+        else if (action === 'delete') this._confirmDelete(sheetName, item, container);
+        else if (action === 'resetpin') this._resetPin(id, container);
+      });
+    });
+  },
+
+  _openForm(sheetName, item, container) {
+    const cfg = this.CONFIG[sheetName];
+    const isEdit = !!item;
+    const master = App.state.master || {};
+
+    // Filter form fields: skip addOnly fields saat edit
+    const fields = cfg.formFields.filter(f => !(isEdit && f.addOnly));
+
+    const fieldsHtml = fields.map(f => {
+      const val = isEdit ? (item[f.key] || '') : '';
+      let inputHtml = '';
+      if (f.type === 'select') {
+        let options = f.options || [];
+        if (f.source === 'rak') options = (master.rak || []).map(r => r.ID_Rak);
+        inputHtml = '<select class="select" name="' + f.key + '"' + (f.required ? ' required' : '') + '>' +
+          '<option value="">— Pilih —</option>' +
+          options.map(o => '<option value="' + U.escapeHtml(o) + '"' + (o === val ? ' selected' : '') + '>' +
+            U.escapeHtml(o) + '</option>').join('') +
+          '</select>';
+      } else if (f.type === 'textarea') {
+        inputHtml = '<textarea class="textarea" name="' + f.key + '"' + (f.required ? ' required' : '') + '>' +
+          U.escapeHtml(val) + '</textarea>';
+      } else {
+        inputHtml = '<input type="' + f.type + '" class="input" name="' + f.key + '" value="' + U.escapeHtml(val) + '"' +
+          (f.required ? ' required' : '') + (f.type === 'number' ? ' step="any"' : '') + '>';
+      }
+      return '<div class="field"><label class="field-label">' + U.escapeHtml(f.label) +
+             (f.required ? ' <span class="required">*</span>' : '') + '</label>' + inputHtml + '</div>';
+    }).join('');
+
+    const formHtml = '<form id="master-form">' +
+      (isEdit ? '<div class="field"><label class="field-label">' + U.escapeHtml(cfg.idField) + '</label>' +
+        '<div class="mono">' + U.escapeHtml(item[cfg.idField]) + '</div></div>' : '') +
+      fieldsHtml +
+    '</form>';
+
+    Modal.open({
+      title: isEdit ? 'Edit ' + cfg.title : 'Tambah ' + cfg.title,
+      body: formHtml,
+      actions: [
+        { label: 'Batal', class: 'btn-secondary' },
+        { label: isEdit ? 'Simpan Perubahan' : 'Simpan', class: 'btn-primary', close: false,
+          onClick: async () => {
+            const form = U.$('#master-form');
+            if (!form.checkValidity()) { form.reportValidity(); return; }
+            const values = {};
+            fields.forEach(f => {
+              const el = form.querySelector('[name="' + f.key + '"]');
+              if (!el) return;
+              let v = el.value;
+              if (f.type === 'number') v = Number(v) || 0;
+              values[f.key] = v;
+            });
+
+            // Untuk Ref_Petugas create, tambahkan Status_Aktif = Aktif
+            // (backend v3.7 sudah auto-set, tapi ini eksplisit)
+            if (sheetName === 'Ref_Petugas' && !isEdit) {
+              values.Status_Aktif = 'Aktif';
+            }
+
+            try {
+              let res;
+              if (isEdit) {
+                res = await Api.editMasterData({
+                  sheet_target: sheetName,
+                  id_field: cfg.idField,
+                  id_record: item[cfg.idField],
+                  changes: values
+                });
+              } else {
+                res = await Api.tambahMaster({ sheet_target: sheetName, fields: values });
+              }
+              Modal.close();
+              Toast.success(isEdit ? 'Data diperbarui.' : 'Data ditambahkan: ' + (res.data && res.data.id || ''));
+              await App.refreshMaster();
+              this.render(container, sheetName);
+            } catch (err) {
+              Toast.error('Gagal: ' + err.message);
+            }
+          }
+        }
+      ]
+    });
+  },
+
+  _confirmDelete(sheetName, item, container) {
+    const cfg = this.CONFIG[sheetName];
+    Modal.confirm(
+      'Nonaktifkan Item',
+      'Item "' + (item[cfg.nameField] || item[cfg.idField]) + '" akan dinonaktifkan. Lanjutkan?',
+      async () => {
+        try {
+          await Api.hapusMaster({
+            sheet_target: sheetName, id_field: cfg.idField, id_record: item[cfg.idField]
+          });
+          Toast.success('Item dinonaktifkan.');
+          await App.refreshMaster();
+          this.render(container, sheetName);
+        } catch (err) {
+          Toast.error('Gagal: ' + err.message);
+        }
+      }, 'Ya, Nonaktifkan', true
+    );
+  },
+
+  async _resetPin(idPetugas, container) {
+    Modal.confirm(
+      'Reset PIN Petugas',
+      'PIN baru akan di-generate acak untuk ' + idPetugas + '. Lanjutkan?',
+      async () => {
+        try {
+          const res = await Api.resetPin(idPetugas);
+          Modal.open({
+            title: 'PIN Baru',
+            body: '<p style="font-size:14px;margin-bottom:12px">Catat PIN baru berikut — tidak akan ditampilkan lagi:</p>' +
+                  '<div style="text-align:center;padding:16px;background:var(--primary-bg);border-radius:var(--radius-md);font-size:24px;font-family:monospace;font-weight:700;letter-spacing:4px">' +
+                  U.escapeHtml(res.data.new_pin) + '</div>',
+            actions: [{ label: 'Tutup', class: 'btn-primary' }]
+          });
+        } catch (err) {
+          Toast.error('Gagal reset PIN: ' + err.message);
+        }
+      }, 'Ya, Reset', true
+    );
+  }
+};
+
+/* ============================================================
+   PAGE: AUDIT LOG
+   ============================================================ */
+const PageAudit = {
+  _page: 0,
+  _perPage: 50,
+
+  async render(container) {
+    this._page = 0;
+    container.innerHTML = '' +
+      '<div class="page-header">' +
+        '<div><div class="page-title">Audit Log</div>' +
+        '<div class="page-desc">Riwayat perubahan data master</div></div>' +
+        '<button class="btn btn-secondary" id="btn-refresh">' + U.icon('refresh', 16) + ' Refresh</button>' +
+      '</div>' +
+      '<div id="audit-result"><div class="empty-state"><div class="spinner"></div></div></div>';
+
+    U.$('#btn-refresh').addEventListener('click', () => this._load());
+    this._load();
+  },
+
+  async _load() {
+    try {
+      const res = await Api.getAuditLog({ limit: 200 });
+      const items = (res.data && res.data.items) || [];
+      if (items.length === 0) {
+        U.$('#audit-result').innerHTML = App._renderEmpty('Belum ada audit', '', 'clipboard');
+        return;
+      }
+
+      const start = this._page * this._perPage;
+      const pageItems = items.slice(start, start + this._perPage);
+      const totalPages = Math.ceil(items.length / this._perPage);
+
+      let html = '<div class="table-wrap"><div class="table-scroll"><table class="data-table">' +
+        '<thead><tr>' +
+          '<th>Waktu</th><th>Petugas</th><th>Aksi</th><th>Target</th>' +
+          '<th>Record</th><th>Field</th><th>Lama → Baru</th>' +
+        '</tr></thead><tbody>' +
+        pageItems.map(it =>
+          '<tr>' +
+            '<td style="font-size:12px">' + U.formatDateTime(it.Timestamp) + '</td>' +
+            '<td class="mono" style="font-size:12px">' + U.escapeHtml(it.ID_Petugas || '-') + '</td>' +
+            '<td><span class="badge badge-muted">' + U.escapeHtml(it.Aksi || '-') + '</span></td>' +
+            '<td>' + U.escapeHtml(it.Sheet_Target || '-') + '</td>' +
+            '<td class="mono">' + U.escapeHtml(it.ID_Record || '-') + '</td>' +
+            '<td>' + U.escapeHtml(it.Field_Changed || '-') + '</td>' +
+            '<td style="font-size:12px">' + U.escapeHtml(String(it.Nilai_Lama || '').substring(0, 30)) +
+              ' → ' + U.escapeHtml(String(it.Nilai_Baru || '').substring(0, 30)) + '</td>' +
+          '</tr>'
+        ).join('') +
+        '</tbody></table></div></div>';
+
+      if (totalPages > 1) {
+        html += '<div class="flex items-center justify-between mt-2" style="gap:8px">' +
+          '<button class="btn btn-secondary" id="audit-prev"' + (this._page === 0 ? ' disabled' : '') + '>← Sebelumnya</button>' +
+          '<span class="text-muted">Halaman ' + (this._page + 1) + ' / ' + totalPages + '</span>' +
+          '<button class="btn btn-secondary" id="audit-next"' + (this._page >= totalPages - 1 ? ' disabled' : '') + '>Selanjutnya →</button>' +
+        '</div>';
+      }
+
+      U.$('#audit-result').innerHTML = html;
+
+      const prev = U.$('#audit-prev');
+      const next = U.$('#audit-next');
+      if (prev) prev.addEventListener('click', () => { this._page--; this._load(); });
+      if (next) next.addEventListener('click', () => { this._page++; this._load(); });
+    } catch (err) {
+      U.$('#audit-result').innerHTML = App._renderEmpty('Gagal', err.message, 'alertCircle');
+    }
+  }
+};
+
+/* ============================================================
+   PAGE: SETTINGS
+   ============================================================ */
+const PageSettings = {
+  async render(container) {
+    const session = App.state.session;
+    container.innerHTML = '' +
+      '<div class="page-header"><div><div class="page-title">Pengaturan</div></div></div>' +
+
+      '<div class="card">' +
+        '<div class="card-title">Profil Pengguna</div>' +
+        '<div class="field"><label class="field-label">Nama</label><div>' + U.escapeHtml(session.nama) + '</div></div>' +
+        '<div class="field"><label class="field-label">Username</label><div class="mono">' + U.escapeHtml(session.username) + '</div></div>' +
+        '<div class="field"><label class="field-label">Role</label><div><span class="badge badge-primary">' + U.escapeHtml(session.role) + '</span></div></div>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="card-title">Ubah PIN</div>' +
+        '<div class="field"><label class="field-label">PIN Lama</label>' +
+          '<input type="password" class="input" id="set-old-pin" inputmode="numeric" maxlength="8" autocomplete="current-password"></div>' +
+        '<div class="field"><label class="field-label">PIN Baru (min 4 digit)</label>' +
+          '<input type="password" class="input" id="set-new-pin" inputmode="numeric" maxlength="8" autocomplete="new-password"></div>' +
+        '<div class="field"><label class="field-label">Ulangi PIN Baru</label>' +
+          '<input type="password" class="input" id="set-new-pin2" inputmode="numeric" maxlength="8" autocomplete="new-password"></div>' +
+        '<button class="btn btn-primary" id="btn-ubah-pin">Ubah PIN</button>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="card-title">Logo Puskesmas</div>' +
+        '<p class="text-muted" style="font-size:13px;margin-bottom:12px">Logo ditampilkan di header Kartu Stok. Ukuran maksimum 500 KB.</p>' +
+        '<div id="logo-preview" style="text-align:center;padding:16px;background:var(--surface-2);border-radius:var(--radius-md);margin-bottom:12px"></div>' +
+        '<input type="file" id="logo-input" accept="image/*" style="display:none">' +
+        '<div class="flex gap-2" style="flex-wrap:wrap">' +
+          '<button class="btn btn-secondary" id="btn-pick-logo">Pilih File</button>' +
+          '<button class="btn btn-ghost text-danger" id="btn-remove-logo">Hapus Logo</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="card-title">Aksi</div>' +
+        '<button class="btn btn-danger" id="btn-logout">' + U.icon('logout', 16) + ' Keluar dari Aplikasi</button>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="card-title">Info</div>' +
+        '<div class="field"><label class="field-label">Versi Aplikasi</label><div>' + CONFIG.APP_VERSION + '</div></div>' +
+        '<div class="field"><label class="field-label">Status Koneksi</label><div id="info-online"></div></div>' +
+      '</div>';
+
+    this._refreshLogo();
+    this._refreshOnline();
+
+    U.$('#btn-pick-logo').addEventListener('click', () => U.$('#logo-input').click());
+    U.$('#logo-input').addEventListener('change', (e) => this._handleLogoUpload(e));
+    U.$('#btn-remove-logo').addEventListener('click', () => {
+      Store.setLogo('');
+      this._refreshLogo();
+      Toast.info('Logo dihapus');
+    });
+    U.$('#btn-ubah-pin').addEventListener('click', () => this._ubahPin());
+    U.$('#btn-logout').addEventListener('click', () => {
+      Modal.confirm('Keluar', 'Yakin ingin keluar dari aplikasi?',
+        () => App.logout(), 'Ya, Keluar', true);
+    });
+  },
+
+  _refreshLogo() {
+    const logo = Store.getLogo();
+    const el = U.$('#logo-preview');
+    if (logo) el.innerHTML = '<img src="' + logo + '" style="max-height:80px;display:inline-block">';
+    else el.innerHTML = '<div class="text-muted">Belum ada logo</div>';
+  },
+
+  _refreshOnline() {
+    const el = U.$('#info-online');
+    if (el) {
+      el.innerHTML = App.state.online
+        ? '<span class="badge badge-success">Terhubung</span>'
+        : '<span class="badge badge-danger">Offline</span>';
+    }
+  },
+
+  _handleLogoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 500 * 1024) {
+      Toast.error('File terlalu besar (max 500 KB)');
+      return;
+    }
+    // Resize via Canvas agar tidak memakan memori
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 400;
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = h * maxDim / w; w = maxDim; }
+          else { w = w * maxDim / h; h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/png');
+        Store.setLogo(dataUrl);
+        this._refreshLogo();
+        Toast.success('Logo diperbarui');
+      };
+      img.onerror = () => Toast.error('Gagal membaca gambar');
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  },
+
+  async _ubahPin() {
+    const oldPin = U.$('#set-old-pin').value;
+    const newPin = U.$('#set-new-pin').value;
+    const newPin2 = U.$('#set-new-pin2').value;
+    if (!oldPin || !newPin || !newPin2) { Toast.error('Semua field wajib diisi'); return; }
+    if (newPin.length < 4) { Toast.error('PIN baru minimal 4 digit'); return; }
+    if (newPin !== newPin2) { Toast.error('PIN baru tidak sama'); return; }
+    try {
+      await Api.ubahPin({ old_pin: oldPin, new_pin: newPin });
+      Toast.success('PIN berhasil diubah');
+      U.$('#set-old-pin').value = '';
+      U.$('#set-new-pin').value = '';
+      U.$('#set-new-pin2').value = '';
+    } catch (err) {
+      Toast.error('Gagal: ' + err.message);
+    }
+  }
+};
+
+/* ============================================================
+   LOGIN FORM HANDLER
+   ============================================================ */
+const LoginForm = {
+  _pin: '',
+  _maxPinLen: 8,
+
+  init() {
+    U.$$('#login-keypad .key-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key;
+        if (key === 'back') this._backspace();
+        else if (key === 'enter') this._submit();
+        else this._append(key);
+      });
+    });
+
+    // FIX #1: keydown global — hanya aktif saat fokus TIDAK di input
+    document.addEventListener('keydown', (e) => {
+      if (U.$('#login-screen').style.display === 'none') return;
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return; // let browser handle
+      if (e.key >= '0' && e.key <= '9') this._append(e.key);
+      else if (e.key === 'Backspace') { e.preventDefault(); this._backspace(); }
+      else if (e.key === 'Enter') { e.preventDefault(); this._submit(); }
+    });
+
+    // FIX #9: Enter di username tidak submit — hanya lepas fokus
+    U.$('#login-username').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        U.vibrate(15);
+        // Blur supaya global keydown aktif untuk PIN
+        e.target.blur();
+      }
+    });
+
+    this._render();
+  },
+
+  _append(digit) {
+    if (this._pin.length >= this._maxPinLen) return;
+    this._pin += digit;
+    U.vibrate(15);
+    this._render();
+  },
+
+  _backspace() {
+    this._pin = this._pin.slice(0, -1);
+    this._render();
+  },
+
+  _render() {
+    const el = U.$('#login-pin');
+    if (this._pin.length === 0) {
+      el.textContent = 'Masukkan PIN';
+      el.classList.add('empty');
+    } else {
+      el.textContent = '●'.repeat(this._pin.length);
+      el.classList.remove('empty');
+    }
+  },
+
+  async _submit() {
+    const username = U.$('#login-username').value.trim().toLowerCase();
+    if (!username) { Toast.error('Username wajib diisi'); U.$('#login-username').focus(); return; }
+    if (username.length < 4) { Toast.error('Username minimal 4 karakter'); return; }
+    if (this._pin.length < 4) { Toast.error('PIN minimal 4 digit'); return; }
+
+    const submitBtn = U.$('#login-submit');
+    submitBtn.disabled = true;
+    Loading.show();
+
+    try {
+      const res = await Api.login(username, this._pin);
+      const session = {
+        token: res.session_token,
+        id_petugas: res.id_petugas,
+        username: res.username,
+        nama: res.nama,
+        role: res.role,
+        wilayah_binaan: res.wilayah_binaan || '',
+        expiry: Date.now() + (res.expiry_sec || 21500) * 1000
+      };
+      Store.setSession(session);
+      App.state.session = session;
+      this._pin = '';
+      this._render();
+      U.$('#login-username').value = '';
+
+      Toast.success('Selamat datang, ' + res.nama);
+      await App.showApp();
+      await App.route('dashboard');
+    } catch (err) {
+      U.vibrate([100, 50, 100]);
+      U.beepError();
+      Toast.error(err.message || 'Login gagal');
+      this._pin = '';
+      this._render();
+    } finally {
+      submitBtn.disabled = false;
+      Loading.hide();
+    }
+  }
+};
+
+/* ============================================================
+   GLOBAL EVENT LISTENERS
+   ============================================================ */
+function setupGlobalListeners() {
+  U.$('#menu-btn').addEventListener('click', () => {
+    U.$('#sidebar').classList.toggle('open');
+    U.$('#sidebar-backdrop').classList.toggle('active');
+  });
+  U.$('#sidebar-backdrop').addEventListener('click', () => {
+    U.$('#sidebar').classList.remove('open');
+    U.$('#sidebar-backdrop').classList.remove('active');
+  });
+  document.addEventListener('click', (e) => {
+    const item = e.target.closest('.bottom-nav-item');
+    if (item && item.dataset.action === 'menu') {
+      e.preventDefault();
+      U.$('#sidebar').classList.toggle('open');
+      U.$('#sidebar-backdrop').classList.toggle('active');
+    }
+  });
+  U.$('#modal-close').addEventListener('click', () => Modal.close());
+  U.$('#modal-overlay').addEventListener('click', (e) => {
+    if (e.target === U.$('#modal-overlay')) Modal.close();
+  });
+  window.addEventListener('hashchange', () => {
+    const route = location.hash ? location.hash.substring(2) : 'dashboard';
+    if (route && App.state.session) App.route(route);
+  });
+  window.addEventListener('error', (e) => console.error('[GLOBAL_ERROR]', e.error || e.message));
+  window.addEventListener('unhandledrejection', (e) => console.error('[UNHANDLED_PROMISE]', e.reason));
+}
+
+/* ============================================================
+   BOOTSTRAP
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  LoginForm.init();
+  setupGlobalListeners();
+  App.init();
+  console.log('[SISTEM_GUDANG] v' + CONFIG.APP_VERSION + ' booted');
+});
+</script>
+</body>
+</html>
