@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="preconnect" href="https://script.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://cdn.sheetjs.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 
 <link rel="stylesheet" href="shared/core.css">
@@ -32,18 +33,16 @@
 .boot-splash-inner { text-align: center; color: white; padding: 20px; }
 .boot-splash-logo {
   width: 72px; height: 72px; margin: 0 auto 18px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255,255,255,0.15);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 28px; font-weight: 700;
 }
 .boot-splash-text { font-size: 15px; opacity: 0.9; margin-bottom: 16px; }
 .boot-splash-spinner {
-  display: inline-block;
-  width: 22px; height: 22px;
-  border: 2.5px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
+  display: inline-block; width: 22px; height: 22px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: white; border-radius: 50%;
   animation: bootspin 0.8s linear infinite;
 }
 @keyframes bootspin { to { transform: rotate(360deg); } }
@@ -53,11 +52,12 @@
    ============================================================ */
 .app-shell {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 260px 1fr;
   min-height: 100dvh;
   background: var(--bg);
+  transition: grid-template-columns 0.25s ease;
 }
-.app-shell.sidebar-collapsed { grid-template-columns: 68px 1fr; }
+.app-shell.sidebar-collapsed { grid-template-columns: 76px 1fr; }
 
 /* ============================================================
    SIDEBAR
@@ -65,153 +65,138 @@
 .sidebar {
   background: var(--surface);
   border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   height: 100dvh;
-  position: sticky;
-  top: 0;
+  position: sticky; top: 0;
   z-index: 40;
-  transition: width 0.25s ease, transform 0.25s ease;
   overflow: hidden;
 }
 .sidebar-header {
   padding: var(--sp-3);
   padding-top: calc(var(--sp-3) + var(--safe-top));
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  display: flex; align-items: center; gap: var(--sp-2);
   flex-shrink: 0;
-  min-height: 60px;
+  min-height: 64px;
 }
 .sidebar-logo {
   width: 38px; height: 38px;
-  background: var(--primary);
-  color: white;
-  border-radius: var(--r-md);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white; border-radius: var(--r-md);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: var(--fs-sm);
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(13,115,119,0.25);
 }
-.sidebar-brand {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  transition: opacity 0.15s;
-}
+.sidebar-brand { flex: 1; min-width: 0; transition: opacity 0.15s; }
 .sidebar-brand-title {
-  font-weight: 700; font-size: var(--fs-base);
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 700; font-size: var(--fs-base); color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.2;
 }
 .sidebar-brand-subtitle {
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: var(--fs-xs); color: var(--text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 2px;
 }
 .sidebar-nav {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: var(--sp-2) 0;
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: var(--sp-2) var(--sp-2);
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
-.sidebar-group { margin-bottom: var(--sp-2); }
+.sidebar-nav::-webkit-scrollbar { width: 6px; }
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--border-strong); border-radius: 3px;
+}
+.sidebar-group { margin-bottom: var(--sp-3); }
+.sidebar-group:last-child { margin-bottom: 0; }
 .sidebar-group-title {
-  padding: 8px var(--sp-3);
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 8px var(--sp-2);
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
   color: var(--text-light);
-  white-space: nowrap;
-  overflow: hidden;
+  white-space: nowrap; overflow: hidden;
 }
 .sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: 10px var(--sp-3);
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 10px var(--sp-2);
   color: var(--text);
-  font-size: var(--fs-sm);
-  border-left: 3px solid transparent;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-decoration: none;
+  font-size: var(--fs-sm); font-weight: 500;
+  border-radius: var(--r-md);
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer; text-decoration: none;
+  white-space: nowrap; overflow: hidden;
+  margin-bottom: 2px;
 }
 .sidebar-item:hover { background: var(--surface-2); }
 .sidebar-item.active {
   background: var(--primary-bg);
   color: var(--primary-dark);
-  border-left-color: var(--primary);
-  font-weight: 600;
+  font-weight: 700;
 }
-.sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-item.active svg { color: var(--primary); }
+.sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; color: var(--text-muted); }
 .sidebar-item .item-label {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis;
 }
 .sidebar-item .item-badge {
   background: var(--danger); color: white;
   font-size: 10px; padding: 2px 7px;
   border-radius: var(--r-full); font-weight: 700;
-  flex-shrink: 0;
+  flex-shrink: 0; min-width: 18px; text-align: center;
 }
 
+/* Collapsed sidebar */
 .app-shell.sidebar-collapsed .sidebar-brand,
 .app-shell.sidebar-collapsed .sidebar-group-title,
 .app-shell.sidebar-collapsed .item-label,
 .app-shell.sidebar-collapsed .item-badge {
-  opacity: 0;
-  pointer-events: none;
-  width: 0;
+  display: none;
 }
 .app-shell.sidebar-collapsed .sidebar-item {
   justify-content: center;
   padding: 12px 0;
 }
+.app-shell.sidebar-collapsed .sidebar-header {
+  justify-content: center;
+  padding-left: 0; padding-right: 0;
+}
 
 .sidebar-backdrop {
   display: none;
   position: fixed; inset: 0;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(15,23,42,0.5);
   backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   z-index: 39;
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
-.sidebar-backdrop.active { display: block; }
+.sidebar-backdrop.active { display: block; opacity: 1; }
 
 @media (max-width: 900px) {
-  .app-shell,
-  .app-shell.sidebar-collapsed {
-    grid-template-columns: 1fr;
-  }
+  .app-shell, .app-shell.sidebar-collapsed { grid-template-columns: 1fr; }
   .sidebar {
-    position: fixed;
-    top: 0; left: 0; bottom: 0;
+    position: fixed; top: 0; left: 0; bottom: 0;
     width: 280px;
     transform: translateX(-100%);
     box-shadow: var(--shadow-xl);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .sidebar.open { transform: translateX(0); }
   .app-shell.sidebar-collapsed .sidebar-brand,
   .app-shell.sidebar-collapsed .sidebar-group-title,
   .app-shell.sidebar-collapsed .item-label,
-  .app-shell.sidebar-collapsed .item-badge {
-    opacity: 1;
-    pointer-events: auto;
-    width: auto;
-  }
+  .app-shell.sidebar-collapsed .item-badge { display: block; }
   .app-shell.sidebar-collapsed .sidebar-item {
     justify-content: flex-start;
-    padding: 10px var(--sp-3);
+    padding: 10px var(--sp-2);
+  }
+  .app-shell.sidebar-collapsed .sidebar-header {
+    justify-content: flex-start;
+    padding-left: var(--sp-3); padding-right: var(--sp-3);
   }
 }
 
@@ -219,10 +204,8 @@
    MAIN AREA
    ============================================================ */
 .main-wrapper {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 100dvh;
+  display: flex; flex-direction: column;
+  min-width: 0; min-height: 100dvh;
 }
 .app-topbar {
   height: 60px;
@@ -240,46 +223,30 @@
   width: 40px; height: 40px;
   border-radius: var(--r-sm);
   display: flex; align-items: center; justify-content: center;
-  color: var(--text-muted);
-  flex-shrink: 0;
+  color: var(--text-muted); flex-shrink: 0;
+  transition: background 0.15s;
 }
 .topbar-toggle:hover { background: var(--surface-2); color: var(--text); }
 .topbar-breadcrumb { flex: 1; min-width: 0; }
 .topbar-breadcrumb-title {
-  font-weight: 700;
-  font-size: var(--fs-md);
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 700; font-size: var(--fs-md); color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   line-height: 1.2;
 }
 .topbar-breadcrumb-sub {
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: var(--fs-xs); color: var(--text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 1px;
 }
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
-}
+.topbar-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .btn-scanner {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 14px;
-  background: var(--primary);
-  color: white;
+  background: var(--primary); color: white;
   border-radius: var(--r-md);
-  font-size: var(--fs-sm);
-  font-weight: 600;
+  font-size: var(--fs-sm); font-weight: 600;
   transition: background 0.15s;
-  min-height: 40px;
-  text-decoration: none;
+  min-height: 40px; text-decoration: none;
 }
 .btn-scanner:hover { background: var(--primary-dark); }
 .btn-scanner svg { width: 16px; height: 16px; }
@@ -289,15 +256,11 @@
   .btn-scanner { padding: 8px 10px; }
 }
 .offline-badge {
-  display: none;
-  align-items: center;
-  gap: 4px;
+  display: none; align-items: center; gap: 4px;
   padding: 4px 10px;
-  background: var(--danger-bg);
-  color: var(--danger);
+  background: var(--danger-bg); color: var(--danger);
   border-radius: var(--r-full);
-  font-size: var(--fs-xs);
-  font-weight: 600;
+  font-size: var(--fs-xs); font-weight: 600;
   flex-shrink: 0;
 }
 .offline-badge.visible { display: inline-flex; }
@@ -310,7 +273,7 @@
   padding: var(--sp-4);
   padding-left: calc(var(--sp-4) + var(--safe-left));
   padding-right: calc(var(--sp-4) + var(--safe-right));
-  padding-bottom: calc(var(--sp-4) + var(--safe-bottom));
+  padding-bottom: calc(var(--sp-5) + var(--safe-bottom));
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
@@ -318,7 +281,7 @@
 @media (max-width: 640px) {
   .page-container {
     padding: var(--sp-3);
-    padding-bottom: calc(var(--sp-3) + var(--safe-bottom));
+    padding-bottom: calc(var(--sp-4) + var(--safe-bottom));
   }
 }
 
@@ -326,24 +289,18 @@
    PAGE HEADER
    ============================================================ */
 .page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-4);
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--sp-3); margin-bottom: var(--sp-4);
   flex-wrap: wrap;
 }
 .page-header-left { flex: 1; min-width: 0; }
-.page-header-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+.page-header-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; align-items: center; }
 .page-title {
-  font-size: var(--fs-xl);
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.2;
+  font-size: var(--fs-xl); font-weight: 700; color: var(--text);
+  line-height: 1.2; letter-spacing: -0.01em;
 }
 .page-subtitle {
-  font-size: var(--fs-sm);
-  color: var(--text-muted);
+  font-size: var(--fs-sm); color: var(--text-muted);
   margin-top: 4px;
 }
 @media (max-width: 640px) {
@@ -356,7 +313,7 @@
    ============================================================ */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: var(--sp-3);
   margin-bottom: var(--sp-4);
 }
@@ -365,10 +322,8 @@
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: var(--sp-3);
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-3);
-  transition: box-shadow 0.15s, border-color 0.15s;
+  display: flex; align-items: flex-start; gap: var(--sp-3);
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
 }
 .stat-card:hover {
   box-shadow: var(--shadow-md);
@@ -388,24 +343,105 @@
 .stat-icon svg { width: 22px; height: 22px; }
 .stat-body { flex: 1; min-width: 0; }
 .stat-value {
-  font-size: var(--fs-2xl);
-  font-weight: 800;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
+  font-size: var(--fs-2xl); font-weight: 800;
+  line-height: 1.1; font-variant-numeric: tabular-nums;
+  color: var(--text); word-break: break-word;
 }
 .stat-label {
-  font-size: var(--fs-sm);
-  color: var(--text-muted);
+  font-size: var(--fs-sm); color: var(--text-muted);
   margin-top: 2px;
 }
 
 /* ============================================================
-   KARTU STOK PREVIEW A5
+   CUSTOM SELECT
+   ============================================================ */
+.cs { position: relative; width: 100%; }
+.cs-trigger {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; width: 100%; min-height: 46px;
+  padding: 11px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  font-size: 16px;
+  cursor: pointer; color: var(--text);
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.cs-trigger:hover { border-color: var(--primary-light); }
+.cs-trigger:focus, .cs-trigger.open {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-bg);
+}
+.cs-trigger[disabled] { opacity: 0.5; cursor: not-allowed; }
+.cs-trigger-text {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cs-trigger-text.placeholder { color: var(--text-light); }
+.cs-trigger-icon { color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
+.cs-trigger.open .cs-trigger-icon { transform: rotate(180deg); }
+.cs-dropdown {
+  position: absolute;
+  top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 500;
+  padding: 4px;
+  animation: csFadeIn 0.15s ease-out;
+}
+@keyframes csFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.cs-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; border-radius: var(--r-sm);
+  font-size: var(--fs-sm); cursor: pointer;
+  transition: background 0.1s; color: var(--text);
+  width: 100%; text-align: left; background: none;
+}
+.cs-option:hover, .cs-option.focused { background: var(--surface-2); }
+.cs-option.selected {
+  background: var(--primary-bg); color: var(--primary-dark); font-weight: 600;
+}
+.cs-option-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.cs-option-check {
+  width: 16px; height: 16px; color: var(--primary);
+  flex-shrink: 0; opacity: 0; transition: opacity 0.1s;
+}
+.cs-option.selected .cs-option-check { opacity: 1; }
+
+/* ============================================================
+   SKELETON TABLES
+   ============================================================ */
+.skeleton-cell { padding: 12px; border-bottom: 1px solid var(--border); }
+.skeleton-cell .skeleton { margin: 0; }
+
+/* ============================================================
+   TABLES (override core untuk proporsi lebih rapi)
+   ============================================================ */
+.table-wrap {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.data-table tbody tr { transition: background 0.1s; }
+.data-table td { padding: 10px 12px; }
+.data-table th { padding: 10px 12px; }
+
+/* ============================================================
+   KARTU STOK PREVIEW (A5)
    ============================================================ */
 .kartu-stok-preview {
   background: white;
-  padding: 12px;
+  padding: 14px;
   max-width: 580px;
   margin: 0 auto;
   border: 1px solid var(--border);
@@ -418,80 +454,58 @@
 .kartu-stok-header {
   text-align: center;
   border-bottom: 2px solid #000;
-  padding-bottom: 8px;
-  margin-bottom: 10px;
+  padding-bottom: 8px; margin-bottom: 10px;
 }
 .kartu-stok-header img { height: 40px; margin: 0 auto 4px; }
 .kartu-stok-header h1 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
 .kartu-stok-header h2 { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
 .kartu-stok-header h3 {
   font-size: 12px; font-weight: 700;
-  text-decoration: underline;
-  margin-top: 8px;
-  letter-spacing: 1px;
+  text-decoration: underline; margin-top: 8px; letter-spacing: 1px;
 }
 .kartu-stok-info {
-  display: grid;
-  grid-template-columns: 90px 8px 1fr;
-  gap: 2px;
-  font-size: 11px;
-  margin-bottom: 10px;
+  display: grid; grid-template-columns: 90px 8px 1fr;
+  gap: 2px; font-size: 11px; margin-bottom: 10px;
 }
 .kartu-stok-info .label { font-weight: 700; }
 .kartu-stok-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 10px;
-  margin-bottom: 10px;
+  width: 100%; border-collapse: collapse;
+  font-size: 10px; margin-bottom: 10px;
 }
-.kartu-stok-table th,
-.kartu-stok-table td {
-  border: 1px solid #000;
-  padding: 3px 5px;
-  text-align: center;
-  vertical-align: middle;
+.kartu-stok-table th, .kartu-stok-table td {
+  border: 1px solid #000; padding: 3px 5px;
+  text-align: center; vertical-align: middle;
 }
 .kartu-stok-table th { background: #f0f0f0; font-weight: 700; }
 .kartu-stok-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .kartu-stok-summary {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 12px;
-  font-size: 11px;
-  margin: 10px 0;
-  padding: 8px;
-  background: #f8f8f8;
-  border-radius: 4px;
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 4px 12px; font-size: 11px;
+  margin: 10px 0; padding: 8px;
+  background: #f8f8f8; border-radius: 4px;
 }
 .kartu-stok-summary .label { font-weight: 700; }
 .kartu-stok-summary .value { text-align: right; }
 .kartu-stok-sign {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-  font-size: 11px;
+  display: flex; justify-content: space-between;
+  margin-top: 20px; font-size: 11px;
 }
 .kartu-stok-sign .sign-box { text-align: center; }
 .kartu-stok-sign .sign-space { height: 44px; }
 .kartu-stok-sign .sign-line {
   border-top: 1px solid #000;
-  padding-top: 3px;
-  min-width: 110px;
+  padding-top: 3px; min-width: 110px;
 }
 .kartu-stok-footnote {
-  font-size: 9px;
-  color: #666;
-  text-align: right;
-  margin-top: 6px;
+  font-size: 9px; color: #666;
+  text-align: right; margin-top: 6px;
 }
 
 /* ============================================================
    MONTH NAV
    ============================================================ */
 .month-nav {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  display: flex; align-items: center; gap: var(--sp-2);
   padding: var(--sp-2);
   background: var(--surface-2);
   border-radius: var(--r-md);
@@ -514,10 +528,8 @@
 }
 .month-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
 .month-nav .current {
-  font-weight: 700;
-  font-size: var(--fs-md);
-  padding: 0 var(--sp-3);
-  min-width: 180px;
+  font-weight: 700; font-size: var(--fs-md);
+  padding: 0 var(--sp-3); min-width: 180px;
   text-align: center;
 }
 
@@ -526,46 +538,37 @@
    ============================================================ */
 .autocomplete-wrap { position: relative; }
 .autocomplete-list {
-  position: absolute;
-  top: 100%; left: 0; right: 0;
+  position: absolute; top: 100%; left: 0; right: 0;
   margin-top: 4px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   box-shadow: var(--shadow-lg);
-  max-height: 280px;
-  overflow-y: auto;
+  max-height: 280px; overflow-y: auto;
   z-index: 50;
 }
 .autocomplete-list:empty { display: none; }
 .autocomplete-item {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: 10px 12px;
-  cursor: pointer;
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 10px 12px; cursor: pointer;
   border-bottom: 1px solid var(--border);
-  font-size: var(--fs-sm);
-  text-align: left;
-  width: 100%;
-  background: none;
-  color: var(--text);
+  font-size: var(--fs-sm); text-align: left; width: 100%;
+  background: none; color: var(--text);
 }
 .autocomplete-item:last-child { border-bottom: none; }
 .autocomplete-item:hover { background: var(--primary-bg-soft); }
 .autocomplete-item .ac-id {
   font-family: ui-monospace, monospace;
-  font-size: var(--fs-xs);
-  color: var(--primary-dark);
-  font-weight: 700;
-  flex-shrink: 0;
+  font-size: var(--fs-xs); color: var(--primary-dark);
+  font-weight: 700; flex-shrink: 0;
 }
 .autocomplete-item .ac-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.autocomplete-empty {
+  padding: 16px; text-align: center;
+  color: var(--text-muted); font-size: var(--fs-sm);
 }
 
 /* ============================================================
@@ -573,9 +576,8 @@
    ============================================================ */
 .qr-layout {
   display: grid;
-  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
-  gap: var(--sp-3);
-  align-items: start;
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: var(--sp-3); align-items: start;
 }
 @media (max-width: 900px) { .qr-layout { grid-template-columns: 1fr; } }
 .qr-checkbox-list {
@@ -586,17 +588,11 @@
   background: var(--surface);
 }
 .qr-check-item {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  display: flex; align-items: center; gap: var(--sp-2);
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  transition: background 0.1s;
-  text-align: left;
-  width: 100%;
-  background: none;
-  color: var(--text);
+  cursor: pointer; transition: background 0.1s;
+  text-align: left; width: 100%; background: none; color: var(--text);
 }
 .qr-check-item:last-child { border-bottom: none; }
 .qr-check-item:hover { background: var(--surface-2); }
@@ -604,25 +600,20 @@
 .qr-check-item input[type="checkbox"] {
   width: 18px; height: 18px;
   accent-color: var(--primary);
-  flex-shrink: 0;
-  cursor: pointer;
+  flex-shrink: 0; cursor: pointer;
 }
 .qr-check-item .info { flex: 1; min-width: 0; }
 .qr-check-item .info .id {
   font-family: ui-monospace, monospace;
-  font-size: var(--fs-xs);
-  font-weight: 700;
+  font-size: var(--fs-xs); font-weight: 700;
   color: var(--primary-dark);
 }
 .qr-check-item .info .name {
   font-size: var(--fs-sm);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .qr-check-item .info .meta {
-  font-size: 10px;
-  color: var(--text-light);
+  font-size: 10px; color: var(--text-light);
 }
 .qr-preview-area {
   background: var(--surface-2);
@@ -633,16 +624,14 @@
 }
 .qr-page {
   background: white;
-  width: 210mm;
-  min-height: 297mm;
+  width: 210mm; min-height: 297mm;
   padding: 8mm;
   margin: 0 auto var(--sp-3);
   box-shadow: var(--shadow-md);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(8, 33.9mm);
-  gap: 0;
-  box-sizing: border-box;
+  gap: 0; box-sizing: border-box;
 }
 .qr-page.mode-40 {
   grid-template-columns: repeat(4, 1fr);
@@ -651,63 +640,44 @@
 .qr-label {
   border: 0.3mm dashed #ccc;
   padding: 2mm;
-  display: flex;
-  align-items: center;
-  gap: 2mm;
-  overflow: hidden;
-  box-sizing: border-box;
+  display: flex; align-items: center; gap: 2mm;
+  overflow: hidden; box-sizing: border-box;
   page-break-inside: avoid;
-  break-inside: avoid;
 }
 .qr-label .qr-img-wrap {
-  width: 22mm;
-  height: 22mm;
-  flex-shrink: 0;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 22mm; height: 22mm;
+  flex-shrink: 0; background: white;
+  display: flex; align-items: center; justify-content: center;
 }
 .qr-label.mode-40 .qr-img-wrap { width: 18mm; height: 18mm; }
 .qr-label .qr-img-wrap img {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   image-rendering: pixelated;
 }
 .qr-label .label-text {
-  flex: 1;
-  min-width: 0;
+  flex: 1; min-width: 0;
   font-family: system-ui, sans-serif;
-  line-height: 1.15;
-  overflow: hidden;
+  line-height: 1.15; overflow: hidden;
 }
 .qr-label .label-id {
-  font-size: 11pt;
-  font-weight: 700;
+  font-size: 11pt; font-weight: 700;
   font-family: ui-monospace, monospace;
   letter-spacing: -0.3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .qr-label.mode-40 .label-id { font-size: 9pt; }
 .qr-label .label-name {
-  font-size: 8pt;
-  color: #222;
+  font-size: 8pt; color: #222;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin-top: 1px;
+  overflow: hidden; margin-top: 1px;
 }
 .qr-label.mode-40 .label-name { font-size: 7pt; -webkit-line-clamp: 1; }
 .qr-label .label-meta {
-  font-size: 6.5pt;
-  color: #666;
+  font-size: 6.5pt; color: #666;
   margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
 /* ============================================================
@@ -724,13 +694,36 @@
   font-weight: 600;
 }
 .opname-input:focus {
-  outline: none;
-  border-color: var(--primary);
+  outline: none; border-color: var(--primary);
   box-shadow: 0 0 0 2px var(--primary-bg);
 }
 .opname-input.changed {
   background: var(--warning-bg);
   border-color: var(--warning);
+}
+
+/* ============================================================
+   INLINE LOADER WRAPPER
+   ============================================================ */
+.loading-block {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+  padding: var(--sp-5) var(--sp-3);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.loading-block .spinner {
+  width: 20px; height: 20px;
+  border-width: 2.5px;
+  color: var(--primary);
+}
+.loading-block-sm {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: var(--sp-2) var(--sp-3);
+  color: var(--text-muted); font-size: var(--fs-sm);
+}
+.loading-block-sm .spinner {
+  width: 14px; height: 14px; color: var(--primary);
 }
 
 /* ============================================================
@@ -742,25 +735,17 @@
   .no-print, .toast-container, .loading-overlay, .modal-overlay {
     display: none !important;
   }
-  .page-container {
-    padding: 0 !important;
-    max-width: none;
-  }
+  .page-container { padding: 0 !important; max-width: none; }
   .kartu-stok-preview {
-    box-shadow: none;
-    border: none;
-    max-width: none;
-    padding: 8mm;
+    box-shadow: none; border: none;
+    max-width: none; padding: 8mm;
     page-break-inside: avoid;
   }
   .qr-page {
-    box-shadow: none;
-    margin: 0;
+    box-shadow: none; margin: 0;
     padding: 8mm;
     page-break-after: always;
-    break-after: page;
-    width: 210mm;
-    height: 297mm;
+    width: 210mm; height: 297mm;
   }
   .qr-page:last-child { page-break-after: auto; }
   .qr-label { border-color: #e5e5e5; }
@@ -834,6 +819,236 @@ const MENU = [
 ];
 
 /* ============================================================
+   HELPERS — loading, skeleton, empty
+   ============================================================ */
+const Helper = {
+  inlineLoader(text) {
+    return '<div class="loading-block"><span class="spinner"></span>' +
+      '<span>' + U.escapeHtml(text || 'Memuat...') + '</span></div>';
+  },
+
+  inlineLoaderSm(text) {
+    return '<div class="loading-block-sm"><span class="spinner"></span>' +
+      '<span>' + U.escapeHtml(text || 'Memuat...') + '</span></div>';
+  },
+
+  skeletonTable(cols, rows) {
+    const c = cols || 5;
+    const r = rows || 5;
+    const headCells = Array(c).fill(0).map((_, i) =>
+      '<th><div class="skeleton skeleton-line" style="width:' +
+        (60 + (i * 7) % 40) + 'px;height:10px;margin:0"></div></th>'
+    ).join('');
+    const bodyRows = Array(r).fill(0).map(() =>
+      '<tr>' + Array(c).fill(0).map(() =>
+        '<td><div class="skeleton skeleton-line" style="width:100%;height:12px;margin:0"></div></td>'
+      ).join('') + '</tr>'
+    ).join('');
+    return '<div class="table-wrap"><div class="table-scroll">' +
+      '<table class="data-table"><thead><tr>' + headCells + '</tr></thead>' +
+      '<tbody>' + bodyRows + '</tbody></table></div></div>';
+  },
+
+  skeletonCards(count) {
+    return Array(count || 4).fill(0).map(() =>
+      '<div class="stat-card">' +
+        '<div class="skeleton" style="width:44px;height:44px;border-radius:var(--r-md)"></div>' +
+        '<div class="stat-body">' +
+          '<div class="skeleton skeleton-line" style="width:60%;height:20px;margin-bottom:6px"></div>' +
+          '<div class="skeleton skeleton-line" style="width:40%;height:12px;margin:0"></div>' +
+        '</div>' +
+      '</div>'
+    ).join('');
+  },
+
+  emptyState(title, desc, iconName) {
+    return '<div class="empty-state">' + U.icon(iconName || 'info', 42) +
+      '<h3>' + U.escapeHtml(title) + '</h3>' +
+      (desc ? '<p>' + U.escapeHtml(desc) + '</p>' : '') + '</div>';
+  },
+
+  emptyInline(text) {
+    return '<div class="text-muted text-center" style="padding:24px;font-size:var(--fs-sm)">' +
+      U.escapeHtml(text) + '</div>';
+  }
+};
+
+/* ============================================================
+   LIB LOADER — qrcode & sheetjs
+   ============================================================ */
+const LibLoader = {
+  _cache: {},
+  _urls: {
+    qrcode: 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
+    sheetjs: 'https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js'
+  },
+  _globals: { qrcode: 'QRCode', sheetjs: 'XLSX' },
+
+  load(name) {
+    if (this._cache[name]) return this._cache[name];
+    const url = this._urls[name];
+    const globalName = this._globals[name];
+    if (!url || !globalName) return Promise.reject(new Error('Unknown lib: ' + name));
+
+    this._cache[name] = new Promise((resolve, reject) => {
+      if (window[globalName]) { resolve(window[globalName]); return; }
+
+      const existing = document.querySelector('script[data-lib="' + name + '"]');
+      if (existing) {
+        existing.addEventListener('load', () => {
+          if (window[globalName]) resolve(window[globalName]);
+          else reject(new Error('Library ' + name + ' tidak expose global'));
+        });
+        existing.addEventListener('error', () => reject(new Error('Gagal load ' + name)));
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = url;
+      script.async = true;
+      script.setAttribute('data-lib', name);
+      script.onload = () => {
+        if (window[globalName]) resolve(window[globalName]);
+        else reject(new Error('Library ' + name + ' tidak expose global'));
+      };
+      script.onerror = () => {
+        delete LibLoader._cache[name];
+        reject(new Error('Gagal load ' + name + ' dari CDN'));
+      };
+      document.head.appendChild(script);
+    });
+
+    return this._cache[name];
+  }
+};
+
+/* ============================================================
+   CUSTOM SELECT — menggantikan <select> native
+   ============================================================ */
+const CS = {
+  enhanceAll(root) {
+    if (!root) root = document;
+    U.$$('select', root).forEach(sel => {
+      if (sel.dataset.csEnhanced === '1') return;
+      this.enhance(sel);
+    });
+  },
+
+  enhance(selectEl) {
+    if (selectEl.dataset.csEnhanced === '1') return;
+    selectEl.dataset.csEnhanced = '1';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cs';
+    selectEl.parentNode.insertBefore(wrapper, selectEl);
+    wrapper.appendChild(selectEl);
+    selectEl.style.display = 'none';
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'cs-trigger';
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    wrapper.appendChild(trigger);
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'cs-dropdown';
+    dropdown.style.display = 'none';
+    dropdown.setAttribute('role', 'listbox');
+    wrapper.appendChild(dropdown);
+
+    const self = this;
+
+    function getOptions() {
+      return Array.from(selectEl.options).map(o => ({
+        value: o.value,
+        label: o.textContent.trim(),
+        disabled: o.disabled
+      }));
+    }
+
+    function render() {
+      const opts = getOptions();
+      const curVal = selectEl.value;
+      const cur = opts.find(o => o.value === curVal);
+
+      trigger.innerHTML =
+        '<span class="cs-trigger-text' + (cur && cur.value ? '' : ' placeholder') + '">' +
+          U.escapeHtml(cur ? cur.label : (opts[0] ? opts[0].label : '—')) +
+        '</span>' +
+        '<span class="cs-trigger-icon">' + U.icon('chevronDown', 18) + '</span>';
+
+      dropdown.innerHTML = opts.map(o =>
+        '<button type="button" class="cs-option' +
+          (o.value === curVal ? ' selected' : '') + '"' +
+          ' data-cs-value="' + U.escapeHtml(o.value) + '"' +
+          (o.disabled ? ' disabled' : '') + '>' +
+          '<span class="cs-option-label">' + U.escapeHtml(o.label) + '</span>' +
+          '<span class="cs-option-check">' + U.icon('check', 16) + '</span>' +
+        '</button>'
+      ).join('');
+    }
+
+    function close() {
+      dropdown.style.display = 'none';
+      trigger.classList.remove('open');
+    }
+
+    function open() {
+      U.$$('.cs-trigger.open').forEach(t => {
+        if (t !== trigger) {
+          t.classList.remove('open');
+          const dd = t.parentElement.querySelector('.cs-dropdown');
+          if (dd) dd.style.display = 'none';
+        }
+      });
+      dropdown.style.display = 'block';
+      trigger.classList.add('open');
+    }
+
+    function selectValue(val) {
+      selectEl.value = val;
+      selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+      render();
+      close();
+    }
+
+    render();
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (trigger.disabled) return;
+      if (dropdown.style.display === 'block') close();
+      else open();
+    });
+
+    dropdown.addEventListener('click', (e) => {
+      const optEl = e.target.closest('[data-cs-value]');
+      if (!optEl || optEl.disabled) return;
+      selectValue(optEl.dataset.csValue);
+    });
+
+    document.addEventListener('click', close);
+    wrapper.addEventListener('click', (e) => e.stopPropagation());
+
+    // Sync visual saat nilai select diubah programatik
+    const observer = new MutationObserver(render);
+    observer.observe(selectEl, { attributes: true, attributeFilter: ['value'] });
+
+    // Simpan referensi untuk update programatik
+    selectEl._csRender = render;
+  },
+
+  /**
+   * Update value secara programatik + refresh visual
+   */
+  setValue(selectEl, val) {
+    if (!selectEl) return;
+    selectEl.value = val;
+    if (selectEl._csRender) selectEl._csRender();
+  }
+};
+
+/* ============================================================
    ADMIN APP
    ============================================================ */
 const AdminApp = {
@@ -843,9 +1058,6 @@ const AdminApp = {
   sidebarCollapsed: false,
   approvalCount: 0,
 
-  // ============================================================
-  // INIT
-  // ============================================================
   async init() {
     dbg('AdminApp init');
     const session = Store.getSession();
@@ -912,7 +1124,10 @@ const AdminApp = {
     } catch (err) {
       dbgWarn('Gagal load master:', err.message);
       Toast.warning('Data master belum termuat.');
-      this.master = { obat: [], bmhp: [], atk: [], supplier: [], unit: [], rak: [], petugas: [] };
+      this.master = {
+        obat: [], bmhp: [], atk: [], supplier: [],
+        unit: [], rak: [], petugas: []
+      };
     }
   },
 
@@ -922,9 +1137,6 @@ const AdminApp = {
     await this._loadMaster();
   },
 
-  // ============================================================
-  // LOGIN
-  // ============================================================
   _showLogin() {
     const root = U.$('#app');
     LoginForm.mount(root, async (session) => {
@@ -940,9 +1152,6 @@ const AdminApp = {
     }, { variant: 'split' });
   },
 
-  // ============================================================
-  // SHELL
-  // ============================================================
   _initShell() {
     const root = U.$('#app');
     root.innerHTML = this._renderShell();
@@ -1109,10 +1318,7 @@ const AdminApp = {
       const it = g.items.find(i => i.id === route);
       if (it) { found = it; foundGroup = g.group; break; }
     }
-    if (!found) {
-      this._renderNotFound();
-      return;
-    }
+    if (!found) { this._renderNotFound(); return; }
     if (found.roles.indexOf(this.session.role) === -1) {
       this._renderForbidden();
       return;
@@ -1128,6 +1334,9 @@ const AdminApp = {
 
     const container = U.$('#page-container');
     container.innerHTML = this._renderSkeleton();
+
+    // Scroll top
+    window.scrollTo({ top: 0, behavior: 'auto' });
 
     try {
       switch (route) {
@@ -1146,11 +1355,11 @@ const AdminApp = {
         case 'audit':            await PageAudit.render(container); break;
         case 'settings':         await PageSettings.render(container); break;
         default:
-          container.innerHTML = this._renderEmpty('Halaman tidak ditemukan', '', 'alertCircle');
+          container.innerHTML = Helper.emptyState('Halaman tidak ditemukan', '', 'alertCircle');
       }
     } catch (err) {
       dbgErr('Route error:', err);
-      container.innerHTML = this._renderEmpty('Gagal Memuat',
+      container.innerHTML = Helper.emptyState('Gagal Memuat',
         err.message || 'Terjadi kesalahan.', 'alertCircle');
     }
   },
@@ -1159,28 +1368,19 @@ const AdminApp = {
     return '' +
       '<div class="skeleton skeleton-line short" style="height:28px;margin-bottom:20px"></div>' +
       '<div class="stats-grid" style="margin-bottom:16px">' +
-        '<div class="skeleton skeleton-card"></div>' +
-        '<div class="skeleton skeleton-card"></div>' +
-        '<div class="skeleton skeleton-card"></div>' +
-        '<div class="skeleton skeleton-card"></div>' +
+        Helper.skeletonCards(4) +
       '</div>' +
       '<div class="skeleton skeleton-card" style="height:200px"></div>';
   },
 
   _renderNotFound() {
-    U.$('#page-container').innerHTML = this._renderEmpty(
+    U.$('#page-container').innerHTML = Helper.emptyState(
       'Halaman tidak ditemukan', 'Periksa URL atau kembali ke Dashboard.', 'alertCircle');
   },
 
   _renderForbidden() {
-    U.$('#page-container').innerHTML = this._renderEmpty(
+    U.$('#page-container').innerHTML = Helper.emptyState(
       'Akses Ditolak', 'Anda tidak berwenang mengakses halaman ini.', 'alertCircle');
-  },
-
-  _renderEmpty(title, desc, iconName) {
-    return '<div class="empty-state">' + U.icon(iconName || 'info', 42) +
-           '<h3>' + U.escapeHtml(title) + '</h3>' +
-           (desc ? '<p>' + U.escapeHtml(desc) + '</p>' : '') + '</div>';
   },
 
   async logout() {
@@ -1199,25 +1399,50 @@ const AdminApp = {
    ============================================================ */
 const PageDashboard = {
   async render(container) {
-    let summary = {
-      total_item_kritis: 0, total_nilai_aset: 0, total_obat_mendekati_ed: 0,
-      total_obat: 0, total_bmhp: 0, total_atk: 0
-    };
-    let expiring = [];
+    container.innerHTML = this._renderHeader() +
+      '<div class="stats-grid" id="stats-area">' + Helper.skeletonCards(6) + '</div>' +
+      '<div class="card">' +
+        '<div class="card-title">' +
+          '<span>Obat Mendekati Kedaluwarsa (≤3 bulan)</span>' +
+        '</div>' +
+        '<div id="expiring-area">' + Helper.inlineLoader('Memuat data kedaluwarsa...') + '</div>' +
+      '</div>';
+
+    U.$('#btn-refresh').addEventListener('click', () => this.render(container));
 
     try {
       const [resS, resE] = await Promise.all([
         Api.getDashboardSummary(),
         Api.getExpiringItems(3)
       ]);
-      if (resS.code === 200) summary = resS.data || summary;
-      if (resE.code === 200) expiring = resE.data || [];
-    } catch (err) {
-      container.innerHTML = AdminApp._renderEmpty('Gagal Memuat', err.message, 'alertCircle');
-      return;
-    }
 
-    container.innerHTML = '' +
+      const summary = (resS.code === 200 ? resS.data : null) || {
+        total_item_kritis: 0, total_nilai_aset: 0, total_obat_mendekati_ed: 0,
+        total_obat: 0, total_bmhp: 0, total_atk: 0
+      };
+      const expiring = (resE.code === 200 ? resE.data : null) || [];
+
+      U.$('#stats-area').innerHTML =
+        this._statCard('primary', 'pills', summary.total_obat || 0, 'Jenis Obat') +
+        this._statCard('info', 'box', summary.total_bmhp || 0, 'Item BMHP') +
+        this._statCard('warning', 'package', summary.total_atk || 0, 'Item ATK') +
+        this._statCard('danger', 'alert', summary.total_item_kritis, 'Stok Kritis') +
+        this._statCard('warning', 'alertCircle', summary.total_obat_mendekati_ed, 'Batch Mendekati ED') +
+        this._statCard('success', 'trending', U.formatRupiah(summary.total_nilai_aset), 'Nilai Aset');
+
+      U.$('#expiring-area').innerHTML = expiring.length === 0
+        ? Helper.emptyInline('Tidak ada obat mendekati kedaluwarsa.')
+        : this._expiringTable(expiring);
+
+    } catch (err) {
+      U.$('#stats-area').innerHTML = '';
+      U.$('#expiring-area').innerHTML = Helper.emptyState(
+        'Gagal memuat dashboard', err.message, 'alertCircle');
+    }
+  },
+
+  _renderHeader() {
+    return '' +
       '<div class="page-header">' +
         '<div class="page-header-left">' +
           '<div class="page-title">Dashboard</div>' +
@@ -1228,28 +1453,7 @@ const PageDashboard = {
             U.icon('refresh', 16) + ' Refresh' +
           '</button>' +
         '</div>' +
-      '</div>' +
-
-      '<div class="stats-grid">' +
-        this._statCard('primary', 'pills', summary.total_obat || 0, 'Jenis Obat') +
-        this._statCard('info', 'box', summary.total_bmhp || 0, 'Item BMHP') +
-        this._statCard('warning', 'package', summary.total_atk || 0, 'Item ATK') +
-        this._statCard('danger', 'alert', summary.total_item_kritis, 'Stok Kritis') +
-        this._statCard('warning', 'alertCircle', summary.total_obat_mendekati_ed, 'Batch Mendekati ED') +
-        this._statCard('success', 'trending', U.formatRupiah(summary.total_nilai_aset), 'Nilai Aset') +
-      '</div>' +
-
-      '<div class="card">' +
-        '<div class="card-title">' +
-          '<span>Obat Mendekati Kedaluwarsa (≤3 bulan)</span>' +
-          '<span class="badge badge-warning">' + expiring.length + '</span>' +
-        '</div>' +
-        (expiring.length === 0
-          ? this._emptyInline('Tidak ada obat mendekati kedaluwarsa.')
-          : this._expiringTable(expiring)) +
       '</div>';
-
-    U.$('#btn-refresh').addEventListener('click', () => this.render(container));
   },
 
   _statCard(tone, iconName, value, label) {
@@ -1261,11 +1465,6 @@ const PageDashboard = {
           '<div class="stat-label">' + U.escapeHtml(label) + '</div>' +
         '</div>' +
       '</div>';
-  },
-
-  _emptyInline(text) {
-    return '<div class="text-muted text-center" style="padding:24px;font-size:var(--fs-sm)">' +
-      U.escapeHtml(text) + '</div>';
   },
 
   _expiringTable(items) {
@@ -1300,16 +1499,26 @@ const PageDashboard = {
    ============================================================ */
 const PageApproval = {
   async render(container) {
-    let items = [];
+    container.innerHTML = this._renderHeader() +
+      '<div id="approval-area">' + Helper.skeletonTable(8, 4) + '</div>';
+
+    U.$('#btn-refresh').addEventListener('click', () => this.render(container));
+
     try {
       const res = await Api.getPendingApprovals();
-      items = (res.data && res.data.items) || [];
+      const items = (res.data && res.data.items) || [];
+      U.$('#approval-area').innerHTML = items.length === 0
+        ? this._emptyState()
+        : this._table(items);
+      this._attachHandlers(container);
     } catch (err) {
-      container.innerHTML = AdminApp._renderEmpty('Gagal Memuat', err.message, 'alertCircle');
-      return;
+      U.$('#approval-area').innerHTML = Helper.emptyState(
+        'Gagal Memuat', err.message, 'alertCircle');
     }
+  },
 
-    container.innerHTML = '' +
+  _renderHeader() {
+    return '' +
       '<div class="page-header">' +
         '<div class="page-header-left">' +
           '<div class="page-title">Menunggu Persetujuan</div>' +
@@ -1322,22 +1531,7 @@ const PageApproval = {
             U.icon('refresh', 16) + ' Refresh' +
           '</button>' +
         '</div>' +
-      '</div>' +
-      (items.length === 0 ? this._emptyState() : this._table(items));
-
-    const refreshBtn = U.$('#btn-refresh');
-    if (refreshBtn) refreshBtn.addEventListener('click', () => this.render(container));
-
-    U.$$('[data-approve]', container).forEach(btn => {
-      btn.addEventListener('click', () => {
-        this._handleApprove(btn.dataset.approve, 'Approved', container);
-      });
-    });
-    U.$$('[data-reject]', container).forEach(btn => {
-      btn.addEventListener('click', () => {
-        this._handleApprove(btn.dataset.reject, 'Rejected', container);
-      });
-    });
+      '</div>';
   },
 
   _emptyState() {
@@ -1368,7 +1562,7 @@ const PageApproval = {
             '</tr></thead>' +
             '<tbody>' +
               items.map(it =>
-                '<tr>' +
+                '<tr data-trx="' + U.escapeHtml(it.id_transaksi) + '">' +
                   '<td style="font-size:12px">' + U.formatDateTime(it.timestamp) + '</td>' +
                   '<td class="mono">' + U.escapeHtml(it.id_transaksi) + '</td>' +
                   '<td>' +
@@ -1396,20 +1590,33 @@ const PageApproval = {
       '</div>';
   },
 
-  _handleApprove(idTrx, keputusan, container) {
+  _attachHandlers(container) {
+    U.$$('[data-approve]', container).forEach(btn => {
+      btn.addEventListener('click', () =>
+        this._handleApprove(btn.dataset.approve, 'Approved', container, btn));
+    });
+    U.$$('[data-reject]', container).forEach(btn => {
+      btn.addEventListener('click', () =>
+        this._handleApprove(btn.dataset.reject, 'Rejected', container, btn));
+    });
+  },
+
+  _handleApprove(idTrx, keputusan, container, triggerBtn) {
     const isApprove = keputusan === 'Approved';
     Modal.confirm(
       isApprove ? 'Setujui Transaksi' : 'Tolak Transaksi',
       'Yakin ingin ' + (isApprove ? 'menyetujui' : 'menolak') +
       ' transaksi ' + idTrx + '?',
       async () => {
+        Btn.setLoading(triggerBtn, isApprove ? 'Menyetujui...' : 'Menolak...');
         try {
           await Api.approveTransaksi(idTrx, keputusan);
           Toast.success('Transaksi ' + idTrx + ' telah di-' + keputusan);
           AdminApp._updateApprovalBadge();
-          this.render(container);
+          await this.render(container);
         } catch (err) {
           Toast.error('Gagal: ' + err.message);
+          Btn.stopLoading(triggerBtn, isApprove ? 'Setujui' : 'Tolak');
         }
       },
       isApprove ? 'Ya, Setujui' : 'Ya, Tolak',
@@ -1444,7 +1651,7 @@ const PageOpname = {
         '</div>' +
         '<div class="page-header-actions">' +
           '<button class="btn btn-primary" id="btn-submit-opname" disabled>' +
-            U.icon('check', 16) + ' Simpan Opname' +
+            U.icon('check', 16) + ' Simpan Opname (0)' +
           '</button>' +
         '</div>' +
       '</div>' +
@@ -1485,6 +1692,9 @@ const PageOpname = {
       this._renderTable(container);
     });
 
+    // Enhance select
+    CS.enhanceAll(container);
+
     this._renderTable(container);
   },
 
@@ -1523,7 +1733,7 @@ const PageOpname = {
 
     const target = U.$('#opname-table-container');
     if (filtered.length === 0) {
-      target.innerHTML = AdminApp._renderEmpty('Tidak ada item', '', 'package');
+      target.innerHTML = Helper.emptyState('Tidak ada item', '', 'package');
       return;
     }
 
@@ -1615,6 +1825,8 @@ const PageOpname = {
       'selisih dan membuat penyesuaian otomatis.\n\nLanjutkan?',
       async () => {
         this._submitting = true;
+        const btn = U.$('#btn-submit-opname');
+        Btn.setLoading(btn, 'Menyimpan...');
         Loading.show();
         try {
           const payload = ids.map(id => ({
@@ -1626,11 +1838,13 @@ const PageOpname = {
           const res = await Api.simpanOpnameBulk(payload);
           Toast.success(res.message || 'Opname tersimpan');
           this._entries = {};
+          Loading.hide();
           this.render(container);
         } catch (err) {
           Toast.error('Gagal: ' + err.message);
-        } finally {
           Loading.hide();
+          Btn.stopLoading(btn, 'Simpan Opname (' + ids.length + ')', 'check');
+        } finally {
           this._submitting = false;
         }
       },
@@ -1692,9 +1906,13 @@ const PageKartuStok = {
         '</div>' +
       '</div>' +
       '<div id="ks-nav"></div>' +
-      '<div id="ks-result"></div>';
+      '<div id="ks-result">' +
+        Helper.emptyState('Belum ada data', 'Pilih barang dan bulan untuk menampilkan kartu stok.', 'file') +
+      '</div>';
 
     this._attachSearch(container);
+    CS.enhanceAll(container);
+
     U.$('#ks-load').addEventListener('click', () => {
       const id = U.$('#ks-id').value;
       if (!id) { Toast.error('Pilih barang dulu'); return; }
@@ -1714,49 +1932,62 @@ const PageKartuStok = {
     this._searchHandler = U.debounce(() => {
       const q = searchEl.value.trim().toLowerCase();
       if (!q) { suggestEl.innerHTML = ''; return; }
-      const master = AdminApp.master || {};
-      const items = [];
 
-      (master.obat || []).forEach(o => {
-        if (o.Status_Aktif === 'Nonaktif') return;
-        if (o.Nama_Obat.toLowerCase().indexOf(q) !== -1 ||
-            o.ID_Obat.toLowerCase().indexOf(q) !== -1) {
-          items.push({ id: o.ID_Obat, nama: o.Nama_Obat, tipe: 'Obat' });
-        }
-      });
-      (master.bmhp || []).forEach(o => {
-        if (o.Status_Aktif === 'Nonaktif') return;
-        if (o.Nama_Barang.toLowerCase().indexOf(q) !== -1 ||
-            o.ID_BMHP.toLowerCase().indexOf(q) !== -1) {
-          items.push({ id: o.ID_BMHP, nama: o.Nama_Barang, tipe: 'BMHP' });
-        }
-      });
-      (master.atk || []).forEach(o => {
-        if (o.Status_Aktif === 'Nonaktif') return;
-        if (o.Nama_Barang.toLowerCase().indexOf(q) !== -1 ||
-            o.ID_ATK.toLowerCase().indexOf(q) !== -1) {
-          items.push({ id: o.ID_ATK, nama: o.Nama_Barang, tipe: 'ATK' });
-        }
-      });
+      // Show inline loader
+      suggestEl.innerHTML = '<div class="autocomplete-empty">' +
+        Helper.inlineLoaderSm('Mencari...') + '</div>';
 
-      suggestEl.innerHTML = items.slice(0, 10).map(it =>
-        '<button type="button" class="autocomplete-item" ' +
-          'data-id="' + U.escapeHtml(it.id) + '" ' +
-          'data-nama="' + U.escapeHtml(it.nama) + '">' +
-          '<span class="ac-id">' + U.escapeHtml(it.id) + '</span>' +
-          '<span class="ac-name">' + U.escapeHtml(it.nama) + '</span>' +
-          '<span class="badge badge-muted">' + it.tipe + '</span>' +
-        '</button>'
-      ).join('');
+      // Search in-memory, tapi tetap async untuk smooth
+      setTimeout(() => {
+        const master = AdminApp.master || {};
+        const items = [];
 
-      U.$$('.autocomplete-item', suggestEl).forEach(el => {
-        el.addEventListener('click', () => {
-          idEl.value = el.dataset.id;
-          searchEl.value = el.dataset.nama + ' (' + el.dataset.id + ')';
-          suggestEl.innerHTML = '';
+        (master.obat || []).forEach(o => {
+          if (o.Status_Aktif === 'Nonaktif') return;
+          if (o.Nama_Obat.toLowerCase().indexOf(q) !== -1 ||
+              o.ID_Obat.toLowerCase().indexOf(q) !== -1) {
+            items.push({ id: o.ID_Obat, nama: o.Nama_Obat, tipe: 'Obat' });
+          }
         });
-      });
-    }, 200);
+        (master.bmhp || []).forEach(o => {
+          if (o.Status_Aktif === 'Nonaktif') return;
+          if (o.Nama_Barang.toLowerCase().indexOf(q) !== -1 ||
+              o.ID_BMHP.toLowerCase().indexOf(q) !== -1) {
+            items.push({ id: o.ID_BMHP, nama: o.Nama_Barang, tipe: 'BMHP' });
+          }
+        });
+        (master.atk || []).forEach(o => {
+          if (o.Status_Aktif === 'Nonaktif') return;
+          if (o.Nama_Barang.toLowerCase().indexOf(q) !== -1 ||
+              o.ID_ATK.toLowerCase().indexOf(q) !== -1) {
+            items.push({ id: o.ID_ATK, nama: o.Nama_Barang, tipe: 'ATK' });
+          }
+        });
+
+        if (items.length === 0) {
+          suggestEl.innerHTML = '<div class="autocomplete-empty">Tidak ditemukan</div>';
+          return;
+        }
+
+        suggestEl.innerHTML = items.slice(0, 10).map(it =>
+          '<button type="button" class="autocomplete-item" ' +
+            'data-id="' + U.escapeHtml(it.id) + '" ' +
+            'data-nama="' + U.escapeHtml(it.nama) + '">' +
+            '<span class="ac-id">' + U.escapeHtml(it.id) + '</span>' +
+            '<span class="ac-name">' + U.escapeHtml(it.nama) + '</span>' +
+            '<span class="badge badge-muted">' + it.tipe + '</span>' +
+          '</button>'
+        ).join('');
+
+        U.$$('.autocomplete-item', suggestEl).forEach(el => {
+          el.addEventListener('click', () => {
+            idEl.value = el.dataset.id;
+            searchEl.value = el.dataset.nama + ' (' + el.dataset.id + ')';
+            suggestEl.innerHTML = '';
+          });
+        });
+      }, 120);
+    }, 220);
 
     searchEl.addEventListener('input', this._searchHandler);
 
@@ -1808,7 +2039,10 @@ const PageKartuStok = {
   async _loadData(container) {
     if (!this._selectedId) return;
     const btn = U.$('#ks-load');
-    if (btn) Btn.setLoading(btn, 'Memuat...');
+    Btn.setLoading(btn, 'Memuat...');
+
+    // Show skeleton in result
+    U.$('#ks-result').innerHTML = Helper.inlineLoader('Memuat kartu stok...');
 
     try {
       const res = await Api.getKartuStokBulanan(
@@ -1818,10 +2052,10 @@ const PageKartuStok = {
       this._renderPreview(res.data);
     } catch (err) {
       Toast.error('Gagal memuat: ' + err.message);
-      U.$('#ks-result').innerHTML = AdminApp._renderEmpty(
+      U.$('#ks-result').innerHTML = Helper.emptyState(
         'Gagal memuat data', err.message, 'alertCircle');
     } finally {
-      if (btn) Btn.stopLoading(btn, 'Tampilkan', 'search');
+      Btn.stopLoading(btn, 'Tampilkan', 'search');
     }
   },
 
@@ -1941,12 +2175,16 @@ const PageKartuStok = {
 
     U.$('#ks-result').innerHTML = html;
     U.$('#ks-print').addEventListener('click', () => window.print());
-    U.$('#ks-xlsx').addEventListener('click', () => this._downloadXLSX(data));
+    U.$('#ks-xlsx').addEventListener('click', (e) =>
+      this._downloadXLSX(data, e.currentTarget));
   },
 
-  _downloadXLSX(data) {
-    this._ensureSheetJS().then(XLSX => {
+  async _downloadXLSX(data, btn) {
+    Btn.setLoading(btn, 'Menyiapkan...');
+    try {
+      const XLSX = await LibLoader.load('sheetjs');
       const wb = XLSX.utils.book_new();
+
       const info = [
         ['KARTU STOK — INFO BARANG'], [''],
         ['Nama', data.nama], ['Kode', data.id_barang],
@@ -1984,26 +2222,11 @@ const PageKartuStok = {
                     String(data.bulan).padStart(2, '0') + '.xlsx';
       XLSX.writeFile(wb, fname);
       Toast.success('File XLSX berhasil diunduh');
-    }).catch(err => Toast.error('Gagal memuat SheetJS: ' + err.message));
-  },
-
-  _ensureSheetJS() {
-    return new Promise((resolve, reject) => {
-      if (window.XLSX) return resolve(window.XLSX);
-      const existing = document.querySelector('script[data-sheetjs="1"]');
-      if (existing) {
-        existing.addEventListener('load', () => resolve(window.XLSX));
-        existing.addEventListener('error', () => reject(new Error('Gagal load SheetJS')));
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js';
-      script.async = true;
-      script.setAttribute('data-sheetjs', '1');
-      script.onload = () => resolve(window.XLSX);
-      script.onerror = () => reject(new Error('Gagal load SheetJS'));
-      document.head.appendChild(script);
-    });
+    } catch (err) {
+      Toast.error('Gagal: ' + err.message);
+    } finally {
+      Btn.stopLoading(btn, 'Unduh XLSX', 'download');
+    }
   }
 };
 
@@ -2059,7 +2282,9 @@ const PageCetakQR = {
             '</div>' +
           '</div>' +
           '<div class="card card-tight" style="padding:0">' +
-            '<div class="qr-checkbox-list" id="qr-checkbox-list"></div>' +
+            '<div class="qr-checkbox-list" id="qr-checkbox-list">' +
+              Helper.inlineLoaderSm('Memuat daftar...') +
+            '</div>' +
           '</div>' +
         '</div>' +
 
@@ -2089,15 +2314,18 @@ const PageCetakQR = {
             '</div>' +
           '</div>' +
           '<div class="card card-tight" style="padding:0">' +
-            '<div class="qr-preview-area" id="qr-preview"></div>' +
+            '<div class="qr-preview-area" id="qr-preview">' +
+              Helper.emptyState('Belum ada label dipilih',
+                'Pilih item di panel kiri untuk melihat preview.', 'qr') +
+            '</div>' +
           '</div>' +
         '</div>' +
       '</div>';
 
     this._populateRakFilter();
     this._attachListeners(container);
+    CS.enhanceAll(container);
     this._renderCheckboxList(container);
-    this._renderPreview();
   },
 
   _populateRakFilter() {
@@ -2111,6 +2339,7 @@ const PageCetakQR = {
       opt.textContent = r.Nama_Rak + ' (' + r.ID_Rak + ')';
       sel.appendChild(opt);
     });
+    if (sel._csRender) sel._csRender();
   },
 
   _attachListeners(container) {
@@ -2149,7 +2378,8 @@ const PageCetakQR = {
     });
 
     U.$('#qr-print').addEventListener('click', () => window.print());
-    U.$('#qr-download').addEventListener('click', () => this._downloadHTML());
+    U.$('#qr-download').addEventListener('click', (e) =>
+      this._downloadHTML(e.currentTarget));
 
     U.$$('input[name="qr-mode"]').forEach(radio => {
       radio.addEventListener('change', (e) => {
@@ -2212,8 +2442,7 @@ const PageCetakQR = {
     if (!list) return;
 
     if (items.length === 0) {
-      list.innerHTML = '<div class="text-muted text-center" ' +
-        'style="padding:24px;font-size:13px">Tidak ada item</div>';
+      list.innerHTML = Helper.emptyState('Tidak ada item', '', 'package');
       return;
     }
 
@@ -2251,9 +2480,12 @@ const PageCetakQR = {
   },
 
   _refreshAfterSelection() {
-    U.$('#qr-count-badge').textContent = this._selected.size + ' label';
-    U.$('#qr-print').disabled = this._selected.size === 0;
-    U.$('#qr-download').disabled = this._selected.size === 0;
+    const badge = U.$('#qr-count-badge');
+    const printBtn = U.$('#qr-print');
+    const dlBtn = U.$('#qr-download');
+    if (badge) badge.textContent = this._selected.size + ' label';
+    if (printBtn) printBtn.disabled = this._selected.size === 0;
+    if (dlBtn) dlBtn.disabled = this._selected.size === 0;
     this._renderPreview();
   },
 
@@ -2265,11 +2497,9 @@ const PageCetakQR = {
     const selectedIds = Array.from(this._selected);
 
     if (selectedIds.length === 0) {
-      preview.innerHTML = '<div class="empty-state" style="padding:40px">' +
-        U.icon('qr', 42) +
-        '<h3>Belum ada label dipilih</h3>' +
-        '<p>Pilih item di panel kiri untuk melihat preview.</p>' +
-      '</div>';
+      preview.innerHTML = Helper.emptyState(
+        'Belum ada label dipilih',
+        'Pilih item di panel kiri untuk melihat preview.', 'qr');
       this._rendering = false;
       return;
     }
@@ -2296,19 +2526,38 @@ const PageCetakQR = {
     });
 
     const items = selectedIds.map(id => allItems[id]).filter(Boolean);
-    const perPage = this._mode === 'mode-24' ? 24 : 40;
-    const pages = Math.ceil(items.length / perPage);
 
-    preview.innerHTML = '<div class="text-center text-muted mb-2" style="font-size:12px">' +
-      'Menghasilkan QR... (' + items.length + ' label, ' + pages + ' halaman)</div>';
+    // Show progress
+    preview.innerHTML =
+      '<div class="loading-block">' +
+        '<span class="spinner"></span>' +
+        '<span id="qr-progress">Menyiapkan QR... 0/' + items.length + '</span>' +
+      '</div>';
 
     try {
-      for (const it of items) {
-        if (!this._qrCache[it.id]) {
-          this._qrCache[it.id] = await this._generateQR(it.id, 220);
+      const toGenerate = items.filter(it => !this._qrCache[it.id]);
+      const chunkSize = 6;
+
+      for (let i = 0; i < toGenerate.length; i += chunkSize) {
+        const chunk = toGenerate.slice(i, i + chunkSize);
+        await Promise.all(chunk.map(it =>
+          this._generateQR(it.id, 220).then(url => {
+            this._qrCache[it.id] = url;
+          })
+        ));
+        const done = Math.min(i + chunkSize, toGenerate.length);
+        const progressEl = U.$('#qr-progress');
+        if (progressEl) {
+          progressEl.textContent = 'Menyiapkan QR... ' +
+            (items.length - toGenerate.length + done) + '/' + items.length;
         }
+        // Yield to browser
+        await new Promise(r => setTimeout(r, 0));
       }
 
+      // Build pages
+      const perPage = this._mode === 'mode-24' ? 24 : 40;
+      const pages = Math.ceil(items.length / perPage);
       let html = '';
       for (let p = 0; p < pages; p++) {
         const pageItems = items.slice(p * perPage, (p + 1) * perPage);
@@ -2332,7 +2581,7 @@ const PageCetakQR = {
       }
       preview.innerHTML = html;
     } catch (err) {
-      preview.innerHTML = AdminApp._renderEmpty(
+      preview.innerHTML = Helper.emptyState(
         'Gagal generate QR', err.message, 'alertCircle');
     } finally {
       this._rendering = false;
@@ -2340,101 +2589,76 @@ const PageCetakQR = {
   },
 
   _generateQR(text, size) {
-    return new Promise((resolve, reject) => {
-      const loadLib = () => {
-        if (window.QRCode && typeof window.QRCode.toDataURL === 'function') {
-          return Promise.resolve(window.QRCode);
-        }
-        return new Promise((res, rej) => {
-          const existing = document.querySelector('script[data-qr-lib="1"]');
-          if (existing) {
-            existing.addEventListener('load', () => {
-              if (window.QRCode && typeof window.QRCode.toDataURL === 'function') {
-                res(window.QRCode);
-              } else {
-                rej(new Error('Library QR tidak expose toDataURL'));
-              }
-            });
-            existing.addEventListener('error', () => rej(new Error('Gagal load library QR')));
-            return;
-          }
-          const script = document.createElement('script');
-          script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
-          script.async = true;
-          script.setAttribute('data-qr-lib', '1');
-          script.onload = () => {
-            if (window.QRCode && typeof window.QRCode.toDataURL === 'function') {
-              res(window.QRCode);
-            } else {
-              rej(new Error('Library QR tidak expose toDataURL'));
-            }
-          };
-          script.onerror = () => rej(new Error('Gagal load library QR dari CDN'));
-          document.head.appendChild(script);
-        });
-      };
-
-      loadLib()
-        .then(lib => {
-          return lib.toDataURL(text, {
+    return LibLoader.load('qrcode').then(lib => {
+      return new Promise((resolve, reject) => {
+        try {
+          const opts = {
             width: size || 220,
             margin: 1,
             errorCorrectionLevel: 'M',
             color: { dark: '#000000', light: '#ffffff' }
+          };
+          // qrcode@1.5.3: callback style
+          lib.toDataURL(text, opts, function(err, url) {
+            if (err) reject(err);
+            else if (!url) reject(new Error('QR kosong'));
+            else resolve(url);
           });
-        })
-        .then(url => {
-          dbg('QR generated: ' + text);
-          resolve(url);
-        })
-        .catch(err => {
-          dbgErr('QR generate error:', err);
-          reject(err);
-        });
+        } catch (e) {
+          reject(e);
+        }
+      });
     });
   },
 
-  _downloadHTML() {
+  _downloadHTML(btn) {
     const preview = U.$('#qr-preview');
     if (!preview) return;
-    const html = '' +
-      '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>QR Labels</title>' +
-      '<style>' +
-      'body{margin:0;font-family:system-ui,sans-serif;background:#f5f5f5}' +
-      '.qr-page{background:white;width:210mm;min-height:297mm;padding:8mm;margin:0 auto 12px;' +
-      'box-shadow:0 2px 8px rgba(0,0,0,0.1);display:grid;grid-template-columns:repeat(3,1fr);' +
-      'grid-template-rows:repeat(8,33.9mm);gap:0;box-sizing:border-box}' +
-      '.qr-page.mode-40{grid-template-columns:repeat(4,1fr);' +
-      'grid-template-rows:repeat(10,25.4mm)}' +
-      '.qr-label{border:0.3mm dashed #ccc;padding:2mm;display:flex;align-items:center;gap:2mm;' +
-      'overflow:hidden;box-sizing:border-box}' +
-      '.qr-img-wrap{width:22mm;height:22mm;flex-shrink:0;display:flex;' +
-      'align-items:center;justify-content:center}' +
-      '.qr-label.mode-40 .qr-img-wrap{width:18mm;height:18mm}' +
-      '.qr-img-wrap img{width:100%;height:100%;image-rendering:pixelated}' +
-      '.label-text{flex:1;min-width:0;line-height:1.15;overflow:hidden}' +
-      '.label-id{font-size:11pt;font-weight:700;font-family:ui-monospace,monospace}' +
-      '.qr-label.mode-40 .label-id{font-size:9pt}' +
-      '.label-name{font-size:8pt;color:#222;display:-webkit-box;-webkit-line-clamp:2;' +
-      '-webkit-box-orient:vertical;overflow:hidden;margin-top:1px}' +
-      '.qr-label.mode-40 .label-name{font-size:7pt;-webkit-line-clamp:1}' +
-      '.label-meta{font-size:6.5pt;color:#666;margin-top:2px}' +
-      '@media print{body{background:white}.qr-page{box-shadow:none;margin:0;' +
-      'page-break-after:always}.qr-page:last-child{page-break-after:auto}@page{margin:0}}' +
-      '</style></head><body>' +
-      preview.innerHTML +
-      '</body></html>';
+    Btn.setLoading(btn, 'Menyiapkan...');
+    try {
+      const html = '' +
+        '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>QR Labels</title>' +
+        '<style>' +
+        'body{margin:0;font-family:system-ui,sans-serif;background:#f5f5f5}' +
+        '.qr-page{background:white;width:210mm;min-height:297mm;padding:8mm;margin:0 auto 12px;' +
+        'box-shadow:0 2px 8px rgba(0,0,0,0.1);display:grid;grid-template-columns:repeat(3,1fr);' +
+        'grid-template-rows:repeat(8,33.9mm);gap:0;box-sizing:border-box}' +
+        '.qr-page.mode-40{grid-template-columns:repeat(4,1fr);' +
+        'grid-template-rows:repeat(10,25.4mm)}' +
+        '.qr-label{border:0.3mm dashed #ccc;padding:2mm;display:flex;align-items:center;gap:2mm;' +
+        'overflow:hidden;box-sizing:border-box}' +
+        '.qr-img-wrap{width:22mm;height:22mm;flex-shrink:0;display:flex;' +
+        'align-items:center;justify-content:center}' +
+        '.qr-label.mode-40 .qr-img-wrap{width:18mm;height:18mm}' +
+        '.qr-img-wrap img{width:100%;height:100%;image-rendering:pixelated}' +
+        '.label-text{flex:1;min-width:0;line-height:1.15;overflow:hidden}' +
+        '.label-id{font-size:11pt;font-weight:700;font-family:ui-monospace,monospace}' +
+        '.qr-label.mode-40 .label-id{font-size:9pt}' +
+        '.label-name{font-size:8pt;color:#222;display:-webkit-box;-webkit-line-clamp:2;' +
+        '-webkit-box-orient:vertical;overflow:hidden;margin-top:1px}' +
+        '.qr-label.mode-40 .label-name{font-size:7pt;-webkit-line-clamp:1}' +
+        '.label-meta{font-size:6.5pt;color:#666;margin-top:2px}' +
+        '@media print{body{background:white}.qr-page{box-shadow:none;margin:0;' +
+        'page-break-after:always}.qr-page:last-child{page-break-after:auto}@page{margin:0}}' +
+        '</style></head><body>' +
+        preview.innerHTML +
+        '</body></html>';
 
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'QR_Labels_' + new Date().toISOString().slice(0, 10) + '.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    Toast.success('File HTML berhasil diunduh. Buka di browser lalu cetak.');
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'QR_Labels_' + new Date().toISOString().slice(0, 10) + '.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      Toast.success('File HTML berhasil diunduh. Buka di browser lalu cetak.');
+    } catch (err) {
+      Toast.error('Gagal: ' + err.message);
+    } finally {
+      Btn.stopLoading(btn, 'Unduh HTML', 'download');
+    }
   }
 };
 
@@ -2577,7 +2801,7 @@ const PageMaster = {
   async render(container, sheetName) {
     const cfg = this.CONFIG[sheetName];
     if (!cfg) {
-      container.innerHTML = AdminApp._renderEmpty('Config tidak ditemukan');
+      container.innerHTML = Helper.emptyState('Config tidak ditemukan');
       return;
     }
 
@@ -2599,15 +2823,17 @@ const PageMaster = {
       '<div class="card card-tight">' +
         '<input class="input" id="master-search" placeholder="Cari...">' +
       '</div>' +
-      '<div id="master-table-container"></div>';
+      '<div id="master-table-container">' + Helper.skeletonTable(6, 6) + '</div>';
 
     if (canAdd) {
-      U.$('#btn-add').addEventListener('click', () => this._openForm(sheetName, null, container));
+      U.$('#btn-add').addEventListener('click', () =>
+        this._openForm(sheetName, null, container));
     }
     U.$('#master-search').addEventListener('input', U.debounce(() => {
       this._renderTable(container, sheetName, U.$('#master-search').value);
     }, 200));
-    this._renderTable(container, sheetName, '');
+
+    setTimeout(() => this._renderTable(container, sheetName, ''), 0);
   },
 
   _renderTable(container, sheetName, query) {
@@ -2625,13 +2851,15 @@ const PageMaster = {
     const q = (query || '').toLowerCase().trim();
     if (q) {
       data = data.filter(item =>
-        cfg.columns.some(c => String(item[c.key] || '').toLowerCase().indexOf(q) !== -1));
+        cfg.columns.some(c =>
+          String(item[c.key] || '').toLowerCase().indexOf(q) !== -1));
     }
 
     const target = U.$('#master-table-container');
+    if (!target) return;
 
     if (data.length === 0) {
-      target.innerHTML = AdminApp._renderEmpty(
+      target.innerHTML = Helper.emptyState(
         'Tidak ada data',
         q ? 'Tidak ditemukan hasil untuk "' + q + '"' : 'Belum ada item.',
         cfg.icon
@@ -2711,7 +2939,7 @@ const PageMaster = {
         const id = btn.dataset.id;
         const action = btn.dataset.action;
         const item = data.find(x => String(x[cfg.idField]) === String(id));
-        if (action === 'edit') this._openForm(sheetName, item, container);
+        if (action === 'edit') this._openForm(sheetName, item, container, btn);
         else if (action === 'delete') this._confirmDelete(sheetName, item, container);
         else if (action === 'resetpin') this._resetPin(id, container);
       });
@@ -2817,13 +3045,16 @@ const PageMaster = {
             }
           }
         }
-      ]
+      ],
+      onClose: () => {}
     });
 
+    // Enhance select setelah modal render
     setTimeout(() => {
+      CS.enhanceAll(U.$('#master-form'));
       const first = U.$('#master-form input, #master-form select, #master-form textarea');
       if (first) first.focus();
-    }, 200);
+    }, 150);
   },
 
   _confirmDelete(sheetName, item, container) {
@@ -2852,13 +3083,15 @@ const PageMaster = {
     );
   },
 
-  async _resetPin(idPetugas, container) {
+  _resetPin(idPetugas, container) {
     Modal.confirm(
       'Reset PIN Petugas',
       'PIN baru akan di-generate acak untuk ' + idPetugas + '. Lanjutkan?',
       async () => {
+        Loading.show();
         try {
           const res = await Api.resetPin(idPetugas);
+          Loading.hide();
           Modal.open({
             title: 'PIN Baru',
             icon: 'success',
@@ -2871,6 +3104,7 @@ const PageMaster = {
             actions: [{ label: 'Tutup', class: 'btn-primary' }]
           });
         } catch (err) {
+          Loading.hide();
           Toast.error('Gagal reset PIN: ' + err.message);
         }
       },
@@ -2905,7 +3139,7 @@ const PageAudit = {
           '</button>' +
         '</div>' +
       '</div>' +
-      '<div id="audit-result"></div>';
+      '<div id="audit-result">' + Helper.skeletonTable(7, 8) + '</div>';
 
     U.$('#btn-refresh').addEventListener('click', () => {
       this._page = 0;
@@ -2916,9 +3150,7 @@ const PageAudit = {
 
   async _load() {
     const target = U.$('#audit-result');
-    target.innerHTML = '<div class="card">' +
-      '<div class="skeleton skeleton-line long"></div>' +
-      '<div class="skeleton skeleton-line medium"></div></div>';
+    target.innerHTML = Helper.skeletonTable(7, 8);
 
     try {
       const res = await Api.getAuditLog({
@@ -2927,10 +3159,10 @@ const PageAudit = {
       });
       const items = (res.data && res.data.items) || [];
       this._hasMore = res.data && res.data.has_more;
-      this._totalRecords = res.data && res.data.total_records || 0;
+      this._totalRecords = (res.data && res.data.total_records) || 0;
 
       if (items.length === 0 && this._page === 0) {
-        target.innerHTML = AdminApp._renderEmpty('Belum ada audit', '', 'clipboard');
+        target.innerHTML = Helper.emptyState('Belum ada audit', '', 'clipboard');
         return;
       }
 
@@ -2988,7 +3220,7 @@ const PageAudit = {
       if (prev) prev.addEventListener('click', () => { this._page--; this._load(); });
       if (next) next.addEventListener('click', () => { this._page++; this._load(); });
     } catch (err) {
-      target.innerHTML = AdminApp._renderEmpty('Gagal', err.message, 'alertCircle');
+      target.innerHTML = Helper.emptyState('Gagal', err.message, 'alertCircle');
     }
   }
 };
@@ -3082,7 +3314,7 @@ const PageSettings = {
       this._refreshLogo();
       Toast.info('Logo dihapus');
     });
-    U.$('#btn-ubah-pin').addEventListener('click', () => this._ubahPin());
+    U.$('#btn-ubah-pin').addEventListener('click', (e) => this._ubahPin(e.currentTarget));
     U.$('#btn-logout').addEventListener('click', () => {
       Modal.confirm('Keluar', 'Yakin ingin keluar dari aplikasi?',
         () => AdminApp.logout(), 'Ya, Keluar', true,
@@ -3117,6 +3349,10 @@ const PageSettings = {
       Toast.error('File terlalu besar (maks 500 KB)');
       return;
     }
+
+    const previewEl = U.$('#logo-preview');
+    if (previewEl) previewEl.innerHTML = Helper.inlineLoader('Memproses gambar...');
+
     const reader = new FileReader();
     reader.onload = (ev) => {
       const img = new Image();
@@ -3136,13 +3372,20 @@ const PageSettings = {
         PageSettings._refreshLogo();
         Toast.success('Logo diperbarui');
       };
-      img.onerror = () => Toast.error('Gagal membaca gambar');
+      img.onerror = () => {
+        Toast.error('Gagal membaca gambar');
+        PageSettings._refreshLogo();
+      };
       img.src = ev.target.result;
+    };
+    reader.onerror = () => {
+      Toast.error('Gagal membaca file');
+      PageSettings._refreshLogo();
     };
     reader.readAsDataURL(file);
   },
 
-  async _ubahPin() {
+  async _ubahPin(btn) {
     const oldPin = U.$('#set-old-pin').value;
     const newPin = U.$('#set-new-pin').value;
     const newPin2 = U.$('#set-new-pin2').value;
@@ -3160,18 +3403,16 @@ const PageSettings = {
       return;
     }
 
-    const btn = U.$('#btn-ubah-pin');
     Btn.setLoading(btn, 'Menyimpan...');
-
     try {
       await Api.ubahPin({ old_pin: oldPin, new_pin: newPin });
       Toast.success('PIN berhasil diubah');
       U.$('#set-old-pin').value = '';
       U.$('#set-new-pin').value = '';
       U.$('#set-new-pin2').value = '';
-      Btn.stopLoading(btn, 'Ubah PIN');
     } catch (err) {
       Toast.error('Gagal: ' + err.message);
+    } finally {
       Btn.stopLoading(btn, 'Ubah PIN');
     }
   }
