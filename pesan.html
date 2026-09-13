@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0d7377">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="Pesan Barang — Puskesmas Sanden">
+<title>Pesan Barang — Puskesmas Sanden</title>
+
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<link rel="preconnect" href="https://script.googleapis.com" crossorigin>
+<link rel="stylesheet" href="shared/core.css">
+
+<style>
+/* ============================================================
+   BOOT SPLASH
+   ============================================================ */
+.boot-splash {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #0d7377 0%, #14a3a8 100%);
+  z-index: 9999;
+  transition: opacity 0.3s;
+}
+.boot-splash.hide { opacity: 0; pointer-events: none; }
+.boot-splash-inner { text-align: center; color: white; padding: 20px; }
+.boot-splash-logo {
+  width: 72px; height: 72px; margin: 0 auto 18px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700;
+}
+.boot-splash-text { font-size: 15px; opacity: 0.9; margin-bottom: 16px; }
+.boot-splash-spinner {
+  display: inline-block; width: 22px; height: 22px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white; border-radius: 50%;
+  animation: bootspin 0.8s linear infinite;
+}
+@keyframes bootspin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   LOGIN — PJ HINT
+   ============================================================ */
+.pj-hint {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  background: var(--primary-bg-soft);
+  border: 1px dashed var(--primary-light);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  color: var(--primary-dark);
+  margin-top: 6px;
+  margin-bottom: var(--sp-3);
+}
+.pj-hint svg { width: 14px; height: 14px; flex-shrink: 0; }
+.pj-hint strong { color: var(--primary-dark); font-weight: 700; }
+
+/* ============================================================
+   CUSTOM SELECT (duplikat dari index.html)
+   ============================================================ */
+.cs { position: relative; width: 100%; }
+.cs-trigger {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; width: 100%; min-height: 46px;
+  padding: 11px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  font-size: 16px;
+  cursor: pointer; color: var(--text);
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.cs-trigger:hover { border-color: var(--primary-light); }
+.cs-trigger:focus, .cs-trigger.open {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-bg);
+}
+.cs-trigger[disabled] { opacity: 0.5; cursor: not-allowed; }
+.cs-trigger-text {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cs-trigger-text.placeholder { color: var(--text-light); }
+.cs-trigger-icon {
+  color: var(--text-muted); flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.cs-trigger.open .cs-trigger-icon { transform: rotate(180deg); }
+.cs-dropdown {
+  position: absolute;
+  top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 500;
+  padding: 4px;
+  animation: csFadeIn 0.15s ease-out;
+}
+@keyframes csFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.cs-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; border-radius: var(--r-sm);
+  font-size: var(--fs-sm); cursor: pointer;
+  transition: background 0.1s; color: var(--text);
+  width: 100%; text-align: left; background: none;
+}
+.cs-option:hover, .cs-option.focused { background: var(--surface-2); }
+.cs-option.selected {
+  background: var(--primary-bg); color: var(--primary-dark); font-weight: 600;
+}
+.cs-option-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.cs-option-check {
+  width: 16px; height: 16px; color: var(--primary);
+  flex-shrink: 0; opacity: 0; transition: opacity 0.1s;
+}
+.cs-option.selected .cs-option-check { opacity: 1; }
+
+/* ============================================================
+   MAIN APP
+   ============================================================ */
+.pesan-app {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100dvh;
+  width: 100%;
+}
+.pesan-main {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--sp-3);
+  padding-left: calc(var(--sp-3) + var(--safe-left));
+  padding-right: calc(var(--sp-3) + var(--safe-right));
+  padding-bottom: calc(var(--sp-4) + var(--safe-bottom));
+}
+.pesan-inner { max-width: 720px; margin: 0 auto; width: 100%; }
+
+/* Welcome */
+.welcome { padding: var(--sp-3) 0 var(--sp-4); }
+.welcome-greet { font-size: var(--fs-sm); color: var(--text-muted); margin-bottom: 2px; }
+.welcome-name {
+  font-size: var(--fs-xl); font-weight: 700;
+  line-height: 1.2; word-break: break-word;
+}
+.welcome-room {
+  display: inline-block; margin-top: var(--sp-2);
+  padding: 4px 12px;
+  background: var(--primary-bg); color: var(--primary-dark);
+  border-radius: var(--r-full);
+  font-size: var(--fs-xs); font-weight: 600;
+}
+
+/* Tabs */
+.tabbar {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4px; padding: 4px;
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-3);
+}
+.tabbar button {
+  padding: 10px; border-radius: var(--r-sm);
+  font-size: var(--fs-sm); font-weight: 600;
+  color: var(--text-muted); transition: all 0.15s;
+}
+.tabbar button.active {
+  background: var(--surface); color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+.search-wrap { position: relative; margin-bottom: var(--sp-3); }
+.search-results {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); box-shadow: var(--shadow-lg);
+  max-height: 340px; overflow-y: auto; z-index: 100;
+}
+.search-item {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
+  width: 100%; text-align: left; background: none; color: var(--text);
+  cursor: pointer; transition: background 0.1s;
+}
+.search-item:last-child { border-bottom: none; }
+.search-item:hover { background: var(--primary-bg-soft); }
+.search-item-main { flex: 1; min-width: 0; }
+.search-item-name {
+  font-weight: 600; font-size: var(--fs-sm);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.search-item-meta {
+  font-size: 11px; color: var(--text-muted); margin-top: 2px;
+}
+.search-item-meta strong {
+  font-family: ui-monospace, monospace; color: var(--primary-dark);
+}
+.search-empty {
+  padding: 16px; text-align: center;
+  color: var(--text-muted); font-size: 12px;
+}
+
+/* ============================================================
+   CART
+   ============================================================ */
+.cart-empty {
+  text-align: center; padding: var(--sp-5) var(--sp-3);
+  color: var(--text-muted);
+}
+.cart-empty svg {
+  width: 42px; height: 42px; color: var(--text-light);
+  margin: 0 auto var(--sp-3);
+}
+.cart-empty h3 { font-size: var(--fs-md); color: var(--text); margin-bottom: 4px; }
+.cart-empty p { font-size: var(--fs-sm); }
+
+.cart-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+.cart-item {
+  display: flex; gap: var(--sp-2); padding: var(--sp-3);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); align-items: center;
+}
+.cart-item-info { flex: 1; min-width: 0; }
+.cart-item-name {
+  font-weight: 600; font-size: var(--fs-sm); margin-bottom: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cart-item-meta {
+  font-size: 11px; color: var(--text-muted);
+  font-family: ui-monospace, monospace;
+}
+.cart-item-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+.qty-ctrl {
+  display: flex; align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md); overflow: hidden;
+}
+.qty-ctrl button {
+  width: 34px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary); font-size: 18px; font-weight: 700;
+  background: var(--surface); transition: background 0.15s;
+}
+.qty-ctrl button:hover { background: var(--primary-bg); }
+.qty-ctrl button:disabled { opacity: 0.4; cursor: not-allowed; }
+.qty-ctrl input {
+  width: 52px; height: 38px; border: none; text-align: center;
+  font-size: 16px; font-weight: 700;
+  background: var(--surface-2); color: var(--text);
+  -moz-appearance: textfield; appearance: textfield;
+}
+.qty-ctrl input::-webkit-outer-spin-button,
+.qty-ctrl input::-webkit-inner-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+.cart-del {
+  width: 34px; height: 34px; border-radius: var(--r-sm);
+  color: var(--danger);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cart-del:hover { background: var(--danger-bg); }
+
+/* Cart bar */
+.cart-bar {
+  padding: var(--sp-3); background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  display: flex; align-items: center; gap: var(--sp-2);
+  flex-wrap: wrap; margin-top: var(--sp-2);
+}
+.cart-bar-info { flex: 1; min-width: 0; }
+.cart-bar-count { font-size: var(--fs-xs); color: var(--text-muted); }
+.cart-bar-total {
+  font-size: var(--fs-lg); font-weight: 800; color: var(--primary-dark);
+}
+.cart-bar .btn { flex-shrink: 0; }
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+.history-item {
+  padding: var(--sp-3); background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  margin-bottom: var(--sp-2);
+}
+.history-head {
+  display: flex; justify-content: space-between; gap: var(--sp-2);
+  align-items: flex-start; margin-bottom: 6px;
+}
+.history-id {
+  font-family: ui-monospace, monospace; font-size: var(--fs-sm);
+  font-weight: 700; color: var(--primary-dark);
+}
+.history-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+.history-body { font-size: var(--fs-sm); color: var(--text-muted); }
+.history-body strong { color: var(--text); }
+
+/* Success icon */
+.success-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--success-bg); color: var(--success);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--sp-3);
+}
+
+/* Confirm modal — item list */
+.confirm-list {
+  max-height: 220px; overflow-y: auto;
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  font-size: 12px; line-height: 1.8;
+}
+.confirm-list strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="boot-splash" id="boot-splash">
+  <div class="boot-splash-inner">
+    <div class="boot-splash-logo">PKM</div>
+    <div class="boot-splash-text">Memuat...</div>
+    <div class="boot-splash-spinner"></div>
+  </div>
+</div>
+
+<div id="pesan-root"></div>
+
+<div class="toast-container" id="toast-container"></div>
+<div class="loading-overlay" id="loading-overlay"><div class="spinner"></div></div>
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script src="shared/core.js" defer></script>
+
+<script defer>
+'use strict';
+
+/* ============================================================
+   HELPERS — inline loader & empty state
+   ============================================================ */
+const H = {
+  loader(text) {
+    return '<div style="display:flex;align-items:center;justify-content:center;gap:10px;' +
+      'padding:32px 16px;color:var(--text-muted);font-size:var(--fs-sm)">' +
+      '<span class="spinner" style="width:20px;height:20px;border-width:2.5px;color:var(--primary)"></span>' +
+      '<span>' + U.escapeHtml(text || 'Memuat...') + '</span></div>';
+  },
+  loaderSm(text) {
+    return '<span style="display:inline-flex;align-items:center;gap:6px;' +
+      'color:var(--text-muted);font-size:12px">' +
+      '<span class="spinner" style="width:12px;height:12px;border-width:2px"></span>' +
+      U.escapeHtml(text || '') + '</span>';
+  },
+  empty(title, desc, icon) {
+    return '<div class="empty-state">' + U.icon(icon || 'info', 42) +
+      '<h3>' + U.escapeHtml(title) + '</h3>' +
+      (desc ? '<p>' + U.escapeHtml(desc) + '</p>' : '') + '</div>';
+  }
+};
+
+/* ============================================================
+   SESSION KHUSUS RUANG — key terpisah dari petugas
+   ============================================================ */
+const RUANG_SESSION_KEY = 'pkm_ruang_session';
+
+const RuangStore = {
+  get() {
+    try {
+      const raw = localStorage.getItem(RUANG_SESSION_KEY);
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      if (s.expiry && Date.now() > s.expiry) {
+        localStorage.removeItem(RUANG_SESSION_KEY);
+        return null;
+      }
+      return s;
+    } catch (e) { return null; }
+  },
+  set(s) {
+    try { localStorage.setItem(RUANG_SESSION_KEY, JSON.stringify(s)); return true; }
+    catch (e) { return false; }
+  },
+  clear() {
+    try { localStorage.removeItem(RUANG_SESSION_KEY); } catch (e) {}
+  }
+};
+
+/* ============================================================
+   OVERRIDE Api._buildRequest — pakai session ruang
+   ============================================================ */
+Api._buildRequest = function(action, payload, opts) {
+  const ruangSession = RuangStore.get();
+  return {
+    auth_token: CONFIG.API_KEY,
+    session_token: (opts && opts.public) ? undefined : (ruangSession ? ruangSession.token : undefined),
+    action: action,
+    uuid: (opts && opts.noUuid) ? undefined : U.uuid(),
+    timestamp_client: U.nowISO(),
+    payload: payload || {}
+  };
+};
+
+/* ============================================================
+   CUSTOM SELECT (duplikat dari index.html)
+   ============================================================ */
+const CS = {
+  enhanceAll(root) {
+    if (!root) root = document;
+    U.$$('select', root).forEach(sel => {
+      if (sel.dataset.csEnhanced === '1') return;
+      this.enhance(sel);
+    });
+  },
+
+  enhance(selectEl) {
+    if (selectEl.dataset.csEnhanced === '1') return;
+    selectEl.dataset.csEnhanced = '1';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cs';
+    selectEl.parentNode.insertBefore(wrapper, selectEl);
+    wrapper.appendChild(selectEl);
+    selectEl.style.display = 'none';
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'cs-trigger';
+    wrapper.appendChild(trigger);
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'cs-dropdown';
+    dropdown.style.display = 'none';
+    wrapper.appendChild(dropdown);
+
+    const render = () => {
+      const opts = Array.from(selectEl.options).map(o => ({
+        value: o.value, label: o.textContent.trim()
+      }));
+      const cur = opts.find(o => o.value === selectEl.value);
+
+      trigger.innerHTML =
+        '<span class="cs-trigger-text' + (cur && cur.value ? '' : ' placeholder') + '">' +
+          U.escapeHtml(cur ? cur.label : (opts[0] ? opts[0].label : '—')) +
+        '</span>' +
+        '<span class="cs-trigger-icon">' + U.icon('chevronDown', 18) + '</span>';
+
+      dropdown.innerHTML = opts.map(o =>
+        '<button type="button" class="cs-option' +
+          (o.value === selectEl.value ? ' selected' : '') + '"' +
+          ' data-value="' + U.escapeHtml(o.value) + '">' +
+          '<span class="cs-option-label">' + U.escapeHtml(o.label) + '</span>' +
+          '<span class="cs-option-check">' + U.icon('check', 16) + '</span>' +
+        '</button>'
+      ).join('');
+    };
+
+    const close = () => {
+      dropdown.style.display = 'none';
+      trigger.classList.remove('open');
+    };
+
+    const open = () => {
+      U.$$('.cs-trigger.open').forEach(t => {
+        if (t !== trigger) {
+          t.classList.remove('open');
+          const d = t.parentElement.querySelector('.cs-dropdown');
+          if (d) d.style.display = 'none';
+        }
+      });
+      dropdown.style.display = 'block';
+      trigger.classList.add('open');
+    };
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (trigger.disabled) return;
+      if (dropdown.style.display === 'block') close();
+      else open();
+    });
+
+    dropdown.addEventListener('click', (e) => {
+      const optEl = e.target.closest('[data-value]');
+      if (!optEl) return;
+      selectEl.value = optEl.dataset.value;
+      selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+      render();
+      close();
+    });
+
+    document.addEventListener('click', close);
+    wrapper.addEventListener('click', (e) => e.stopPropagation());
+
+    selectEl._csRender = render;
+    render();
+  }
+};
+
+/* ============================================================
+   PESAN API — wrapper endpoint khusus pesanan
+   ============================================================ */
+const PesanApi = {
+  getRuangList() {
+    return Api.call('getRuangList', {}, { public: true });
+  },
+  loginRuang(kode, pin) {
+    return Api.call('loginRuang',
+      { kode_ruang: kode, pin_plaintext: pin },
+      { public: true });
+  },
+  getBarangUntukPesan() {
+    return Api.call('getBarangUntukPesan', {});
+  },
+  kirimPesanan(payload) {
+    return Api.call('kirimPesanan', payload);
+  },
+  getPesananSaya(limit) {
+    return Api.call('getPesananSaya', { limit: limit || 20 });
+  }
+};
+
+/* ============================================================
+   PESAN APP
+   ============================================================ */
+const PesanApp = {
+  session: null,
+  ruangList: [],
+  barangList: [],
+  barangLoading: false,
+  cart: {},
+  currentTab: 'pesan',
+  catatan: '',
+  submitting: false,
+
+  /* -------------------------------------------------- INIT */
+  async init() {
+    dbg('PesanApp init');
+    const stored = RuangStore.get();
+
+    if (stored && stored.token) {
+      dbg('Ada session ruang, verifikasi...');
+      try {
+        const res = await Api.whoAmI();
+        if (res && res.code === 200 && res.data && res.data.role === 'Ruang') {
+          this.session = {
+            token: stored.token,
+            role: 'Ruang',
+            id_petugas: res.data.id_petugas,
+            username: res.data.username,
+            nama: res.data.nama,
+            kode_ruang: res.data.kode_ruang,
+            nama_ruang: res.data.nama_ruang,
+            pj: res.data.pj || '',
+            expiry: res.data.expiry
+          };
+          RuangStore.set(this.session);
+          this._hideBoot();
+          await this.showMain();
+          return;
+        }
+      } catch (err) {
+        dbgWarn('whoAmI ruang gagal:', err.message);
+      }
+      RuangStore.clear();
+    }
+
+    this._hideBoot();
+    this.showLogin();
+  },
+
+  _hideBoot() {
+    const el = document.getElementById('boot-splash');
+    if (!el) return;
+    el.classList.add('hide');
+    setTimeout(() => {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }, 300);
+  },
+
+  /* -------------------------------------------------- API ERROR */
+  _handleApiError(err) {
+    if (err && (err.code === 'UNAUTHORIZED' || err.code === 'UNAUTHORIZED_TOKEN')) {
+      RuangStore.clear();
+      this.session = null;
+      this.cart = {};
+      Toast.warning('Sesi berakhir. Silakan login ulang.');
+      this.showLogin();
+      return true;
+    }
+    return false;
+  },
+
+  /* -------------------------------------------------- LOGIN */
+  showLogin() {
+    this.session = null;
+    this.cart = {};
+    this.catatan = '';
+
+    const root = U.$('#pesan-root');
+    root.innerHTML = this._renderLogin();
+
+    const form = U.$('#form-login-ruang');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this._doLogin();
+      });
+    }
+
+    this._loadRuangList();
+
+    setTimeout(() => {
+      const pinEl = U.$('#login-pin');
+      if (pinEl) pinEl.focus();
+    }, 300);
+  },
+
+  _renderLogin() {
+    return '' +
+      '<div class="login-screen compact">' +
+        '<div class="login-card">' +
+          '<div class="login-logo">PKM</div>' +
+          '<div class="login-title">Pesan Barang</div>' +
+          '<div class="login-subtitle">Puskesmas Sanden, Bantul</div>' +
+          '<form class="login-form" id="form-login-ruang" autocomplete="off">' +
+            '<div class="field">' +
+              '<label class="field-label">Ruang <span class="required">*</span></label>' +
+              '<div id="login-ruang-wrap">' + H.loaderSm('Memuat ruang...') + '</div>' +
+              '<div class="pj-hint" id="pj-hint" style="display:none"></div>' +
+            '</div>' +
+            '<div class="field">' +
+              '<label class="field-label">PIN <span class="required">*</span></label>' +
+              '<input type="password" class="input" id="login-pin" ' +
+                'inputmode="numeric" maxlength="8" placeholder="••••" ' +
+                'autocomplete="current-password" required>' +
+              '<div class="field-hint">Tanya admin jika lupa PIN.</div>' +
+            '</div>' +
+            '<button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-login">' +
+              U.icon('check', 18) + ' Masuk' +
+            '</button>' +
+          '</form>' +
+          '<div class="login-help mt-3">' +
+            'Halaman ini untuk <strong>pemesanan barang</strong> dari ruang.' +
+          '</div>' +
+          '<div class="login-footer">' +
+            '<span>v' + CONFIG.APP_VERSION + ' · Pesan Barang</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  },
+
+  async _loadRuangList() {
+    const placeholder = U.$('#login-ruang-wrap');
+    if (!placeholder) return;
+
+    try {
+      const res = await PesanApi.getRuangList();
+      this.ruangList = (res.data && res.data.items) || [];
+
+      if (this.ruangList.length === 0) {
+        placeholder.innerHTML =
+          '<div style="color:var(--danger);font-size:12px;padding:8px">' +
+          'Belum ada ruang aktif. Hubungi admin.</div>';
+        return;
+      }
+
+      const select = document.createElement('select');
+      select.className = 'select';
+      select.id = 'login-ruang';
+      select.innerHTML = '<option value="">— Pilih Ruang —</option>' +
+        this.ruangList.map(r =>
+          '<option value="' + U.escapeHtml(r.kode) + '">' +
+            U.escapeHtml(r.kode + ' · ' + r.nama) +
+          '</option>'
+        ).join('');
+
+      placeholder.innerHTML = '';
+      placeholder.appendChild(select);
+
+      CS.enhance(select);
+
+      const self = this;
+      select.addEventListener('change', () => {
+        const r = self.ruangList.find(x => x.kode === select.value);
+        const pjHint = U.$('#pj-hint');
+        if (!pjHint) return;
+        if (r && r.pj) {
+          pjHint.style.display = 'flex';
+          pjHint.innerHTML = U.icon('users', 14) +
+            '<span>PJ: <strong>' + U.escapeHtml(r.pj) + '</strong></span>';
+        } else {
+          pjHint.style.display = 'none';
+        }
+      });
+    } catch (err) {
+      dbgWarn('Gagal load ruang:', err.message);
+      placeholder.innerHTML =
+        '<div style="color:var(--danger);font-size:12px;padding:8px">' +
+        'Gagal memuat ruang: ' + U.escapeHtml(err.message) + '</div>';
+    }
+  },
+
+  async _doLogin() {
+    const select = U.$('#login-ruang');
+    const pinEl = U.$('#login-pin');
+    const btn = U.$('#btn-login');
+
+    const kode = select ? select.value : '';
+    const pin = pinEl ? pinEl.value : '';
+
+    if (!kode) { Toast.error('Pilih ruang dulu'); return; }
+    if (!pin || pin.length < 4) { Toast.error('PIN minimal 4 digit'); return; }
+
+    Btn.setLoading(btn, 'Memeriksa...');
+    try {
+      const res = await PesanApi.loginRuang(kode, pin);
+      if (!res || res.code !== 200) {
+        throw new Error((res && res.message) || 'Login gagal');
+      }
+
+      const session = {
+        token: res.session_token,
+        role: 'Ruang',
+        kode_ruang: res.kode_ruang,
+        nama_ruang: res.nama_ruang,
+        pj: res.pj || '',
+        nama: res.pj || res.nama_ruang,
+        expiry: Date.now() + (res.expiry_sec || 21500) * 1000
+      };
+      RuangStore.set(session);
+      this.session = session;
+
+      U.beepSuccess();
+      Toast.success('Selamat datang, ' + (res.pj || res.nama_ruang));
+
+      await this.showMain();
+    } catch (err) {
+      dbgWarn('Login ruang gagal:', err.message);
+      U.vibrate([100, 50, 100]);
+      U.beepError();
+      Toast.error(err.message || 'Login gagal');
+      if (pinEl) pinEl.value = '';
+      Btn.stopLoading(btn, 'Masuk', 'check');
+    }
+  },
+
+  /* -------------------------------------------------- MAIN */
+  async showMain() {
+    const root = U.$('#pesan-root');
+    root.innerHTML = this._renderMain();
+    this._attachMainListeners();
+
+    this.currentTab = 'pesan';
+    this.cart = {};
+    this.catatan = '';
+
+    // Render tab dulu (dengan state loading)
+    this.barangLoading = true;
+    this._renderTab();
+
+    // Fetch barang di background
+    try {
+      const res = await PesanApi.getBarangUntukPesan();
+      this.barangList = (res.data && res.data.items) || [];
+    } catch (err) {
+      dbgWarn('Gagal load barang:', err.message);
+      if (this._handleApiError(err)) return;
+      Toast.warning('Daftar barang belum termuat.');
+    } finally {
+      this.barangLoading = false;
+      if (this.currentTab === 'pesan') this._renderTab();
+    }
+  },
+
+  _renderMain() {
+    const s = this.session;
+    return '' +
+      '<div class="pesan-app">' +
+        '<header class="app-topbar">' +
+          '<div class="app-topbar-brand">' +
+            '<div class="app-topbar-logo">PKM</div>' +
+            '<div style="min-width:0">' +
+              '<div class="app-topbar-title">Pesan Barang</div>' +
+              '<div class="app-topbar-subtitle">' + U.escapeHtml(s.nama_ruang || '') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="app-topbar-actions">' +
+            '<button class="app-icon-btn danger" id="btn-logout" title="Keluar">' +
+              U.icon('logout', 20) +
+            '</button>' +
+          '</div>' +
+        '</header>' +
+        '<main class="pesan-main">' +
+          '<div class="pesan-inner">' +
+            '<div class="welcome">' +
+              '<div class="welcome-greet">Selamat datang,</div>' +
+              '<div class="welcome-name">' + U.escapeHtml(s.pj || s.nama || '-') + '</div>' +
+              '<span class="welcome-room">' + U.escapeHtml(s.nama_ruang || '') + '</span>' +
+            '</div>' +
+            '<div class="tabbar" id="tabbar">' +
+              '<button data-tab="pesan" class="active">Pesan Barang</button>' +
+              '<button data-tab="riwayat">Riwayat</button>' +
+            '</div>' +
+            '<div id="tab-content"></div>' +
+          '</div>' +
+        '</main>' +
+      '</div>';
+  },
+
+  _attachMainListeners() {
+    const logoutBtn = U.$('#btn-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        Modal.confirm('Keluar', 'Yakin ingin keluar dari aplikasi?',
+          () => this.logout(), 'Ya, Keluar', true,
+          { icon: 'danger', subtitle: 'Anda harus login ulang' });
+      });
+    }
+
+    U.$$('#tabbar button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.tab;
+        if (t === this.currentTab) return;
+        this.currentTab = t;
+        U.$$('#tabbar button').forEach(b =>
+          b.classList.toggle('active', b === btn));
+        this._renderTab();
+      });
+    });
+  },
+
+  _renderTab() {
+    const el = U.$('#tab-content');
+    if (!el) return;
+    if (this.currentTab === 'pesan') this._renderPesanTab(el);
+    else this._renderRiwayatTab(el);
+  },
+
+  /* -------------------------------------------------- TAB: PESAN */
+  _renderPesanTab(el) {
+    const cartCount = Object.keys(this.cart).length;
+    const cartTotal = Object.values(this.cart).reduce((a, b) => a + b.qty, 0);
+
+    const searchPlaceholder = this.barangLoading
+      ? 'Memuat daftar barang...'
+      : 'Cari nama barang BMHP / ATK...';
+    const searchDisabled = this.barangLoading ? ' disabled' : '';
+
+    el.innerHTML = '' +
+      '<div class="search-wrap">' +
+        '<input type="text" class="input" id="barang-search" ' +
+          'placeholder="' + U.escapeHtml(searchPlaceholder) + '" ' +
+          'autocomplete="off"' + searchDisabled + '>' +
+        '<div class="search-results" id="search-results" style="display:none"></div>' +
+      '</div>' +
+
+      '<div class="card" style="padding:0">' +
+        '<div class="card-title" style="padding:var(--sp-3) var(--sp-3) 0">' +
+          '<span>Keranjang</span>' +
+          '<span class="badge badge-primary" id="cart-badge">' + cartCount + ' item</span>' +
+        '</div>' +
+        '<div id="cart-area" style="padding:var(--sp-3)"></div>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="field" style="margin-bottom:0">' +
+          '<label class="field-label">Catatan (opsional)</label>' +
+          '<textarea class="textarea" id="pesan-ket" rows="2" ' +
+            'placeholder="Mis. untuk kegiatan posyandu..." maxlength="500">' +
+            U.escapeHtml(this.catatan) +
+          '</textarea>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="cart-bar">' +
+        '<div class="cart-bar-info">' +
+          '<div class="cart-bar-count" id="cart-bar-count">' +
+            cartCount + ' item · ' + cartTotal + ' pcs' +
+          '</div>' +
+          '<div class="cart-bar-total" id="cart-bar-total">' +
+            cartCount + ' item' +
+          '</div>' +
+        '</div>' +
+        '<button class="btn btn-primary btn-lg" id="btn-kirim" ' +
+          (cartCount === 0 ? 'disabled' : '') + '>' +
+          U.icon('check', 18) + ' Kirim Pesanan' +
+        '</button>' +
+      '</div>';
+
+    this._renderCart();
+    this._attachSearch();
+    this._attachCatatan();
+
+    const btnKirim = U.$('#btn-kirim');
+    if (btnKirim) btnKirim.addEventListener('click', () => this._confirmKirim());
+  },
+
+  _attachCatatan() {
+    const el = U.$('#pesan-ket');
+    if (!el) return;
+    el.addEventListener('input', () => { this.catatan = el.value; });
+  },
+
+  _attachSearch() {
+    const input = U.$('#barang-search');
+    const results = U.$('#search-results');
+    if (!input || !results) return;
+
+    const closeResults = () => {
+      results.style.display = 'none';
+      results.innerHTML = '';
+    };
+
+    const handler = U.debounce(() => {
+      const q = input.value.trim().toLowerCase();
+      if (!q) { closeResults(); return; }
+
+      results.style.display = 'block';
+
+      if (this.barangLoading) {
+        results.innerHTML = '<div class="search-empty">' + H.loaderSm('Memuat...') + '</div>';
+        return;
+      }
+      if (!this.barangList.length) {
+        results.innerHTML =
+          '<div class="search-empty">Daftar barang belum termuat. Coba refresh.</div>';
+        return;
+      }
+
+      const found = this.barangList.filter(b =>
+        b.nama.toLowerCase().indexOf(q) !== -1 ||
+        b.kode.toLowerCase().indexOf(q) !== -1
+      ).slice(0, 30);
+
+      if (found.length === 0) {
+        results.innerHTML =
+          '<div class="search-empty">Tidak ditemukan</div>';
+        return;
+      }
+
+      results.innerHTML = found.map(b => {
+        const inCart = !!this.cart[b.kode];
+        return '' +
+          '<button type="button" class="search-item" data-kode="' +
+            U.escapeHtml(b.kode) + '">' +
+            '<div class="search-item-main">' +
+              '<div class="search-item-name">' + U.escapeHtml(b.nama) + '</div>' +
+              '<div class="search-item-meta">' +
+                '<strong>' + U.escapeHtml(b.kode) + '</strong> · ' +
+                U.escapeHtml(b.tipe) + ' · ' + U.escapeHtml(b.satuan || '-') +
+              '</div>' +
+            '</div>' +
+            '<span class="badge ' + (inCart ? 'badge-success' : 'badge-primary') + '">' +
+              (inCart ? U.icon('check', 12) + ' di keranjang' : U.icon('plus', 12) + ' Tambah') +
+            '</span>' +
+          '</button>';
+      }).join('');
+
+      U.$$('.search-item', results).forEach(item => {
+        item.addEventListener('click', () => {
+          this._addToCart(item.dataset.kode);
+          input.value = '';
+          closeResults();
+          input.focus();
+        });
+      });
+    }, 180);
+
+    input.addEventListener('input', handler);
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        input.value = '';
+        closeResults();
+      }
+    });
+
+    // Close on outside click
+    const clickHandler = (e) => {
+      if (!e.target.closest('.search-wrap')) closeResults();
+    };
+    if (this._searchClickHandler) {
+      document.removeEventListener('click', this._searchClickHandler);
+    }
+    this._searchClickHandler = clickHandler;
+    document.addEventListener('click', clickHandler);
+  },
+
+  _addToCart(kode) {
+    if (this.cart[kode]) {
+      Toast.info('Sudah ada di keranjang');
+      return;
+    }
+    const b = this.barangList.find(x => x.kode === kode);
+    if (!b) return;
+
+    const itemCount = Object.keys(this.cart).length;
+    if (itemCount >= 20) {
+      Toast.error('Maksimal 20 item per pesanan');
+      return;
+    }
+
+    this.cart[kode] = {
+      kode: b.kode,
+      nama: b.nama,
+      tipe: b.tipe,
+      satuan: b.satuan || '',
+      qty: 1
+    };
+
+    U.vibrate(15);
+    this._renderCart();
+    this._updateCartBar();
+
+    // Refresh search result badges kalau masih terbuka
+    const results = U.$('#search-results');
+    if (results && results.style.display === 'block') {
+      const input = U.$('#barang-search');
+      if (input && input.value.trim()) {
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+  },
+
+  _renderCart() {
+    const area = U.$('#cart-area');
+    if (!area) return;
+    const items = Object.values(this.cart);
+
+    if (items.length === 0) {
+      area.innerHTML = H.empty('Keranjang kosong',
+        'Cari barang di atas untuk menambahkan.', 'package');
+      return;
+    }
+
+    area.innerHTML = '<div class="cart-list">' + items.map(it =>
+      '<div class="cart-item" data-kode="' + U.escapeHtml(it.kode) + '">' +
+        '<div class="cart-item-info">' +
+          '<div class="cart-item-name">' + U.escapeHtml(it.nama) + '</div>' +
+          '<div class="cart-item-meta">' +
+            U.escapeHtml(it.kode) + ' · ' + U.escapeHtml(it.tipe) +
+            (it.satuan ? ' · ' + U.escapeHtml(it.satuan) : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="cart-item-actions">' +
+          '<div class="qty-ctrl">' +
+            '<button type="button" data-act="dec" data-kode="' +
+              U.escapeHtml(it.kode) + '">−</button>' +
+            '<input type="number" min="1" max="1000" step="1" ' +
+              'value="' + it.qty + '" data-act="set" data-kode="' +
+              U.escapeHtml(it.kode) + '">' +
+            '<button type="button" data-act="inc" data-kode="' +
+              U.escapeHtml(it.kode) + '">+</button>' +
+          '</div>' +
+          '<button type="button" class="cart-del" data-act="del" data-kode="' +
+            U.escapeHtml(it.kode) + '" title="Hapus">' +
+            U.icon('trash', 16) +
+          '</button>' +
+        '</div>' +
+      '</div>'
+    ).join('') + '</div>';
+
+    U.$$('[data-act]', area).forEach(el => {
+      const kode = el.dataset.kode;
+      const act = el.dataset.act;
+
+      if (act === 'inc') {
+        el.addEventListener('click', () => this._changeQty(kode, 1));
+      } else if (act === 'dec') {
+        el.addEventListener('click', () => this._changeQty(kode, -1));
+      } else if (act === 'del') {
+        el.addEventListener('click', () => this._removeFromCart(kode));
+      } else if (act === 'set') {
+        el.addEventListener('change', () => {
+          let v = Number(el.value);
+          if (!isFinite(v) || v < 1) v = 1;
+          if (v > 1000) { v = 1000; Toast.warning('Maks 1000'); }
+          v = Math.floor(v);
+          this.cart[kode].qty = v;
+          el.value = v;
+          this._updateCartBar();
+        });
+        el.addEventListener('blur', () => {
+          const cur = this.cart[kode];
+          if (cur && String(el.value) !== String(cur.qty)) {
+            el.value = cur.qty;
+          }
+        });
+      }
+    });
+  },
+
+  _changeQty(kode, delta) {
+    if (!this.cart[kode]) return;
+    const newQty = this.cart[kode].qty + delta;
+    if (newQty < 1) { this._removeFromCart(kode); return; }
+    if (newQty > 1000) { Toast.warning('Maks 1000'); return; }
+    this.cart[kode].qty = newQty;
+    this._renderCart();
+    this._updateCartBar();
+  },
+
+  _removeFromCart(kode) {
+    delete this.cart[kode];
+    this._renderCart();
+    this._updateCartBar();
+  },
+
+  _updateCartBar() {
+    const count = Object.keys(this.cart).length;
+    const total = Object.values(this.cart).reduce((a, b) => a + b.qty, 0);
+
+    const badge = U.$('#cart-badge');
+    const barTotal = U.$('#cart-bar-total');
+    const barCount = U.$('#cart-bar-count');
+    const btnKirim = U.$('#btn-kirim');
+
+    if (badge) badge.textContent = count + ' item';
+    if (barTotal) barTotal.textContent = count + ' item';
+    if (barCount) barCount.textContent = count + ' item · ' + total + ' pcs';
+    if (btnKirim) btnKirim.disabled = count === 0;
+  },
+
+  /* -------------------------------------------------- TAB: RIWAYAT */
+  async _renderRiwayatTab(el) {
+    el.innerHTML = '<div class="card">' + H.loader('Memuat riwayat...') + '</div>';
+
+    try {
+      const res = await PesanApi.getPesananSaya(20);
+      const items = (res.data && res.data.items) || [];
+
+      if (items.length === 0) {
+        el.innerHTML = '<div class="card">' +
+          H.empty('Belum ada pesanan',
+            'Pesanan yang Anda kirim akan muncul di sini.', 'clipboard') +
+          '</div>';
+        return;
+      }
+
+      el.innerHTML = items.map(it => {
+        const badgeCls =
+          it.status === 'Baru' ? 'badge-warning' :
+          it.status === 'Diproses' ? 'badge-primary' :
+          it.status === 'Selesai' ? 'badge-success' :
+          it.status === 'Gagal' ? 'badge-muted' :
+          'badge-danger';
+
+        return '' +
+          '<div class="history-item">' +
+            '<div class="history-head">' +
+              '<div>' +
+                '<div class="history-id">' + U.escapeHtml(it.id_pesanan) + '</div>' +
+                '<div class="history-date">' + U.formatDateTime(it.timestamp) + '</div>' +
+              '</div>' +
+              '<span class="badge ' + badgeCls + '">' +
+                U.escapeHtml(it.status) + '</span>' +
+            '</div>' +
+            '<div class="history-body">' +
+              '<strong>' + it.total_item + ' item</strong>' +
+              (it.keterangan ? ' · ' + U.escapeHtml(it.keterangan) : '') +
+            '</div>' +
+          '</div>';
+      }).join('');
+    } catch (err) {
+      if (this._handleApiError(err)) return;
+      el.innerHTML = '<div class="card">' +
+        H.empty('Gagal memuat', err.message, 'alertCircle') +
+        '</div>';
+    }
+  },
+
+  /* -------------------------------------------------- KIRIM */
+  _confirmKirim() {
+    if (this.submitting) return;
+    const items = Object.values(this.cart);
+    if (items.length === 0) { Toast.error('Keranjang kosong'); return; }
+
+    const totalQty = items.reduce((a, b) => a + b.qty, 0);
+
+    const body = '' +
+      '<div style="font-size:var(--fs-sm);line-height:1.6;margin-bottom:12px">' +
+        'Pesanan dari <strong>' + U.escapeHtml(this.session.nama_ruang) + '</strong>:<br>' +
+        '<strong>' + items.length + ' item</strong> · total <strong>' +
+        totalQty + ' pcs</strong>' +
+      '</div>' +
+      '<div class="confirm-list">' +
+        items.map(it =>
+          '• ' + U.escapeHtml(it.nama) + ' — <strong>' + it.qty + '</strong> ' +
+          U.escapeHtml(it.satuan || '')
+        ).join('<br>') +
+      '</div>';
+
+    const self = this;
+    Modal.open({
+      title: 'Kirim Pesanan?',
+      icon: 'primary',
+      subtitle: 'Pesanan akan diteruskan ke Apoteker & Gudang',
+      body: body,
+      actions: [
+        { label: 'Periksa Lagi', class: 'btn-secondary' },
+        {
+          label: 'Ya, Kirim',
+          class: 'btn-primary',
+          close: false,
+          icon: 'check',
+          onClick: (btn) => self._kirim(btn)
+        }
+      ]
+    });
+  },
+
+  async _kirim(btn) {
+    if (this.submitting) return;
+    this.submitting = true;
+
+    const items = Object.values(this.cart).map(it => ({
+      kode_barang: it.kode,
+      qty: it.qty
+    }));
+    const keterangan = this.catatan || '';
+
+    Btn.setLoading(btn, 'Mengirim...');
+
+    try {
+      const res = await PesanApi.kirimPesanan({ items, keterangan });
+      Modal.close();
+      U.vibrate([50, 50, 50]);
+      U.beepSuccess();
+
+      const idPesanan = (res.data && res.data.id_pesanan) || '-';
+      const notified = !!(res.data && res.data.notified);
+
+      Modal.open({
+        title: 'Pesanan Terkirim',
+        icon: 'success',
+        body: '' +
+          '<div style="text-align:center;padding:8px 0">' +
+            '<div class="success-icon">' + U.icon('check', 36) + '</div>' +
+            '<div style="font-size:var(--fs-lg);font-weight:700;margin-bottom:6px">' +
+              'Pesanan berhasil dikirim' +
+            '</div>' +
+            '<div style="font-size:var(--fs-sm);color:var(--text-muted);margin-bottom:16px">' +
+              'ID: <strong style="font-family:ui-monospace,monospace">' +
+              U.escapeHtml(idPesanan) + '</strong>' +
+            '</div>' +
+            (notified
+              ? '<div class="badge badge-success" style="padding:8px 14px;font-size:12px">' +
+                U.icon('check', 14) + ' Notifikasi Telegram terkirim</div>'
+              : '<div class="badge badge-warning" style="padding:8px 14px;font-size:12px">' +
+                '⚠️ Notifikasi Telegram tidak terkirim</div>') +
+          '</div>',
+        actions: [
+          {
+            label: 'Pesan Lagi',
+            class: 'btn-primary',
+            onClick: () => {
+              this.cart = {};
+              this.catatan = '';
+              this.currentTab = 'pesan';
+              U.$$('#tabbar button').forEach(b =>
+                b.classList.toggle('active', b.dataset.tab === 'pesan'));
+              this._renderTab();
+            }
+          }
+        ]
+      });
+    } catch (err) {
+      dbgErr('Kirim gagal:', err.message);
+      if (this._handleApiError(err)) return;
+
+      Toast.error('Gagal kirim: ' + err.message);
+
+      // PARTIAL_WRITE: pesanan tercatat dengan status Gagal, beri tahu user
+      if (err.code === 'PARTIAL_WRITE' && err.raw && err.raw.data && err.raw.data.id_pesanan) {
+        Modal.close();
+        Modal.open({
+          title: 'Pesanan Tercatat Sebagian',
+          icon: 'warning',
+          body: '<div style="font-size:var(--fs-sm);line-height:1.6">' +
+            'ID pesanan <strong style="font-family:ui-monospace,monospace">' +
+            U.escapeHtml(err.raw.data.id_pesanan) + '</strong> ' +
+            'tercatat, namun detail item gagal disimpan. ' +
+            'Hubungi admin dengan ID ini untuk perbaikan manual.</div>',
+          actions: [{ label: 'Tutup', class: 'btn-primary' }]
+        });
+        return;
+      }
+
+      Btn.stopLoading(btn, 'Ya, Kirim', 'check');
+    } finally {
+      this.submitting = false;
+    }
+  },
+
+  /* -------------------------------------------------- LOGOUT */
+  async logout() {
+    try { await Api.logout(); } catch (e) { /* silent */ }
+    RuangStore.clear();
+    this.session = null;
+    this.cart = {};
+    this.catatan = '';
+    this.barangList = [];
+    Toast.info('Anda telah keluar.');
+    this.showLogin();
+  }
+};
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  dbg('pesan.html ready');
+  PesanApp.init().catch(err => {
+    dbgErr('PesanApp init fatal:', err);
+    const el = document.getElementById('boot-splash');
+    if (el) el.classList.add('hide');
+    Toast.error('Gagal memuat aplikasi: ' + err.message);
+  });
+});
+</script>
+</body>
+</html>
