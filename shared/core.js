@@ -497,20 +497,22 @@ const QRScanner = {
 };
 
 // ============================================================
-// LOGIN FORM COMPONENT (shared)
+// LOGIN FORM COMPONENT (shared, 2 variant: compact & split)
 // ============================================================
 const LoginForm = {
   _pin: '',
   _maxPinLen: 8,
   _onSuccess: null,
   _container: null,
+  _variant: 'compact',
 
   /**
-   * Render login screen into a container and set onSuccess callback.
+   * Mount login form.
    * @param {string|HTMLElement} containerOrSelector
-   * @param {function} onSuccess - called after successful login, receives session object
+   * @param {function} onSuccess - receives session
+   * @param {object} opts - { variant: 'compact' | 'split' }
    */
-  mount(containerOrSelector, onSuccess) {
+  mount(containerOrSelector, onSuccess, opts) {
     const container = typeof containerOrSelector === 'string'
       ? U.$(containerOrSelector)
       : containerOrSelector;
@@ -518,6 +520,7 @@ const LoginForm = {
 
     this._container = container;
     this._onSuccess = onSuccess;
+    this._variant = (opts && opts.variant) || 'compact';
     this._pin = '';
 
     container.innerHTML = this._renderHTML();
@@ -526,59 +529,87 @@ const LoginForm = {
   },
 
   _renderHTML() {
-    return '' +
-      '<div class="login-screen">' +
-        '<div class="login-card">' +
-          '<div class="login-brand">' +
-            '<div class="login-logo">PKM</div>' +
-            '<div class="login-title">Sistem Gudang</div>' +
-            '<div class="login-subtitle">Puskesmas Sanden, Bantul</div>' +
+    const formHTML = '' +
+      '<div class="login-card">' +
+        '<div class="login-brand">' +
+          '<div class="login-logo">PKM</div>' +
+          '<div class="login-title">Sistem Gudang</div>' +
+          '<div class="login-subtitle">Puskesmas Sanden, Bantul</div>' +
+        '</div>' +
+        '<form class="login-form" id="login-form" autocomplete="off">' +
+          '<div class="field">' +
+            '<label class="field-label" for="login-username">Username</label>' +
+            '<input type="text" class="input" id="login-username" ' +
+              'autocapitalize="none" autocorrect="off" spellcheck="false" ' +
+              'autocomplete="username" placeholder="contoh: apoteker_pj" ' +
+              'maxlength="20" required>' +
           '</div>' +
-          '<form class="login-form" id="login-form" autocomplete="off">' +
-            '<div class="field">' +
-              '<label class="field-label" for="login-username">Username</label>' +
-              '<input type="text" class="input" id="login-username" ' +
-                'autocapitalize="none" autocorrect="off" spellcheck="false" ' +
-                'autocomplete="username" placeholder="contoh: apoteker_pj" ' +
-                'maxlength="20" required>' +
-            '</div>' +
-            '<div class="field">' +
-              '<label class="field-label">PIN</label>' +
-              '<div class="login-pin-display empty" id="login-pin">Masukkan PIN</div>' +
-            '</div>' +
-            '<div class="login-keypad" id="login-keypad">' +
-              '<button type="button" class="key-btn" data-key="1">1</button>' +
-              '<button type="button" class="key-btn" data-key="2">2</button>' +
-              '<button type="button" class="key-btn" data-key="3">3</button>' +
-              '<button type="button" class="key-btn" data-key="4">4</button>' +
-              '<button type="button" class="key-btn" data-key="5">5</button>' +
-              '<button type="button" class="key-btn" data-key="6">6</button>' +
-              '<button type="button" class="key-btn" data-key="7">7</button>' +
-              '<button type="button" class="key-btn" data-key="8">8</button>' +
-              '<button type="button" class="key-btn" data-key="9">9</button>' +
-              '<button type="button" class="key-btn" data-key="back" aria-label="Hapus">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-                  '<path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>' +
-                  '<line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/>' +
-                '</svg>' +
-              '</button>' +
-              '<button type="button" class="key-btn" data-key="0">0</button>' +
-              '<button type="button" class="key-btn primary" data-key="enter" id="login-submit" aria-label="Masuk">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
-                  '<polyline points="20 6 9 17 4 12"/>' +
-                '</svg>' +
-              '</button>' +
-            '</div>' +
-            '<div class="login-help mt-3">Lupa PIN? Hubungi <strong>Admin</strong></div>' +
-          '</form>' +
-          '<div class="login-footer">' +
-            '<span class="status-dot" id="conn-dot"></span>' +
-            '<span id="conn-text">Terhubung</span>' +
-            '<span>·</span>' +
-            '<span>v' + CONFIG.APP_VERSION + '</span>' +
+          '<div class="field">' +
+            '<label class="field-label">PIN</label>' +
+            '<div class="login-pin-display empty" id="login-pin">Masukkan PIN</div>' +
           '</div>' +
+          '<div class="login-keypad" id="login-keypad">' +
+            '<button type="button" class="key-btn" data-key="1">1</button>' +
+            '<button type="button" class="key-btn" data-key="2">2</button>' +
+            '<button type="button" class="key-btn" data-key="3">3</button>' +
+            '<button type="button" class="key-btn" data-key="4">4</button>' +
+            '<button type="button" class="key-btn" data-key="5">5</button>' +
+            '<button type="button" class="key-btn" data-key="6">6</button>' +
+            '<button type="button" class="key-btn" data-key="7">7</button>' +
+            '<button type="button" class="key-btn" data-key="8">8</button>' +
+            '<button type="button" class="key-btn" data-key="9">9</button>' +
+            '<button type="button" class="key-btn" data-key="back" aria-label="Hapus">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                '<path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>' +
+                '<line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/>' +
+              '</svg>' +
+            '</button>' +
+            '<button type="button" class="key-btn" data-key="0">0</button>' +
+            '<button type="button" class="key-btn primary" data-key="enter" id="login-submit" aria-label="Masuk">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+                '<polyline points="20 6 9 17 4 12"/>' +
+              '</svg>' +
+            '</button>' +
+          '</div>' +
+          '<div class="login-help mt-3">Lupa PIN? Hubungi <strong>Admin</strong></div>' +
+        '</form>' +
+        '<div class="login-footer">' +
+          '<span class="status-dot" id="conn-dot"></span>' +
+          '<span id="conn-text">Terhubung</span>' +
+          '<span>·</span>' +
+          '<span>v' + CONFIG.APP_VERSION + '</span>' +
         '</div>' +
       '</div>';
+
+    if (this._variant === 'split') {
+      return '' +
+        '<div class="login-screen split">' +
+          '<div class="split-container">' +
+            '<div class="split-left">' +
+              '<div class="split-brand">' +
+                '<div class="split-brand-logo">PKM</div>' +
+                '<div class="split-brand-title">Sistem Gudang Terpadu</div>' +
+                '<div class="split-brand-subtitle">' +
+                  'Manajemen logistik obat, BMHP, dan ATK Puskesmas Sanden. ' +
+                  'Terintegrasi, cepat, dan akurat.' +
+                '</div>' +
+                '<div class="split-brand-features">' +
+                  '<div class="split-feature">' + U.icon('check', 18) + '<span>Pencatatan batch &amp; ED obat otomatis</span></div>' +
+                  '<div class="split-feature">' + U.icon('check', 18) + '<span>FEFO — First Expired First Out</span></div>' +
+                  '<div class="split-feature">' + U.icon('check', 18) + '<span>Kartu stok, opname, dan LPLPO</span></div>' +
+                  '<div class="split-feature">' + U.icon('check', 18) + '<span>QR Code &amp; scan cepat</span></div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="split-right">' +
+              formHTML +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    // Default: compact
+    return '<div class="login-screen compact">' + formHTML + '</div>';
   },
 
   _attachListeners() {
@@ -593,7 +624,7 @@ const LoginForm = {
       });
     });
 
-    // Physical keyboard — hanya aktif saat fokus tidak di input
+    // Physical keyboard
     this._keydownHandler = (e) => {
       if (!this._container || !this._container.querySelector('.login-screen')) return;
       const tag = (e.target && e.target.tagName) || '';
@@ -613,7 +644,6 @@ const LoginForm = {
       this._submit();
     });
 
-    // Online indicator
     this._updateOnline();
     this._onlineHandler = () => this._updateOnline();
     window.addEventListener('online', this._onlineHandler);
