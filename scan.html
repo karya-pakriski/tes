@@ -2,80 +2,130 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0d7377">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Scanner Gudang Puskesmas Sanden">
-<title>Scanner Gudang — Puskesmas Sanden</title>
+<title>Scanner — Puskesmas Sanden</title>
 <link rel="stylesheet" href="shared/core.css">
 <style>
 /* ============================================================
-   SCAN.HTML SPECIFIC STYLES
+   SCAN.HTML — Mobile-first scanner
+   Layout: CSS Grid (topbar / main scroll / footer fixed)
    ============================================================ */
-.scan-app { min-height: 100vh; padding-bottom: calc(20px + var(--safe-bottom)); }
 
-/* Topbar */
+.scan-app {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ---- TOPBAR ---- */
 .scan-topbar {
-  position: sticky; top: 0; z-index: 30;
   height: var(--topbar-h);
   padding-top: var(--safe-top);
+  padding-left: calc(var(--sp-3) + var(--safe-left));
+  padding-right: calc(var(--sp-3) + var(--safe-right));
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: var(--sp-2);
-  padding-left: var(--sp-3);
-  padding-right: var(--sp-3);
-}
-.scan-topbar-brand {
-  display: flex; align-items: center; gap: var(--sp-2);
-  flex: 1; min-width: 0;
-}
-.scan-topbar-logo {
-  width: clamp(28px, 3vw, 34px);
-  height: clamp(28px, 3vw, 34px);
-  background: var(--primary); color: white;
-  border-radius: var(--r-sm);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: var(--fs-sm);
-}
-.scan-topbar-title {
-  font-weight: 600; font-size: var(--fs-base);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.scan-topbar-actions {
-  display: flex; align-items: center; gap: var(--sp-1);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  z-index: 30;
 }
 .scan-icon-btn {
-  width: 38px; height: 38px;
+  width: 40px; height: 40px;
   border-radius: var(--r-sm);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 .scan-icon-btn:hover { background: var(--surface-2); color: var(--text); }
+.scan-topbar-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.scan-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--r-full);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.scan-mode-pill.obat { background: var(--primary-bg); color: var(--primary-dark); }
+.scan-mode-pill.bmhp { background: var(--success-bg); color: var(--success); }
+.scan-mode-pill.atk { background: var(--warning-bg); color: var(--warning); }
 
-/* Main container */
+/* ---- MAIN (scrollable) ---- */
 .scan-main {
-  padding: var(--sp-4) var(--sp-3);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--sp-3);
+  padding-left: calc(var(--sp-3) + var(--safe-left));
+  padding-right: calc(var(--sp-3) + var(--safe-right));
+  /* Konten di atas footer, hindari cut-off */
+  padding-bottom: var(--sp-4);
+}
+.scan-main-inner {
   max-width: 640px;
   margin: 0 auto;
   width: 100%;
 }
 
-/* Layer 1: Welcome + Menu */
+/* ---- BOTTOM ACTION BAR ---- */
+.scan-footer {
+  padding: var(--sp-2) var(--sp-3);
+  padding-bottom: calc(var(--sp-2) + var(--safe-bottom));
+  padding-left: calc(var(--sp-3) + var(--safe-left));
+  padding-right: calc(var(--sp-3) + var(--safe-right));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  z-index: 25;
+}
+.scan-footer-info {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  flex: 1;
+  min-width: 0;
+}
+.scan-footer-info strong {
+  color: var(--text);
+  font-family: ui-monospace, monospace;
+}
+
+/* ---- LAYER 1: MENU ---- */
 .scan-welcome {
-  margin-bottom: var(--sp-4);
-  padding: var(--sp-3) 0;
+  padding: var(--sp-3) 0 var(--sp-4);
 }
 .scan-welcome-greeting {
   font-size: var(--fs-sm);
   color: var(--text-muted);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .scan-welcome-name {
   font-size: var(--fs-xl);
   font-weight: 700;
   line-height: 1.2;
+  word-break: break-word;
 }
 .scan-welcome-role {
-  display: inline-flex; align-items: center;
+  display: inline-block;
   margin-top: var(--sp-2);
   padding: 3px 10px;
   background: var(--primary-bg);
@@ -88,15 +138,19 @@
   font-size: var(--fs-base);
   color: var(--text-muted);
   margin-bottom: var(--sp-3);
+  font-weight: 500;
 }
 .scan-menu-cards {
-  display: flex; flex-direction: column;
-  gap: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
   margin-bottom: var(--sp-4);
 }
 .scan-menu-card {
-  display: flex; align-items: center; gap: var(--sp-3);
-  padding: var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
@@ -104,18 +158,21 @@
   transition: all 0.15s;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
+  width: 100%;
+  color: var(--text);
 }
 .scan-menu-card:hover {
   border-color: var(--primary);
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
 }
-.scan-menu-card:active { transform: translateY(0); }
+.scan-menu-card:active { transform: scale(0.99); }
 .scan-menu-card-icon {
-  width: 52px; height: 52px;
+  width: 48px; height: 48px;
   border-radius: var(--r-md);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
   flex-shrink: 0;
 }
 .scan-menu-card-icon.obat { background: var(--primary-bg); color: var(--primary); }
@@ -123,7 +180,7 @@
 .scan-menu-card-icon.atk { background: var(--warning-bg); color: var(--warning); }
 .scan-menu-card-body { flex: 1; min-width: 0; }
 .scan-menu-card-title {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
   font-weight: 700;
   margin-bottom: 2px;
   color: var(--text);
@@ -131,22 +188,24 @@
 .scan-menu-card-desc {
   font-size: var(--fs-sm);
   color: var(--text-muted);
+  word-break: break-word;
 }
 .scan-menu-card-arrow {
   color: var(--text-light);
   flex-shrink: 0;
 }
 
-/* Recent history preview on Layer 1 */
+/* ---- HISTORY PREVIEW ---- */
 .scan-history-preview {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: var(--sp-3);
-  margin-bottom: var(--sp-3);
 }
 .scan-history-preview-header {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--sp-2);
 }
 .scan-history-preview-title {
@@ -157,60 +216,14 @@
   letter-spacing: 0.3px;
 }
 
-/* Layer 2: Scanner */
-.scan-header {
-  display: flex; align-items: center; gap: var(--sp-2);
-  margin-bottom: var(--sp-3);
-}
-.scan-header-back {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 8px 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: var(--text);
-}
-.scan-header-back:hover { background: var(--surface-2); }
-.scan-header-mode {
-  flex: 1;
-  display: inline-flex; align-items: center; justify-content: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--r-md);
-  font-size: var(--fs-sm);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.scan-header-mode.obat { background: var(--primary-bg); color: var(--primary-dark); }
-.scan-header-mode.bmhp { background: var(--success-bg); color: var(--success); }
-.scan-header-mode.atk { background: var(--warning-bg); color: var(--warning); }
-
-/* Batch dropdown FEFO */
-.batch-option-row {
-  display: flex; align-items: center; gap: 6px;
-  flex-wrap: wrap;
-}
-.batch-badge {
-  display: inline-flex; align-items: center;
-  padding: 2px 7px;
-  border-radius: var(--r-full);
-  font-size: 10px;
-  font-weight: 700;
-}
-.batch-badge.fefo { background: var(--primary); color: white; }
-.batch-badge.near-ed { background: var(--warning); color: white; }
-.batch-badge.expired { background: var(--danger); color: white; }
-
-/* Selected item info card */
+/* ---- LAYER 2: SCANNER ---- */
 .selected-item-card {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
-  padding: var(--sp-4);
+  padding: var(--sp-3);
   border-radius: var(--r-lg);
   margin-bottom: var(--sp-3);
+  word-break: break-word;
 }
 .selected-item-name {
   font-size: var(--fs-lg);
@@ -225,43 +238,101 @@
   margin-bottom: var(--sp-2);
 }
 .selected-item-meta {
-  display: flex; flex-wrap: wrap; gap: var(--sp-2);
-  font-size: var(--fs-sm);
-  opacity: 0.9;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  opacity: 0.95;
 }
 .selected-item-meta-item {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
+.selected-item-meta-item svg { width: 13px; height: 13px; }
 
-/* Empty state on layer 2 */
+/* Type toggle (Masuk/Keluar) */
+.tipe-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+.tipe-toggle-btn {
+  padding: 12px;
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tipe-toggle-btn:active { transform: scale(0.98); }
+.tipe-toggle-btn.active.in {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+.tipe-toggle-btn.active.out {
+  background: var(--warning);
+  border-color: var(--warning);
+  color: white;
+}
+.tipe-toggle-btn svg { width: 16px; height: 16px; }
+
+/* Batch select info */
+.batch-info {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.batch-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--r-full);
+  font-size: 10px;
+  font-weight: 700;
+}
+.batch-pill.fefo { background: var(--primary); color: white; }
+.batch-pill.near-ed { background: var(--warning); color: white; }
+.batch-pill.expired { background: var(--danger); color: white; }
+
+/* Empty scanner */
 .scan-empty {
   text-align: center;
   padding: var(--sp-5) var(--sp-3);
   color: var(--text-muted);
 }
-.scan-empty p { font-size: var(--fs-sm); margin-top: var(--sp-2); }
-
-/* Status bar small */
-.scan-status-strip {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  padding: var(--sp-2) var(--sp-3);
-  padding-bottom: calc(var(--sp-2) + var(--safe-bottom));
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  display: flex; align-items: center; justify-content: space-between;
-  z-index: 25;
+.scan-empty svg {
+  width: 42px; height: 42px;
+  color: var(--text-light);
+  margin: 0 auto var(--sp-3);
 }
-.scan-status-strip strong { color: var(--text); font-family: ui-monospace, monospace; }
+.scan-empty h3 {
+  font-size: var(--fs-md);
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.scan-empty p { font-size: var(--fs-sm); }
+
+/* Prevent cut-off on short landscape */
+@media (max-height: 500px) {
+  .scanner-box { max-height: 60vh; }
+}
 </style>
 </head>
 <body>
 
-<!-- App container (di-render oleh JS) -->
 <div id="scan-root"></div>
 
-<!-- Global UI elements -->
 <div class="toast-container" id="toast-container"></div>
 <div class="loading-overlay" id="loading-overlay"><div class="spinner"></div></div>
 <div class="modal-overlay" id="modal-overlay">
@@ -281,27 +352,19 @@
 <script>
 'use strict';
 
-/* ============================================================
-   SCAN APP — Scanner Aplikasi (3 Layer)
-   Layer 0: Login
-   Layer 1: Menu pilihan (Obat/BMHP/ATK)
-   Layer 2: Scanner + Form
-   ============================================================ */
 const ScanApp = {
   session: null,
   master: null,
-  currentLayer: 'login', // 'login' | 'menu' | 'scan'
-  selectedGroup: null,   // 'obat' | 'bmhp' | 'atk'
+  currentLayer: 'login',
+  selectedGroup: null,
   selectedItem: null,
   availableBatches: [],
-  history: [],
+  currentTipe: 'Masuk',
   _submitting: false,
 
   async init() {
-    // Cek session
     const session = Store.getSession();
     if (session && session.token) {
-      // Verify session masih valid
       try {
         const res = await Api.whoAmI();
         if (res.code === 200) {
@@ -315,16 +378,11 @@ const ScanApp = {
             expiry: res.data.expiry
           };
           Store.setSession(this.session);
-          // Cek role
-          if (this.session.role === 'Scanner' || true) {
-            // Semua role bisa akses scan page
-            await this._loadMaster();
-            this.showMenu();
-            return;
-          }
+          await this._loadMaster();
+          this.showMenu();
+          return;
         }
       } catch (err) {
-        // session invalid, fall through to login
         Store.clearSession();
       }
     }
@@ -346,15 +404,14 @@ const ScanApp = {
     this.master = master;
   },
 
-  // ============== LAYER 0: LOGIN ==============
+  // ============ LAYER 0: LOGIN ============
   showLogin() {
     this.currentLayer = 'login';
     const root = U.$('#scan-root');
     LoginForm.mount(root, (session) => {
       this.session = session;
-      // Setelah login, load master lalu ke menu
       this._onLoginSuccess();
-    });
+    }, { variant: 'compact' });
   },
 
   async _onLoginSuccess() {
@@ -362,7 +419,7 @@ const ScanApp = {
     this.showMenu();
   },
 
-  // ============== LAYER 1: MENU ==============
+  // ============ LAYER 1: MENU ============
   showMenu() {
     this.currentLayer = 'menu';
     this.selectedGroup = null;
@@ -372,21 +429,21 @@ const ScanApp = {
     const root = U.$('#scan-root');
     root.innerHTML = this._renderMenu();
 
-    // Attach listeners
     U.$$('.scan-menu-card', root).forEach(card => {
       card.addEventListener('click', () => {
-        const group = card.dataset.group;
-        this.showScanner(group);
+        this.showScanner(card.dataset.group);
       });
     });
 
     U.$('#btn-logout', root).addEventListener('click', () => {
-      Modal.confirm('Keluar', 'Yakin ingin keluar?', () => this.logout(), 'Ya, Keluar', true);
+      Modal.confirm('Keluar', 'Yakin ingin keluar?',
+        () => this.logout(), 'Ya, Keluar', true);
     });
 
-    U.$('#btn-go-admin', root)?.addEventListener('click', () => {
-      location.href = 'index.html';
-    });
+    const adminBtn = U.$('#btn-go-admin', root);
+    if (adminBtn) {
+      adminBtn.addEventListener('click', () => { location.href = 'index.html'; });
+    }
 
     this._renderHistoryPreview();
   },
@@ -398,61 +455,66 @@ const ScanApp = {
     return '' +
       '<div class="scan-app">' +
         '<header class="scan-topbar">' +
-          '<div class="scan-topbar-brand">' +
-            '<div class="scan-topbar-logo">PKM</div>' +
-            '<div class="scan-topbar-title">Scanner</div>' +
+          '<div style="width:40px"></div>' +
+          '<div class="scan-topbar-center">' +
+            '<div style="font-weight:700;font-size:var(--fs-md)">Scanner Gudang</div>' +
           '</div>' +
-          '<div class="scan-topbar-actions">' +
-            (isAdmin ? '<button class="scan-icon-btn" id="btn-go-admin" title="Menu Utama">' + U.icon('home', 20) + '</button>' : '') +
-            '<button class="scan-icon-btn" id="btn-logout" title="Keluar">' + U.icon('logout', 20) + '</button>' +
-          '</div>' +
+          (isAdmin
+            ? '<button class="scan-icon-btn" id="btn-go-admin" title="Menu Utama">' + U.icon('home', 20) + '</button>'
+            : '<div style="width:40px"></div>') +
         '</header>' +
 
         '<main class="scan-main">' +
-          '<div class="scan-welcome">' +
-            '<div class="scan-welcome-greeting">Selamat datang,</div>' +
-            '<div class="scan-welcome-name">' + U.escapeHtml(s.nama || s.username) + '</div>' +
-            '<span class="scan-welcome-role">' + U.escapeHtml(s.role) + '</span>' +
+          '<div class="scan-main-inner">' +
+            '<div class="scan-welcome">' +
+              '<div class="scan-welcome-greeting">Selamat datang,</div>' +
+              '<div class="scan-welcome-name">' + U.escapeHtml(s.nama || s.username) + '</div>' +
+              '<span class="scan-welcome-role">' + U.escapeHtml(s.role) + '</span>' +
+            '</div>' +
+
+            '<div class="scan-menu-title">Pilih jenis barang yang akan Anda scan:</div>' +
+
+            '<div class="scan-menu-cards">' +
+              '<button class="scan-menu-card" data-group="obat">' +
+                '<div class="scan-menu-card-icon obat">💊</div>' +
+                '<div class="scan-menu-card-body">' +
+                  '<div class="scan-menu-card-title">Scan Obat</div>' +
+                  '<div class="scan-menu-card-desc">Batch, ED, VVM, dan golongan</div>' +
+                '</div>' +
+                '<div class="scan-menu-card-arrow">' + U.icon('chevronRight', 20) + '</div>' +
+              '</button>' +
+
+              '<button class="scan-menu-card" data-group="bmhp">' +
+                '<div class="scan-menu-card-icon bmhp">🩹</div>' +
+                '<div class="scan-menu-card-body">' +
+                  '<div class="scan-menu-card-title">Scan BMHP</div>' +
+                  '<div class="scan-menu-card-desc">Masker, kasa, cairan medis</div>' +
+                '</div>' +
+                '<div class="scan-menu-card-arrow">' + U.icon('chevronRight', 20) + '</div>' +
+              '</button>' +
+
+              '<button class="scan-menu-card" data-group="atk">' +
+                '<div class="scan-menu-card-icon atk">📄</div>' +
+                '<div class="scan-menu-card-body">' +
+                  '<div class="scan-menu-card-title">Scan ATK</div>' +
+                  '<div class="scan-menu-card-desc">Kertas, alat tulis, kebersihan</div>' +
+                '</div>' +
+                '<div class="scan-menu-card-arrow">' + U.icon('chevronRight', 20) + '</div>' +
+              '</button>' +
+            '</div>' +
+
+            '<div class="scan-history-preview" id="history-preview"></div>' +
           '</div>' +
-
-          '<div class="scan-menu-title">Pilih jenis barang yang akan Anda scan:</div>' +
-
-          '<div class="scan-menu-cards">' +
-            '<button class="scan-menu-card" data-group="obat">' +
-              '<div class="scan-menu-card-icon obat">💊</div>' +
-              '<div class="scan-menu-card-body">' +
-                '<div class="scan-menu-card-title">Scan Obat</div>' +
-                '<div class="scan-menu-card-desc">Batch, ED, VVM, golongan</div>' +
-              '</div>' +
-              '<div class="scan-menu-card-arrow">' + U.icon('chevronRight', 20) + '</div>' +
-            '</button>' +
-
-            '<button class="scan-menu-card" data-group="bmhp">' +
-              '<div class="scan-menu-card-icon bmhp">🩹</div>' +
-              '<div class="scan-menu-card-body">' +
-                '<div class="scan-menu-card-title">Scan BMHP</div>' +
-                '<div class="scan-menu-card-desc">Masker, kasa, cairan medis</div>' +
-              '</div>' +
-              '<div class="scan-menu-card-arrow">' + U.icon('chevronRight', 20) + '</div>' +
-            '</button>' +
-
-            '<button class="scan-menu-card" data-group="atk">' +
-              '<div class="scan-menu-card-icon atk">📄</div>' +
-              '<div class="scan-menu-card-body">' +
-                '<div class="scan-menu-card-title">Scan ATK</div>' +
-                '<div class="scan-menu-card-desc">Kertas, alat tulis, kebersihan</div>' +
-              '</div>' +
-              '<div class="scan-menu-card-arrow">' + U.icon('chevronRight', 20) + '</div>' +
-            '</button>' +
-          '</div>' +
-
-          '<div class="scan-history-preview" id="history-preview"></div>' +
         '</main>' +
 
-        '<div class="scan-status-strip">' +
-          '<span>Mode: <strong>Menu</strong></span>' +
-          '<span id="online-indicator"></span>' +
-        '</div>' +
+        '<footer class="scan-footer">' +
+          '<div class="scan-footer-info">' +
+            '<span>v' + CONFIG.APP_VERSION + ' · <span id="online-status">Online</span></span>' +
+          '</div>' +
+          '<button class="btn btn-secondary btn-sm" id="btn-logout">' +
+            U.icon('logout', 14) + ' Keluar' +
+          '</button>' +
+        '</footer>' +
       '</div>';
   },
 
@@ -464,11 +526,10 @@ const ScanApp = {
       const total = res.data.total || 0;
       const items = res.data.items || [];
 
-      let html = '' +
-        '<div class="scan-history-preview-header">' +
-          '<div class="scan-history-preview-title">Riwayat Hari Ini</div>' +
-          '<span class="badge badge-primary">' + total + ' item</span>' +
-        '</div>';
+      let html = '<div class="scan-history-preview-header">' +
+        '<div class="scan-history-preview-title">Riwayat Hari Ini</div>' +
+        '<span class="badge badge-primary">' + total + '</span>' +
+      '</div>';
 
       if (items.length === 0) {
         html += '<div class="text-muted text-center" style="font-size:12px;padding:8px">Belum ada scan hari ini.</div>';
@@ -477,16 +538,12 @@ const ScanApp = {
         items.slice(0, 5).forEach(it => {
           html += '<div class="scan-history-item">' +
             '<span class="check">' + U.icon('check', 15) + '</span>' +
-            '<span class="text"><strong>' + U.escapeHtml(it.id_barang) + '</strong> — ' +
-              U.escapeHtml(it.tipe_mutasi) + ' ' + it.qty + '</span>' +
+            '<span class="text"><strong>' + U.escapeHtml(it.id_barang) + '</strong> ' +
+              U.escapeHtml(it.tipe_mutasi) + ' (' + it.qty + ')</span>' +
             '<span class="time">' + U.formatDateTime(it.timestamp) + '</span>' +
           '</div>';
         });
         html += '</div>';
-        if (items.length > 5) {
-          html += '<div class="text-muted text-center mt-2" style="font-size:12px">+ ' +
-            (items.length - 5) + ' lainnya</div>';
-        }
       }
       el.innerHTML = html;
     } catch (err) {
@@ -494,78 +551,89 @@ const ScanApp = {
     }
   },
 
-  // ============== LAYER 2: SCANNER ==============
+  // ============ LAYER 2: SCANNER ============
   showScanner(group) {
     this.currentLayer = 'scan';
     this.selectedGroup = group;
     this.selectedItem = null;
     this.availableBatches = [];
+    this.currentTipe = 'Masuk';
 
     const root = U.$('#scan-root');
     root.innerHTML = this._renderScanner();
 
-    const groupLabel = group === 'obat' ? 'Obat' : group === 'bmhp' ? 'BMHP' : 'ATK';
-    U.$('#mode-indicator').textContent = groupLabel;
-
-    // Attach listeners
     U.$('#btn-back', root).addEventListener('click', () => {
       this._stopScanner();
       this.showMenu();
     });
-
-    U.$('#btn-start-scan', root).addEventListener('click', () => this._startScanner());
-    U.$('#btn-manual', root).addEventListener('click', () => this._showManualInput());
-    U.$('#btn-stop', root).addEventListener('click', () => this._stopScanner());
     U.$('#btn-flash', root).addEventListener('click', async () => {
       const on = await QRScanner.toggleFlash();
       Toast.info(on ? 'Flash aktif' : 'Flash mati');
     });
+    U.$('#btn-start-scan', root).addEventListener('click', () => this._startScanner());
+    U.$('#btn-manual', root).addEventListener('click', () => this._showManualInput());
+    U.$('#btn-stop', root).addEventListener('click', () => this._stopScanner());
 
     this._renderFormArea();
+    this._updateFooter();
   },
 
   _renderScanner() {
-    const groupLabel = this.selectedGroup === 'obat' ? 'Obat' :
-                       this.selectedGroup === 'bmhp' ? 'BMHP' : 'ATK';
+    const label = this.selectedGroup === 'obat' ? 'Obat' :
+                  this.selectedGroup === 'bmhp' ? 'BMHP' : 'ATK';
     return '' +
       '<div class="scan-app">' +
         '<header class="scan-topbar">' +
-          '<button class="scan-icon-btn" id="btn-back" title="Ganti">' + U.icon('arrowLeft', 20) + '</button>' +
-          '<div class="scan-topbar-brand">' +
-            '<div class="scan-header-mode ' + this.selectedGroup + '" id="mode-indicator">' + groupLabel + '</div>' +
+          '<button class="scan-icon-btn" id="btn-back" title="Ganti Jenis">' + U.icon('arrowLeft', 20) + '</button>' +
+          '<div class="scan-topbar-center">' +
+            '<div class="scan-mode-pill ' + this.selectedGroup + '">' + label + '</div>' +
           '</div>' +
-          '<div class="scan-topbar-actions">' +
-            '<button class="scan-icon-btn" id="btn-flash" title="Flash">' + U.icon('zap', 20) + '</button>' +
-          '</div>' +
+          '<button class="scan-icon-btn" id="btn-flash" title="Flash">' + U.icon('zap', 20) + '</button>' +
         '</header>' +
 
         '<main class="scan-main">' +
-          '<div class="scanner-box">' +
-            '<div class="scanner-placeholder" id="scanner-placeholder">' +
-              U.icon('camera', 42) +
-              '<p style="margin-top:8px">Kamera belum aktif</p>' +
+          '<div class="scan-main-inner">' +
+            '<div class="scanner-box">' +
+              '<div class="scanner-placeholder" id="scanner-placeholder">' +
+                U.icon('camera', 40) +
+                '<p style="margin-top:8px">Kamera belum aktif</p>' +
+              '</div>' +
+              '<video id="scanner-video" style="display:none" playsinline muted></video>' +
+              '<div class="scanner-frame" id="scanner-frame" style="display:none"></div>' +
+              '<div class="scanner-mode-badge in" id="mode-badge" style="display:none">SCAN</div>' +
+              '<div class="scanner-controls" id="scanner-controls" style="display:none">' +
+                '<button id="btn-stop">' + U.icon('x', 14) + ' Stop</button>' +
+              '</div>' +
             '</div>' +
-            '<video id="scanner-video" style="display:none" playsinline muted></video>' +
-            '<div class="scanner-frame" id="scanner-frame" style="display:none"></div>' +
-            '<div class="scanner-mode-badge in" id="mode-badge" style="display:none">SCAN</div>' +
-            '<div class="scanner-controls" id="scanner-controls" style="display:none">' +
-              '<button id="btn-stop">' + U.icon('x', 15) + ' Stop</button>' +
+
+            '<div class="flex gap-2 flex-wrap mb-3">' +
+              '<button class="btn btn-primary" id="btn-start-scan" style="flex:1">' +
+                U.icon('camera', 16) + ' Mulai Scan' +
+              '</button>' +
+              '<button class="btn btn-secondary" id="btn-manual">' +
+                U.icon('keyboard', 16) + ' Manual' +
+              '</button>' +
             '</div>' +
-          '</div>' +
 
-          '<div class="flex gap-2 flex-wrap mb-3">' +
-            '<button class="btn btn-primary" id="btn-start-scan">' + U.icon('camera', 16) + ' Mulai Scan</button>' +
-            '<button class="btn btn-secondary" id="btn-manual">' + U.icon('keyboard', 16) + ' Input Manual</button>' +
+            '<div id="form-area"></div>' +
           '</div>' +
-
-          '<div id="form-area"></div>' +
         '</main>' +
 
-        '<div class="scan-status-strip">' +
-          '<span>Mode: <strong>' + groupLabel + '</strong></span>' +
-          '<span id="scan-counter">0 scan</span>' +
-        '</div>' +
+        '<footer class="scan-footer">' +
+          '<div class="scan-footer-info">' +
+            '<span id="counter-info">0 scan</span>' +
+          '</div>' +
+          '<button class="btn btn-ghost btn-sm" id="btn-go-menu2">' +
+            U.icon('arrowLeft', 14) + ' Menu' +
+          '</button>' +
+        '</footer>' +
       '</div>';
+  },
+
+  _updateFooter() {
+    const el = U.$('#counter-info');
+    if (el) el.textContent = 'Siap scan · Mode ' +
+      (this.selectedGroup === 'obat' ? 'Obat' : this.selectedGroup === 'bmhp' ? 'BMHP' : 'ATK');
   },
 
   async _startScanner() {
@@ -594,8 +662,8 @@ const ScanApp = {
 
   _stopScanner() {
     QRScanner.stop();
-    const video = U.$('#scanner-video');
-    if (video) video.style.display = 'none';
+    const v = U.$('#scanner-video');
+    if (v) v.style.display = 'none';
     const p = U.$('#scanner-placeholder');
     if (p) p.style.display = 'flex';
     ['#scanner-frame','#mode-badge','#scanner-controls'].forEach(sel => {
@@ -604,17 +672,16 @@ const ScanApp = {
   },
 
   _showManualInput() {
+    const expectedPrefix = this.selectedGroup === 'obat' ? 'OBT-' :
+                          this.selectedGroup === 'bmhp' ? 'BMP-' : 'ATK-';
     Modal.open({
-      title: 'Input ID Barang Manual',
+      title: 'Input ID Barang',
       body: '<div class="field">' +
               '<label class="field-label">ID Barang <span class="required">*</span></label>' +
-              '<input class="input" id="manual-id" placeholder="contoh: ' +
-                (this.selectedGroup === 'obat' ? 'OBT-0001' :
-                 this.selectedGroup === 'bmhp' ? 'BMP-0001' : 'ATK-0001') +
-                '" autofocus autocomplete="off">' +
-              '<div class="field-hint">Pastikan prefix sesuai dengan mode aktif (' +
-                (this.selectedGroup === 'obat' ? 'OBT-' :
-                 this.selectedGroup === 'bmhp' ? 'BMP-' : 'ATK-') + ')</div>' +
+              '<input type="text" class="input" id="manual-id" placeholder="contoh: ' +
+                expectedPrefix + '0001" autofocus autocomplete="off" ' +
+                'autocapitalize="characters">' +
+              '<div class="field-hint">Mode aktif: ' + expectedPrefix + '</div>' +
             '</div>',
       actions: [
         { label: 'Batal', class: 'btn-secondary' },
@@ -622,10 +689,8 @@ const ScanApp = {
           onClick: () => {
             const val = U.$('#manual-id').value.trim().toUpperCase();
             if (!val) { Toast.error('ID wajib diisi'); return; }
-            const prefix = this.selectedGroup === 'obat' ? 'OBT-' :
-                           this.selectedGroup === 'bmhp' ? 'BMP-' : 'ATK-';
-            if (val.indexOf(prefix) !== 0) {
-              Toast.error('ID harus diawali ' + prefix);
+            if (val.indexOf(expectedPrefix) !== 0) {
+              Toast.error('ID harus diawali ' + expectedPrefix);
               return;
             }
             if (!/^(OBT|BMP|ATK)-\d+$/.test(val)) {
@@ -644,29 +709,24 @@ const ScanApp = {
   async _handleScannedCode(code) {
     if (!code) return;
 
-    // Validasi prefix sesuai mode aktif
     const expectedPrefix = this.selectedGroup === 'obat' ? 'OBT-' :
-                           this.selectedGroup === 'bmhp' ? 'BMP-' : 'ATK-';
+                          this.selectedGroup === 'bmhp' ? 'BMP-' : 'ATK-';
     if (code.indexOf(expectedPrefix) !== 0) {
       const actualGroup = code.indexOf('OBT-') === 0 ? 'Obat' :
                           code.indexOf('BMP-') === 0 ? 'BMHP' :
                           code.indexOf('ATK-') === 0 ? 'ATK' : 'Unknown';
-      Toast.error('QR ini adalah "' + actualGroup + '". Silakan ganti mode scan.');
+      Toast.error('QR ini "' + actualGroup + '". Ganti mode scan.');
       U.vibrate([100, 50, 100]);
       return;
     }
 
     const master = this.master;
-    if (!master) { Toast.error('Data master belum dimuat'); return; }
+    if (!master) { Toast.error('Master belum dimuat'); return; }
 
     let item = null;
-    if (this.selectedGroup === 'obat') {
-      item = (master.obat || []).find(o => o.ID_Obat === code);
-    } else if (this.selectedGroup === 'bmhp') {
-      item = (master.bmhp || []).find(o => o.ID_BMHP === code);
-    } else {
-      item = (master.atk || []).find(o => o.ID_ATK === code);
-    }
+    if (this.selectedGroup === 'obat') item = (master.obat || []).find(o => o.ID_Obat === code);
+    else if (this.selectedGroup === 'bmhp') item = (master.bmhp || []).find(o => o.ID_BMHP === code);
+    else item = (master.atk || []).find(o => o.ID_ATK === code);
 
     if (!item) { Toast.error('Barang tidak ditemukan: ' + code); return; }
     if (item.Status_Aktif === 'Nonaktif') { Toast.error('Barang dinonaktifkan'); return; }
@@ -674,14 +734,11 @@ const ScanApp = {
     this.selectedItem = item;
     this.availableBatches = [];
 
-    // Untuk Obat, ambil batch tersedia (jika Scan Keluar)
     if (this.selectedGroup === 'obat') {
       try {
         const res = await Api.getAvailableBatches(code);
         this.availableBatches = (res.data && res.data.batches) || [];
-      } catch (err) {
-        // silent — batch akan kosong, user pakai form default
-      }
+      } catch (err) {}
     }
 
     this._renderFormArea();
@@ -696,7 +753,7 @@ const ScanApp = {
         '<div class="card">' +
           '<div class="scan-empty">' +
             U.icon('qr', 42) +
-            '<h3 style="color:var(--text);margin-top:8px;font-size:var(--fs-md)">Belum ada item</h3>' +
+            '<h3>Belum ada item</h3>' +
             '<p>Scan QR atau input ID manual untuk memulai.</p>' +
           '</div>' +
         '</div>';
@@ -705,33 +762,30 @@ const ScanApp = {
 
     const item = this.selectedItem;
     const group = this.selectedGroup;
-
     const idField = group === 'obat' ? 'ID_Obat' : group === 'bmhp' ? 'ID_BMHP' : 'ID_ATK';
     const nameField = group === 'obat' ? 'Nama_Obat' : 'Nama_Barang';
 
-    // Selected item card
     let html = '' +
       '<div class="selected-item-card">' +
         '<div class="selected-item-name">' + U.escapeHtml(item[nameField] || '-') + '</div>' +
         '<div class="selected-item-id">' + U.escapeHtml(item[idField]) + '</div>' +
         '<div class="selected-item-meta">' +
-          '<span class="selected-item-meta-item">' + U.icon('package', 14) + ' ' + U.escapeHtml(item.Satuan || '-') + '</span>' +
-          '<span class="selected-item-meta-item">' + U.icon('mapPin', 14) + ' ' + U.escapeHtml(item.Lokasi_Rak || '-') + '</span>' +
+          '<span class="selected-item-meta-item">' + U.icon('package', 13) + ' ' + U.escapeHtml(item.Satuan || '-') + '</span>' +
+          '<span class="selected-item-meta-item">' + U.icon('mapPin', 13) + ' ' + U.escapeHtml(item.Lokasi_Rak || '-') + '</span>' +
         '</div>' +
       '</div>';
 
-    // Form
     html += '<form class="card" id="scan-form">';
 
-    // Tipe Mutasi (Masuk/Keluar) — toggle
+    // Tipe toggle
     html += '' +
       '<div class="field">' +
-        '<label class="field-label">Tipe <span class="required">*</span></label>' +
-        '<div class="field-row">' +
-          '<button type="button" class="btn btn-secondary" data-tipe="Masuk" style="width:100%">' +
+        '<label class="field-label">Tipe Mutasi <span class="required">*</span></label>' +
+        '<div class="tipe-toggle">' +
+          '<button type="button" class="tipe-toggle-btn active in" data-tipe="Masuk">' +
             U.icon('arrowDown', 16) + ' Masuk' +
           '</button>' +
-          '<button type="button" class="btn btn-secondary" data-tipe="Keluar" style="width:100%">' +
+          '<button type="button" class="tipe-toggle-btn" data-tipe="Keluar">' +
             U.icon('arrowUp', 16) + ' Keluar' +
           '</button>' +
         '</div>' +
@@ -745,13 +799,9 @@ const ScanApp = {
         '<input type="number" class="input" id="f-qty" min="1" step="1" required inputmode="numeric" autofocus>' +
       '</div>';
 
-    // Group-specific fields
-    if (group === 'obat') {
-      html += this._renderObatFields(item);
-    } else if (group === 'bmhp') {
-      html += this._renderBmhpFields(item);
-    }
-    // ATK tidak butuh field tambahan
+    // Group-specific
+    if (group === 'obat') html += this._renderObatFields(item);
+    else if (group === 'bmhp') html += this._renderBmhpFields(item);
 
     // Common fields
     const master = this.master;
@@ -765,7 +815,6 @@ const ScanApp = {
       '<option value="' + s + '">' + s + '</option>'
     ).join('');
 
-    // Sumber Dana (selalu ada)
     html += '' +
       '<div class="field">' +
         '<label class="field-label">Sumber Dana</label>' +
@@ -774,16 +823,14 @@ const ScanApp = {
         '</select>' +
       '</div>';
 
-    // Supplier (untuk Masuk) — dinamis akan di-show/hide
     html += '' +
-      '<div class="field" id="field-supplier" style="display:none">' +
+      '<div class="field" id="field-supplier" style="display:block">' +
         '<label class="field-label">Supplier <span class="required">*</span></label>' +
         '<select class="select" id="f-supplier">' +
           '<option value="">— Pilih —</option>' + supplierOptions +
         '</select>' +
       '</div>';
 
-    // Unit Tujuan (untuk Keluar) — dinamis akan di-show/hide
     html += '' +
       '<div class="field" id="field-unit" style="display:none">' +
         '<label class="field-label">Unit Tujuan <span class="required">*</span></label>' +
@@ -792,23 +839,20 @@ const ScanApp = {
         '</select>' +
       '</div>';
 
-    // No Dokumen
     html += '' +
       '<div class="field">' +
         '<label class="field-label">No. Dokumen</label>' +
         '<input type="text" class="input" id="f-dok" placeholder="Faktur / SJ / Resep">' +
       '</div>';
 
-    // Keterangan
     html += '' +
       '<div class="field">' +
         '<label class="field-label">Keterangan</label>' +
         '<textarea class="textarea" id="f-ket" rows="2"></textarea>' +
       '</div>';
 
-    // Actions
     html += '' +
-      '<div class="flex gap-2 flex-wrap mt-3">' +
+      '<div class="flex gap-2 flex-wrap mt-2">' +
         '<button type="button" class="btn btn-secondary" id="btn-cancel">Batal</button>' +
         '<button type="submit" class="btn btn-primary" id="btn-submit" style="flex:1">' +
           U.icon('check', 16) + ' Simpan' +
@@ -816,24 +860,22 @@ const ScanApp = {
       '</div>';
 
     html += '</form>';
-
     area.innerHTML = html;
 
-    // Attach listeners
+    // Attach
     U.$$('[data-tipe]', area).forEach(btn => {
       btn.addEventListener('click', () => {
-        const tipe = btn.dataset.tipe;
-        U.$('#f-tipe', area).value = tipe;
+        this.currentTipe = btn.dataset.tipe;
+        U.$('#f-tipe', area).value = this.currentTipe;
         U.$$('[data-tipe]', area).forEach(b => {
-          b.classList.toggle('btn-primary', b.dataset.tipe === tipe);
-          b.classList.toggle('btn-secondary', b.dataset.tipe !== tipe);
+          b.classList.remove('active', 'in', 'out');
+          if (b.dataset.tipe === this.currentTipe) {
+            b.classList.add('active', this.currentTipe === 'Masuk' ? 'in' : 'out');
+          }
         });
         this._updateConditionalFields();
       });
     });
-
-    // Set default tipe = Masuk
-    this._updateConditionalFields();
 
     U.$('#btn-cancel', area).addEventListener('click', () => {
       this.selectedItem = null;
@@ -847,28 +889,22 @@ const ScanApp = {
   },
 
   _updateConditionalFields() {
-    const tipe = U.$('#f-tipe').value;
-    const isMasuk = tipe === 'Masuk';
-    U.$('#field-supplier').style.display = isMasuk ? 'block' : 'none';
-    U.$('#field-unit').style.display = isMasuk ? 'none' : 'block';
+    const isMasuk = this.currentTipe === 'Masuk';
+    const s = U.$('#field-supplier'); if (s) s.style.display = isMasuk ? 'block' : 'none';
+    const u = U.$('#field-unit'); if (u) u.style.display = isMasuk ? 'none' : 'block';
 
-    // Batch dropdown only show saat Keluar (untuk Obat)
     if (this.selectedGroup === 'obat') {
-      const batchFieldKeluar = U.$('#field-batch-keluar');
-      const batchFieldMasuk = U.$('#field-batch-masuk');
-      if (batchFieldKeluar) batchFieldKeluar.style.display = isMasuk ? 'none' : 'block';
-      if (batchFieldMasuk) batchFieldMasuk.style.display = isMasuk ? 'block' : 'none';
+      const bm = U.$('#field-batch-masuk');
+      const bk = U.$('#field-batch-keluar');
+      if (bm) bm.style.display = isMasuk ? 'block' : 'none';
+      if (bk) bk.style.display = isMasuk ? 'none' : 'block';
     }
   },
 
   _renderObatFields(item) {
     const needVVM = String(item.Wajib_VVM) === 'Ya';
-
-    // Masuk: input batch & ED manual
-    // Keluar: pilih batch dari dropdown FEFO
     let html = '';
 
-    // Batch field for Masuk
     html += '' +
       '<div id="field-batch-masuk">' +
         '<div class="field-row">' +
@@ -895,16 +931,15 @@ const ScanApp = {
         : '') +
       '</div>';
 
-    // Batch field for Keluar — dropdown FEFO
     html += '<div id="field-batch-keluar" style="display:none">';
     if (this.availableBatches.length === 0) {
       html += '' +
         '<div class="field">' +
           '<label class="field-label">Batch yang Diambil <span class="required">*</span></label>' +
-          '<div class="input" style="background:var(--warning-bg);border-color:var(--warning);color:var(--warning);font-weight:600;display:flex;align-items:center">' +
-            U.icon('alert', 16) + '<span style="margin-left:6px">Tidak ada batch tersedia</span>' +
+          '<div class="input" style="background:var(--warning-bg);border-color:var(--warning);color:var(--warning);font-weight:600;display:flex;align-items:center;gap:6px">' +
+            U.icon('alert', 16) + '<span>Tidak ada batch tersedia</span>' +
           '</div>' +
-          '<div class="field-hint">Belum ada batch dengan stok. Lakukan penerimaan (Scan Masuk) terlebih dulu.</div>' +
+          '<div class="field-hint">Belum ada batch dengan stok.</div>' +
         '</div>';
     } else {
       html += '' +
@@ -914,26 +949,22 @@ const ScanApp = {
             '<option value="">— Pilih batch —</option>' +
             this.availableBatches.map((b, idx) => {
               const isFEFO = idx === 0;
-              const isNearEd = b.status_ed === 'near_expired';
-              const isExpired = b.status_ed === 'expired';
+              const isNear = b.status_ed === 'near_expired';
+              const isExp = b.status_ed === 'expired';
               let label = b.no_batch + ' — sisa ' + b.sisa_stok;
               if (b.exp_date) label += ' — ED ' + b.exp_date;
               if (b.days_to_ed !== null && b.days_to_ed >= 0) label += ' (' + b.days_to_ed + ' hr)';
               if (isFEFO) label += ' ⭐ FEFO';
-              if (isExpired) label += ' ⚠️ EXPIRED';
-              else if (isNearEd) label += ' ⚠️ ED DEKAT';
+              if (isExp) label += ' ⚠️ EXPIRED';
+              else if (isNear) label += ' ⚠️ ED DEKAT';
               return '<option value="' + U.escapeHtml(b.no_batch) + '"' +
-                     (isExpired ? ' disabled' : '') + '>' + U.escapeHtml(label) + '</option>';
+                     (isExp ? ' disabled' : '') + '>' + U.escapeHtml(label) + '</option>';
             }).join('') +
           '</select>' +
-          '<div class="field-hint">' +
-            'Pilih batch yang benar-benar Anda ambil dari rak. ' +
-            'Batch teratas disarankan (FEFO — ED terdekat).' +
-          '</div>' +
+          '<div class="field-hint">Batch teratas disarankan (FEFO — ED terdekat).</div>' +
         '</div>';
     }
     html += '</div>';
-
     return html;
   },
 
@@ -968,23 +999,20 @@ const ScanApp = {
     const payload = {
       id_barang: item[idField],
       tipe_mutasi: tipe,
-      qty: qty,
-      sumber_dana: sumber,
-      no_dokumen: dok,
-      keterangan: ket
+      qty, sumber_dana: sumber,
+      no_dokumen: dok, keterangan: ket
     };
 
     if (tipe === 'Masuk') {
       const sup = U.$('#f-supplier').value;
-      if (!sup) { Toast.error('Supplier wajib untuk barang masuk'); this._submitting = false; return; }
+      if (!sup) { Toast.error('Supplier wajib'); this._submitting = false; return; }
       payload.id_supplier = sup;
     } else {
       const unit = U.$('#f-unit').value;
-      if (!unit) { Toast.error('Unit tujuan wajib untuk barang keluar'); this._submitting = false; return; }
+      if (!unit) { Toast.error('Unit tujuan wajib'); this._submitting = false; return; }
       payload.id_unit = unit;
     }
 
-    // Group-specific
     if (group === 'obat') {
       if (tipe === 'Masuk') {
         const batch = U.$('#f-batch').value.trim();
@@ -1001,9 +1029,7 @@ const ScanApp = {
       } else {
         const batchOut = U.$('#f-batch-out');
         if (!batchOut || !batchOut.value) {
-          Toast.error('Pilih batch yang diambil');
-          this._submitting = false;
-          return;
+          Toast.error('Pilih batch'); this._submitting = false; return;
         }
         payload.no_batch = batchOut.value;
       }
@@ -1025,14 +1051,11 @@ const ScanApp = {
       U.beepSuccess();
 
       const isPending = res.data && res.data.status_approval === 'Pending';
-      Toast.success('Berhasil: ' + res.data.id_transaksi +
-                    (isPending ? ' (menunggu approval)' : ''));
+      Toast.success('Berhasil: ' + res.data.id_transaksi + (isPending ? ' (pending)' : ''));
 
-      // Reset
       this.selectedItem = null;
       this.availableBatches = [];
       this._renderFormArea();
-      this._updateCounter();
     } catch (err) {
       Toast.error('Gagal: ' + err.message);
 
@@ -1040,19 +1063,16 @@ const ScanApp = {
         const isApprover = ['SuperAdmin','Apoteker'].indexOf(this.session.role) !== -1;
         const prompt = err.message + '\n\n' +
           (isApprover ? 'Lanjutkan sebagai pengeluaran darurat?'
-                      : 'Lanjutkan sebagai pengeluaran darurat?\n\n(Butuh approval Apoteker)');
+                      : 'Lanjutkan sebagai pengeluaran darurat? Butuh approval Apoteker.');
         Modal.confirm('Stok Tidak Mencukupi', prompt,
           async () => {
             payload.is_emergency = true;
             try {
               const res2 = await Api.simpanTransaksi(payload);
-              const pending = res2.data && res2.data.status_approval === 'Pending';
-              Toast.success('Pengeluaran darurat: ' + res2.data.id_transaksi +
-                            (pending ? ' (menunggu approval)' : ''));
+              Toast.success('Darurat: ' + res2.data.id_transaksi);
               this.selectedItem = null;
               this.availableBatches = [];
               this._renderFormArea();
-              this._updateCounter();
             } catch (err2) {
               Toast.error('Gagal: ' + err2.message);
             }
@@ -1068,11 +1088,6 @@ const ScanApp = {
     }
   },
 
-  _updateCounter() {
-    const el = U.$('#scan-counter');
-    if (el) el.textContent = this.history.length + ' scan';
-  },
-
   async logout() {
     try { await Api.logout(); } catch (e) {}
     Store.clearSession();
@@ -1080,19 +1095,15 @@ const ScanApp = {
     this.session = null;
     this.master = null;
     this.selectedItem = null;
-    this.availableBatches = [];
     Toast.info('Anda telah keluar.');
     this.showLogin();
   }
 };
 
-// ============================================================
-// BOOT
-// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   ScanApp.init();
   console.log('[SCAN] v' + CONFIG.APP_VERSION + ' booted');
 });
 </script>
 </body>
-</html>scan.html
+</html>
