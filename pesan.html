@@ -9,6 +9,7 @@
 <meta name="description" content="Pesan Barang — Puskesmas Sanden">
 <title>Pesan Barang — Puskesmas Sanden</title>
 
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="preconnect" href="https://script.googleapis.com" crossorigin>
 <link rel="stylesheet" href="shared/core.css">
@@ -402,18 +403,26 @@ const RuangStore = {
 
 /* ============================================================
    OVERRIDE Api._buildRequest — pakai session ruang
+   (dipanggil setelah core.js loaded, lihat BOOT di bawah)
    ============================================================ */
-Api._buildRequest = function(action, payload, opts) {
-  const ruangSession = RuangStore.get();
-  return {
-    auth_token: CONFIG.API_KEY,
-    session_token: (opts && opts.public) ? undefined : (ruangSession ? ruangSession.token : undefined),
-    action: action,
-    uuid: (opts && opts.noUuid) ? undefined : U.uuid(),
-    timestamp_client: U.nowISO(),
-    payload: payload || {}
+function installRuangApiOverride() {
+  if (typeof Api === 'undefined') {
+    dbgErr('Api tidak tersedia — core.js gagal dimuat?');
+    return false;
+  }
+  Api._buildRequest = function(action, payload, opts) {
+    const ruangSession = RuangStore.get();
+    return {
+      auth_token: CONFIG.API_KEY,
+      session_token: (opts && opts.public) ? undefined : (ruangSession ? ruangSession.token : undefined),
+      action: action,
+      uuid: (opts && opts.noUuid) ? undefined : U.uuid(),
+      timestamp_client: U.nowISO(),
+      payload: payload || {}
+    };
   };
-};
+  return true;
+}
 
 /* ============================================================
    CUSTOM SELECT (duplikat dari index.html)
@@ -1320,10 +1329,24 @@ const PesanApp = {
 };
 
 /* ============================================================
-   BOOT
+   BOOT — tunggu core.js (defer) selesai
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
   dbg('pesan.html ready');
+
+  if (!installRuangApiOverride()) {
+    // core.js tidak loaded — tampilkan error yang jelas
+    const el = document.getElementById('boot-splash');
+    if (el) el.classList.add('hide');
+    document.getElementById('pesan-root').innerHTML =
+      '<div style="padding:32px;text-align:center;color:#d32f2f">' +
+        '<h2>Gagal memuat sistem</h2>' +
+        '<p>File <code>shared/core.js</code> tidak ditemukan.</p>' +
+        '<p>Pastikan struktur folder: <code>pesan.html</code> dan folder <code>shared/</code> sejajar.</p>' +
+      '</div>';
+    return;
+  }
+
   PesanApp.init().catch(err => {
     dbgErr('PesanApp init fatal:', err);
     const el = document.getElementById('boot-splash');
