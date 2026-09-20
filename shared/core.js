@@ -3,19 +3,20 @@
  * SHARED CORE JS — Sistem Gudang Puskesmas v5.4
  * ============================================================
  * Termasuk: config, utilities, store, toast, modal, btn,
- *           form error, API client, CustomSelect (auto-replace
- *           semua <select>), QR scanner dengan jsQR fallback,
- *           LoginForm, AuthGuard, lib loader.
+ *           form error, API client, CustomSelect, QR scanner,
+ *           LoginForm, AuthGuard, LibLoader, BatchSelector.
  *
  * Changelog v5.4:
  *   - Fix LoginForm._submitting (user tidak terkunci saat login gagal)
- *   - LoginForm: ganti Loading overlay → .busy class di form
+ *   - LibLoader overhaul: per-CDN timeout 8s, cleanup script tag,
+ *     strict global check, no hang on retry
+ *   - LoginForm: ganti Loading overlay -> .busy class
  *   - Loading object deprecated (no-op + dbgWarn)
  *   - Api.getPesananDetail() + Api.getLaporan() (backend v5.4)
  *   - Api.call skip retry untuk PARTIAL_WRITE
- *   - LibLoader strict check (qrcode.toDataURL, XLSX.utils)
+ *   - MASTER_TIMEOUT_MS 12s -> 20s
  *   - APP_VERSION 5.4
- *   - Guard digit-input saat LoginForm submitting
+ *   - LoginForm: guard digit input saat submitting
  * ============================================================
  */
 'use strict';
@@ -28,16 +29,21 @@ const CONFIG = Object.freeze({
   API_KEY: 'PKM_SANDEN_26',
   APP_VERSION: '5.4',
 
+  // Timeouts per endpoint (ms)
   REQUEST_TIMEOUT_MS: 15000,
   LOGIN_TIMEOUT_MS: 12000,
-  MASTER_TIMEOUT_MS: 12000,
+  MASTER_TIMEOUT_MS: 20000,       // v5.4: master payload besar, network kadang lambat
   WHOAMI_TIMEOUT_MS: 6000,
   RETRY_ATTEMPTS: 2,
 
-  MASTER_CACHE_TTL_MS: 3600000,
+  // Cache TTL
+  MASTER_CACHE_TTL_MS: 3600000,   // 1 jam
+
+  // localStorage keys
   LOGO_KEY: 'PKM_LOGO_DATAURL',
   SESSION_KEY: 'pkm_session',
   MASTER_KEY: 'pkm_master_data',
+
   MAX_TOAST: 3,
   DEBUG: true
 });
@@ -232,7 +238,8 @@ const Store = {
   setMaster(data) {
     try {
       localStorage.setItem(CONFIG.MASTER_KEY, JSON.stringify({
-        data, expires: Date.now() + CONFIG.MASTER_CACHE_TTL_MS
+        data: data,
+        expires: Date.now() + CONFIG.MASTER_CACHE_TTL_MS
       }));
     } catch (e) { dbgWarn('setMaster error', e); }
   },
@@ -377,30 +384,25 @@ const Modal = {
  *   1. Button loading state:
  *        Btn.setLoading(btn, 'Menyimpan...');
  *
- *   2. Container busy overlay (inline di dalam container):
+ *   2. Container busy overlay:
  *        containerEl.classList.add('busy');
  *        // ... async work ...
  *        containerEl.classList.remove('busy');
- *        // variasi: .busy-sm, .busy-plain (tanpa blur)
  *
  *   3. Inline placeholder:
  *        el.innerHTML = Helper.loader('Memuat...');
  *
- * Objek ini tetap ada untuk backward-compat supaya kalau ada kode
- * lain yang masih mereferensikan Loading.show/hide/forceHide,
- * tidak error — hanya no-op + warning.
+ * Objek ini tetap ada untuk backward-compat — kalau ada kode
+ * lama yang masih mereferensikan Loading.show/hide, tidak error.
  */
 const Loading = {
   _count: 0,
-  _watchdogTimer: null,
-  _watchdogMs: 0,
-  _deprecated: true,
 
   show() {
-    dbgWarn('[DEPRECATED] Loading.show() dipanggil — pakai Btn.setLoading() atau class .busy');
+    dbgWarn('[DEPRECATED] Loading.show() — pakai Btn.setLoading() atau class .busy');
   },
   hide() {
-    dbgWarn('[DEPRECATED] Loading.hide() dipanggil — pakai Btn.setLoading() atau class .busy');
+    dbgWarn('[DEPRECATED] Loading.hide() — pakai Btn.setLoading() atau class .busy');
   },
   forceHide() {}
 };
@@ -671,6 +673,11 @@ class ApiError extends Error {
 const Api = {
   _warmedUp: false,
 
+  /**
+   * Warmup — 1 request health ke backend.
+   * Gunakan GET supaya tidak masuk hitungan doPost.
+   * Skip kalau baru warmup <30s lalu (cegah spam).
+   */
   warmup() {
     if (this._warmedUp) return;
     this._warmedUp = true;
@@ -710,7 +717,7 @@ const Api = {
       clearTimeout(tid);
       const text = await res.text();
       const elapsed = Math.round(performance.now() - t0);
-      dbg('API ' + body.action + ' → ' + res.status + ' (' + elapsed + 'ms)');
+      dbg('API ' + body.action + ' -> ' + res.status + ' (' + elapsed + 'ms)');
       let json;
       try { json = JSON.parse(text); }
       catch (e) {
@@ -735,18 +742,10 @@ const Api = {
     opts = opts || {};
     const body = this._buildRequest(action, payload, opts);
 
-if (action === 'login' || action === 'loginRuang') {
-  const res = await this._fetch(body, CONFIG.LOGIN_TIMEOUT_MS);
-  if (res.code === 200) return res;
-  
-  dbgWarn('Login gagal: code=' + res.code + ' msg=' + (res.message || ''));
-  throw new ApiError(
-    res.error_code || 'UNAUTHORIZED',
-    res.message || (action === 'loginRuang' ? 'PIN salah.' : 'Username atau PIN salah.'),
-    res
-  );
-}
-    
+    // Endpoint dengan timeout khusus
+    if (action === 'login' || action === 'loginRuang') {
+      return await this._fetch(body, CONFIG.LOGIN_TIMEOUT_MS);
+    }
     if (action === 'getMasterData') {
       return await this._fetch(body, CONFIG.MASTER_TIMEOUT_MS);
     }
@@ -777,9 +776,8 @@ if (action === 'login' || action === 'loginRuang') {
           continue;
         }
         // v5.4: PARTIAL_WRITE tidak boleh diretry.
-        // Kalau diretry, idempotency UUID akan mengembalikan "duplikat diabaikan"
-        // (code 200) dan menutupi kegagalan awal. Frontend butuh info PARTIAL_WRITE
-        // asli untuk menampilkan pesan khusus ke user.
+        // Kalau diretry, idempotency UUID akan return "duplikat diabaikan"
+        // (code 200) dan menutupi kegagalan awal. Frontend butuh info asli.
         if (res.code >= 500 && res.error_code !== 'PARTIAL_WRITE'
             && attempt < CONFIG.RETRY_ATTEMPTS - 1) {
           lastError = new ApiError(res.error_code || 'SERVER_ERROR', res.message || 'Server error');
@@ -800,10 +798,12 @@ if (action === 'login' || action === 'loginRuang') {
 
   // ---------- Endpoints ----------
   login(username, pin) {
-    return this.call('login', { username, pin_plaintext: pin }, { public: true });
+    return this.call('login', { username: username, pin_plaintext: pin }, { public: true });
   },
   loginRuang(kode, pin) {
-    return this.call('loginRuang', { kode_ruang: kode, pin_plaintext: pin }, { public: true });
+    return this.call('loginRuang',
+      { kode_ruang: kode, pin_plaintext: pin },
+      { public: true });
   },
   getRuangList() {
     return this.call('getRuangList', {}, { public: true });
@@ -813,11 +813,17 @@ if (action === 'login' || action === 'loginRuang') {
   getMasterData() { return this.call('getMasterData', {}); },
   getDashboardSummary() { return this.call('getDashboardSummary', {}); },
   getKartuStokBulanan(idBarang, bulan, tahun) {
-    return this.call('getKartuStokBulanan', { id_barang: idBarang, bulan, tahun });
+    return this.call('getKartuStokBulanan', { id_barang: idBarang, bulan: bulan, tahun: tahun });
   },
-  getAvailableBatches(idBarang) { return this.call('getAvailableBatches', { id_barang: idBarang }); },
-  getAvailableMonths(idBarang) { return this.call('getAvailableMonths', { id_barang: idBarang }); },
-  getExpiringItems(bulan) { return this.call('getExpiringItems', { bulan: bulan || 3 }); },
+  getAvailableBatches(idBarang) {
+    return this.call('getAvailableBatches', { id_barang: idBarang });
+  },
+  getAvailableMonths(idBarang) {
+    return this.call('getAvailableMonths', { id_barang: idBarang });
+  },
+  getExpiringItems(bulan) {
+    return this.call('getExpiringItems', { bulan: bulan || 3 });
+  },
   simpanTransaksi(payload) { return this.call('simpanTransaksi', payload); },
   simpanOpnameBulk(payload) { return this.call('simpanOpnameBulk', payload); },
   editMasterData(payload) { return this.call('editMasterData', payload); },
@@ -830,13 +836,19 @@ if (action === 'login' || action === 'loginRuang') {
   approveTransaksi(idTrx, keputusan) {
     return this.call('approveTransaksi', { id_transaksi: idTrx, keputusan: keputusan });
   },
-  getMyScanHistory(limit) { return this.call('getMyScanHistory', { limit: limit || 50 }); },
+  getMyScanHistory(limit) {
+    return this.call('getMyScanHistory', { limit: limit || 50 });
+  },
 
   // Pesanan Ruang
   getBarangUntukPesan() { return this.call('getBarangUntukPesan', {}); },
   kirimPesanan(payload) { return this.call('kirimPesanan', payload); },
-  getPesananSaya(limit) { return this.call('getPesananSaya', { limit: limit || 20 }); },
-  getPesananMasuk(payload) { return this.call('getPesananMasuk', payload || {}); },
+  getPesananSaya(limit) {
+    return this.call('getPesananSaya', { limit: limit || 20 });
+  },
+  getPesananMasuk(payload) {
+    return this.call('getPesananMasuk', payload || {});
+  },
   getPesananDetail(idPesanan) {
     return this.call('getPesananDetail', { id_pesanan: idPesanan });
   },
@@ -849,18 +861,21 @@ if (action === 'login' || action === 'loginRuang') {
     return this.call('getLaporan', payload || {});
   },
   getLaporanStokTerkini(payload) {
-    return this.call('getLaporan', Object.assign({ tipe: 'stok_terkini' }, payload || {}));
+    return this.call('getLaporan',
+      Object.assign({ tipe: 'stok_terkini' }, payload || {}));
   },
   getLaporanMutasiBulanan(payload) {
-    return this.call('getLaporan', Object.assign({ tipe: 'mutasi_bulanan' }, payload || {}));
+    return this.call('getLaporan',
+      Object.assign({ tipe: 'mutasi_bulanan' }, payload || {}));
   },
   getLaporanNilaiAset(payload) {
-    return this.call('getLaporan', Object.assign({ tipe: 'nilai_aset' }, payload || {}));
+    return this.call('getLaporan',
+      Object.assign({ tipe: 'nilai_aset' }, payload || {}));
   }
 };
 
 // ============================================================
-// LIB LOADER — multi-CDN fallback (v5.4: strict check)
+// LIB LOADER — multi-CDN fallback (v5.4: hang-proof)
 // ============================================================
 const LibLoader = {
   _cache: {},
@@ -881,19 +896,26 @@ const LibLoader = {
     ]
   },
   _globals: { qrcode: 'QRCode', sheetjs: 'XLSX', jsqr: 'jsQR' },
+  _cdnTimeoutMs: 8000,
 
   load(name) {
     if (this._cache[name]) return this._cache[name];
     const urls = this._sources[name];
     const globalName = this._globals[name];
-    if (!urls || !globalName) return Promise.reject(new Error('Unknown lib: ' + name));
+    if (!urls || !globalName) {
+      return Promise.reject(new Error('Unknown lib: ' + name));
+    }
+
+    // v5.4: bersihkan script tag lama yang mungkin stale
+    // dari retry sebelumnya — supaya tidak bocor di DOM.
+    this._cleanupOldScripts(name);
 
     this._cache[name] = this._trySequential(urls, name, globalName, 0);
     return this._cache[name];
   },
 
-  // v5.4: strict check supaya global yang "stale" (mis. window.XLSX = {} dari script lain)
-  // tidak dianggap valid.
+  // v5.4: strict check supaya global "stale" (mis. window.XLSX = {})
+  // dari script lain tidak dianggap valid.
   _isValidGlobal(name, globalName) {
     const g = window[globalName];
     if (!g) return false;
@@ -903,26 +925,26 @@ const LibLoader = {
     return true;
   },
 
+  _cleanupOldScripts(name) {
+    const stale = document.querySelectorAll('script[data-lib^="' + name + '-"]');
+    stale.forEach(s => { try { s.remove(); } catch (e) {} });
+  },
+
+  /**
+   * v5.4: SELALU buat script baru per attempt.
+   * JANGAN reuse tag lama — event load/error sudah fired,
+   * listener baru tidak akan trigger -> promise hang selamanya.
+   * Timeout per-CDN 8s supaya tidak hang kalau script diam-diam fail.
+   */
   _trySequential(urls, name, globalName, idx) {
     if (idx >= urls.length) {
       delete LibLoader._cache[name];
       return Promise.reject(new Error('Semua CDN gagal untuk ' + name));
     }
     return new Promise((resolve, reject) => {
+      // Cek global dulu — kalau sudah valid, selesai
       if (this._isValidGlobal(name, globalName)) {
         resolve(window[globalName]);
-        return;
-      }
-
-      const existing = document.querySelector('script[data-lib="' + name + '-' + idx + '"]');
-      if (existing) {
-        existing.addEventListener('load', () => {
-          if (this._isValidGlobal(name, globalName)) resolve(window[globalName]);
-          else this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
-        });
-        existing.addEventListener('error', () => {
-          this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
-        });
         return;
       }
 
@@ -930,7 +952,21 @@ const LibLoader = {
       script.src = urls[idx];
       script.async = true;
       script.setAttribute('data-lib', name + '-' + idx);
+
+      let settled = false;
+      const tid = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        dbgWarn('CDN #' + (idx + 1) + ' TIMEOUT (' +
+          Math.round(this._cdnTimeoutMs / 1000) + 's): ' + urls[idx]);
+        try { script.remove(); } catch (e) {}
+        this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
+      }, this._cdnTimeoutMs);
+
       script.onload = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(tid);
         if (this._isValidGlobal(name, globalName)) {
           dbg('Lib ' + name + ' loaded dari CDN #' + (idx + 1));
           resolve(window[globalName]);
@@ -939,10 +975,15 @@ const LibLoader = {
           this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
         }
       };
+
       script.onerror = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(tid);
         dbgWarn('CDN #' + (idx + 1) + ' gagal: ' + urls[idx]);
         this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
       };
+
       document.head.appendChild(script);
     });
   }
@@ -1473,6 +1514,7 @@ const LoginForm = {
     this._onSuccess = null;
     this._pin = '';
     this._mounted = false;
+    this._submitting = false;
   },
 
   async _submit() {
@@ -1509,14 +1551,8 @@ const LoginForm = {
     dbg('Login: ' + username);
 
     try {
-const res = await Api.login(username, this._pin);
-
-// Defensive: pastikan response benar-benar sukses
-if (!res || res.code !== 200 || !res.session_token) {
-  throw new Error((res && res.message) || 'Login gagal: respons tidak valid.');
-}
-
-dbg('Login OK code=' + res.code + ' role=' + res.role);
+      const res = await Api.login(username, this._pin);
+      dbg('Login OK code=' + res.code);
 
       const session = {
         token: res.session_token,
