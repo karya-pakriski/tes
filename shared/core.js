@@ -735,9 +735,18 @@ const Api = {
     opts = opts || {};
     const body = this._buildRequest(action, payload, opts);
 
-    if (action === 'login' || action === 'loginRuang') {
-      return await this._fetch(body, CONFIG.LOGIN_TIMEOUT_MS);
-    }
+if (action === 'login' || action === 'loginRuang') {
+  const res = await this._fetch(body, CONFIG.LOGIN_TIMEOUT_MS);
+  if (res.code === 200) return res;
+  
+  dbgWarn('Login gagal: code=' + res.code + ' msg=' + (res.message || ''));
+  throw new ApiError(
+    res.error_code || 'UNAUTHORIZED',
+    res.message || (action === 'loginRuang' ? 'PIN salah.' : 'Username atau PIN salah.'),
+    res
+  );
+}
+    
     if (action === 'getMasterData') {
       return await this._fetch(body, CONFIG.MASTER_TIMEOUT_MS);
     }
@@ -1500,8 +1509,14 @@ const LoginForm = {
     dbg('Login: ' + username);
 
     try {
-      const res = await Api.login(username, this._pin);
-      dbg('Login OK code=' + res.code);
+const res = await Api.login(username, this._pin);
+
+// Defensive: pastikan response benar-benar sukses
+if (!res || res.code !== 200 || !res.session_token) {
+  throw new Error((res && res.message) || 'Login gagal: respons tidak valid.');
+}
+
+dbg('Login OK code=' + res.code + ' role=' + res.role);
 
       const session = {
         token: res.session_token,
