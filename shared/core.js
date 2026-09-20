@@ -1,9 +1,21 @@
 /**
  * ============================================================
- * SHARED CORE JS — Sistem Gudang Puskesmas v4.2
- * Complete: config, utilities, toast, modal, loading, store,
- *           api, qr scanner, login form, form error, btn,
- *           batch selector, auth guard
+ * SHARED CORE JS — Sistem Gudang Puskesmas v5.4
+ * ============================================================
+ * Termasuk: config, utilities, store, toast, modal, btn,
+ *           form error, API client, CustomSelect (auto-replace
+ *           semua <select>), QR scanner dengan jsQR fallback,
+ *           LoginForm, AuthGuard, lib loader.
+ *
+ * Changelog v5.4:
+ *   - Fix LoginForm._submitting (user tidak terkunci saat login gagal)
+ *   - LoginForm: ganti Loading overlay → .busy class di form
+ *   - Loading object deprecated (no-op + dbgWarn)
+ *   - Api.getPesananDetail() + Api.getLaporan() (backend v5.4)
+ *   - Api.call skip retry untuk PARTIAL_WRITE
+ *   - LibLoader strict check (qrcode.toDataURL, XLSX.utils)
+ *   - APP_VERSION 5.4
+ *   - Guard digit-input saat LoginForm submitting
  * ============================================================
  */
 'use strict';
@@ -14,7 +26,7 @@
 const CONFIG = Object.freeze({
   API_URL: 'https://script.google.com/macros/s/AKfycbxX6oAam5bFHR4ngUEWwZ7TXXzuo9mGxBrXtnj1e6y8BT9Fm3rw7JWDKsxYpZwTb45pSw/exec',
   API_KEY: 'PKM_SANDEN_26',
-  APP_VERSION: '4.2',
+  APP_VERSION: '5.4',
 
   REQUEST_TIMEOUT_MS: 15000,
   LOGIN_TIMEOUT_MS: 12000,
@@ -183,6 +195,59 @@ const U = {
 };
 
 // ============================================================
+// STORE — localStorage wrapper
+// ============================================================
+const Store = {
+  getSession() {
+    try {
+      const raw = localStorage.getItem(CONFIG.SESSION_KEY);
+      if (!raw) return null;
+      const sess = JSON.parse(raw);
+      if (sess.expiry && Date.now() > sess.expiry) {
+        localStorage.removeItem(CONFIG.SESSION_KEY);
+        return null;
+      }
+      return sess;
+    } catch (e) { dbgWarn('getSession error', e); return null; }
+  },
+  setSession(s) {
+    try { localStorage.setItem(CONFIG.SESSION_KEY, JSON.stringify(s)); return true; }
+    catch (e) { dbgErr('setSession error', e); return false; }
+  },
+  clearSession() {
+    try { localStorage.removeItem(CONFIG.SESSION_KEY); } catch (e) {}
+  },
+  getMaster() {
+    try {
+      const raw = localStorage.getItem(CONFIG.MASTER_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed.expires && Date.now() > parsed.expires) {
+        localStorage.removeItem(CONFIG.MASTER_KEY);
+        return null;
+      }
+      return parsed.data;
+    } catch (e) { return null; }
+  },
+  setMaster(data) {
+    try {
+      localStorage.setItem(CONFIG.MASTER_KEY, JSON.stringify({
+        data, expires: Date.now() + CONFIG.MASTER_CACHE_TTL_MS
+      }));
+    } catch (e) { dbgWarn('setMaster error', e); }
+  },
+  clearMaster() {
+    try { localStorage.removeItem(CONFIG.MASTER_KEY); } catch (e) {}
+  },
+  getLogo() {
+    try { return localStorage.getItem(CONFIG.LOGO_KEY) || ''; } catch (e) { return ''; }
+  },
+  setLogo(dataUrl) {
+    try { localStorage.setItem(CONFIG.LOGO_KEY, dataUrl); } catch (e) {}
+  }
+};
+
+// ============================================================
 // TOAST
 // ============================================================
 const Toast = {
@@ -269,9 +334,6 @@ const Modal = {
     });
 
     U.$('#modal-close', modal).addEventListener('click', () => Modal.close());
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) Modal.close();
-    }, { once: true });
 
     this._currentOnClose = opts.onClose || null;
     overlay.classList.add('active');
@@ -298,6 +360,7 @@ const Modal = {
         { label: opts.cancelText || 'Batal', class: 'btn-secondary' },
         { label: confirmText || 'Ya, Lanjutkan',
           class: danger ? 'btn-danger' : 'btn-primary',
+          close: opts.keepOpen ? false : true,
           onClick: onConfirm }
       ]
     });
@@ -305,50 +368,44 @@ const Modal = {
 };
 
 // ============================================================
-// LOADING OVERLAY
+// LOADING — [DEPRECATED v5.4]
 // ============================================================
+/**
+ * Overlay loading sudah TIDAK DIPAKAI lagi sejak v5.4.
+ *
+ * Pengganti (pilih sesuai konteks):
+ *   1. Button loading state:
+ *        Btn.setLoading(btn, 'Menyimpan...');
+ *
+ *   2. Container busy overlay (inline di dalam container):
+ *        containerEl.classList.add('busy');
+ *        // ... async work ...
+ *        containerEl.classList.remove('busy');
+ *        // variasi: .busy-sm, .busy-plain (tanpa blur)
+ *
+ *   3. Inline placeholder:
+ *        el.innerHTML = Helper.loader('Memuat...');
+ *
+ * Objek ini tetap ada untuk backward-compat supaya kalau ada kode
+ * lain yang masih mereferensikan Loading.show/hide/forceHide,
+ * tidak error — hanya no-op + warning.
+ */
 const Loading = {
   _count: 0,
   _watchdogTimer: null,
-  _watchdogMs: 25000,
+  _watchdogMs: 0,
+  _deprecated: true,
 
   show() {
-    this._count++;
-    const el = U.$('#loading-overlay');
-    if (el) el.classList.add('active');
-    if (!this._watchdogTimer) {
-      this._watchdogTimer = setTimeout(() => {
-        dbgWarn('[Loading] Watchdog fired');
-        this.forceHide();
-        Toast.error('Loading terlalu lama. Coba lagi.');
-      }, this._watchdogMs);
-    }
+    dbgWarn('[DEPRECATED] Loading.show() dipanggil — pakai Btn.setLoading() atau class .busy');
   },
-
   hide() {
-    this._count = Math.max(0, this._count - 1);
-    if (this._count === 0) {
-      const el = U.$('#loading-overlay');
-      if (el) el.classList.remove('active');
-      if (this._watchdogTimer) {
-        clearTimeout(this._watchdogTimer);
-        this._watchdogTimer = null;
-      }
-    }
+    dbgWarn('[DEPRECATED] Loading.hide() dipanggil — pakai Btn.setLoading() atau class .busy');
   },
-
-  forceHide() {
-    this._count = 0;
-    const el = U.$('#loading-overlay');
-    if (el) el.classList.remove('active');
-    if (this._watchdogTimer) {
-      clearTimeout(this._watchdogTimer);
-      this._watchdogTimer = null;
-    }
-  }
+  forceHide() {}
 };
 
-window.__forceHideLoading = () => Loading.forceHide();
+window.__forceHideLoading = () => {};
 
 // ============================================================
 // BUTTON HELPERS
@@ -358,7 +415,7 @@ const Btn = {
     if (!btn) return;
     btn.disabled = true;
     btn.classList.add('loading');
-    if (!btn.querySelector('.btn-label')) {
+    if (label !== undefined) {
       btn.innerHTML = '<span class="btn-label">' + U.escapeHtml(label || '') + '</span>';
     }
   },
@@ -371,7 +428,7 @@ const Btn = {
 };
 
 // ============================================================
-// FORM ERROR (inline validation)
+// FORM ERROR
 // ============================================================
 const FormError = {
   set(inputEl, message) {
@@ -402,62 +459,201 @@ const FormError = {
   },
 
   clearAll(container) {
-    U.$$('.input.error, .select.error, .textarea.error', container).forEach(el => {
+    U.$$('.input.error, .textarea.error, .cs-trigger.error', container).forEach(el => {
       this.clear(el);
     });
   }
 };
 
 // ============================================================
-// STORE (safe localStorage)
+// CUSTOM SELECT — auto-replace semua <select>
 // ============================================================
-const Store = {
-  getSession() {
-    try {
-      const raw = localStorage.getItem(CONFIG.SESSION_KEY);
-      if (!raw) return null;
-      const sess = JSON.parse(raw);
-      if (sess.expiry && Date.now() > sess.expiry) {
-        localStorage.removeItem(CONFIG.SESSION_KEY);
-        return null;
-      }
-      return sess;
-    } catch (e) { dbgWarn('getSession error', e); return null; }
+const CS = {
+  _observer: null,
+
+  init() {
+    this.enhanceAll(document);
+
+    if (this._observer) return;
+
+    this._observer = new MutationObserver(mutations => {
+      mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType !== 1) return;
+          if (node.tagName === 'SELECT') this.enhance(node);
+          else if (node.querySelectorAll) {
+            node.querySelectorAll('select').forEach(s => this.enhance(s));
+          }
+        });
+      });
+    });
+
+    if (document.body) {
+      this._observer.observe(document.body, { childList: true, subtree: true });
+      dbg('CS observer aktif');
+    }
   },
-  setSession(s) {
-    try { localStorage.setItem(CONFIG.SESSION_KEY, JSON.stringify(s)); return true; }
-    catch (e) { dbgErr('setSession error', e); return false; }
+
+  enhanceAll(root) {
+    if (!root) root = document;
+    U.$$('select', root).forEach(sel => {
+      if (sel.dataset.csEnhanced === '1') return;
+      this.enhance(sel);
+    });
   },
-  clearSession() {
-    try { localStorage.removeItem(CONFIG.SESSION_KEY); } catch (e) {}
-  },
-  getMaster() {
-    try {
-      const raw = localStorage.getItem(CONFIG.MASTER_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (parsed.expires && Date.now() > parsed.expires) {
-        localStorage.removeItem(CONFIG.MASTER_KEY);
-        return null;
-      }
-      return parsed.data;
-    } catch (e) { return null; }
-  },
-  setMaster(data) {
-    try {
-      localStorage.setItem(CONFIG.MASTER_KEY, JSON.stringify({
-        data, expires: Date.now() + CONFIG.MASTER_CACHE_TTL_MS
+
+  enhance(selectEl) {
+    if (!selectEl || selectEl.dataset.csEnhanced === '1') return;
+    selectEl.dataset.csEnhanced = '1';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cs';
+    selectEl.parentNode.insertBefore(wrapper, selectEl);
+    wrapper.appendChild(selectEl);
+    selectEl.style.display = 'none';
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'cs-trigger';
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    wrapper.appendChild(trigger);
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'cs-dropdown';
+    dropdown.style.display = 'none';
+    dropdown.setAttribute('role', 'listbox');
+    wrapper.appendChild(dropdown);
+
+    const render = () => {
+      const opts = Array.from(selectEl.options).map(o => ({
+        value: o.value,
+        label: o.textContent.trim(),
+        disabled: o.disabled
       }));
-    } catch (e) { dbgWarn('setMaster error', e); }
+
+      const cur = opts.find(o => o.value === selectEl.value) ||
+                  (opts[0] && opts[0].value === '' ? opts[0] : null);
+
+      trigger.disabled = !!selectEl.disabled;
+      trigger.classList.toggle('error', selectEl.classList.contains('error'));
+
+      trigger.innerHTML =
+        '<span class="cs-trigger-text' + (cur && cur.value ? '' : ' placeholder') + '">' +
+          U.escapeHtml(cur ? cur.label : (opts[0] ? opts[0].label : '—')) +
+        '</span>' +
+        '<span class="cs-trigger-icon">' + U.icon('chevronDown', 18) + '</span>';
+
+      if (opts.length === 0) {
+        dropdown.innerHTML = '<div class="cs-empty">Tidak ada pilihan</div>';
+        return;
+      }
+
+      dropdown.innerHTML = opts.map(o =>
+        '<button type="button" class="cs-option' +
+          (o.value === selectEl.value ? ' selected' : '') + '"' +
+          ' data-value="' + U.escapeHtml(o.value) + '"' +
+          (o.disabled ? ' data-disabled="1"' : '') + '>' +
+          '<span class="cs-option-label">' + U.escapeHtml(o.label) + '</span>' +
+          '<span class="cs-option-check">' + U.icon('check', 16) + '</span>' +
+        '</button>'
+      ).join('');
+    };
+
+    const close = () => {
+      dropdown.style.display = 'none';
+      trigger.classList.remove('open');
+    };
+
+    const open = () => {
+      U.$$('.cs-trigger.open').forEach(t => {
+        if (t !== trigger) {
+          t.classList.remove('open');
+          const d = t.parentElement.querySelector('.cs-dropdown');
+          if (d) d.style.display = 'none';
+        }
+      });
+      dropdown.style.display = 'block';
+      trigger.classList.add('open');
+    };
+
+    const selectValue = (val) => {
+      selectEl.value = val;
+      try {
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+      } catch (e) {
+        const evt = document.createEvent('HTMLEvents');
+        evt.initEvent('change', true, true);
+        selectEl.dispatchEvent(evt);
+      }
+      render();
+      close();
+    };
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (trigger.disabled) return;
+      if (dropdown.style.display === 'block') close();
+      else open();
+    });
+
+    trigger.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { close(); return; }
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (dropdown.style.display === 'block') close();
+        else open();
+      }
+    });
+
+    dropdown.addEventListener('click', (e) => {
+      const optEl = e.target.closest('[data-value]');
+      if (!optEl || optEl.dataset.disabled === '1') return;
+      selectValue(optEl.dataset.value);
+    });
+
+    this._bindGlobalClose();
+
+    const attrObserver = new MutationObserver(() => render());
+    attrObserver.observe(selectEl, {
+      attributes: true,
+      attributeFilter: ['disabled', 'class'],
+      childList: true,
+      subtree: true
+    });
+
+    wrapper.addEventListener('click', (e) => e.stopPropagation());
+
+    selectEl._csRender = render;
+    selectEl._csClose = close;
+
+    render();
   },
-  clearMaster() {
-    try { localStorage.removeItem(CONFIG.MASTER_KEY); } catch (e) {}
+
+  _bindGlobalClose() {
+    if (this._globalBound) return;
+    this._globalBound = true;
+    document.addEventListener('click', () => {
+      U.$$('.cs-trigger.open').forEach(t => {
+        t.classList.remove('open');
+        const d = t.parentElement.querySelector('.cs-dropdown');
+        if (d) d.style.display = 'none';
+      });
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        U.$$('.cs-trigger.open').forEach(t => {
+          t.classList.remove('open');
+          const d = t.parentElement.querySelector('.cs-dropdown');
+          if (d) d.style.display = 'none';
+        });
+      }
+    });
   },
-  getLogo() {
-    try { return localStorage.getItem(CONFIG.LOGO_KEY) || ''; } catch (e) { return ''; }
-  },
-  setLogo(dataUrl) {
-    try { localStorage.setItem(CONFIG.LOGO_KEY, dataUrl); } catch (e) {}
+
+  setValue(selectEl, val) {
+    if (!selectEl) return;
+    selectEl.value = val;
+    if (selectEl._csRender) selectEl._csRender();
   }
 };
 
@@ -539,20 +735,19 @@ const Api = {
     opts = opts || {};
     const body = this._buildRequest(action, payload, opts);
 
-    // Login: 1 attempt
-    if (action === 'login') {
+    if (action === 'login' || action === 'loginRuang') {
       return await this._fetch(body, CONFIG.LOGIN_TIMEOUT_MS);
     }
-    // GetMasterData: medium timeout
     if (action === 'getMasterData') {
       return await this._fetch(body, CONFIG.MASTER_TIMEOUT_MS);
     }
-    // whoAmI: short timeout
     if (action === 'whoAmI') {
       return await this._fetch(body, CONFIG.WHOAMI_TIMEOUT_MS);
     }
+    if (action === 'getRuangList') {
+      return await this._fetch(body, CONFIG.MASTER_TIMEOUT_MS);
+    }
 
-    // Normal: retry
     let lastError = null;
     for (let attempt = 0; attempt < CONFIG.RETRY_ATTEMPTS; attempt++) {
       if (attempt > 0) {
@@ -572,7 +767,12 @@ const Api = {
           await U.sleep(3000);
           continue;
         }
-        if (res.code >= 500 && attempt < CONFIG.RETRY_ATTEMPTS - 1) {
+        // v5.4: PARTIAL_WRITE tidak boleh diretry.
+        // Kalau diretry, idempotency UUID akan mengembalikan "duplikat diabaikan"
+        // (code 200) dan menutupi kegagalan awal. Frontend butuh info PARTIAL_WRITE
+        // asli untuk menampilkan pesan khusus ke user.
+        if (res.code >= 500 && res.error_code !== 'PARTIAL_WRITE'
+            && attempt < CONFIG.RETRY_ATTEMPTS - 1) {
           lastError = new ApiError(res.error_code || 'SERVER_ERROR', res.message || 'Server error');
           continue;
         }
@@ -589,8 +789,16 @@ const Api = {
     throw lastError || new ApiError('UNKNOWN', 'Gagal setelah beberapa kali percobaan');
   },
 
-  // Endpoints
-  login(username, pin) { return this.call('login', { username, pin_plaintext: pin }, { public: true }); },
+  // ---------- Endpoints ----------
+  login(username, pin) {
+    return this.call('login', { username, pin_plaintext: pin }, { public: true });
+  },
+  loginRuang(kode, pin) {
+    return this.call('loginRuang', { kode_ruang: kode, pin_plaintext: pin }, { public: true });
+  },
+  getRuangList() {
+    return this.call('getRuangList', {}, { public: true });
+  },
   logout() { return this.call('logout', {}); },
   whoAmI() { return this.call('whoAmI', {}); },
   getMasterData() { return this.call('getMasterData', {}); },
@@ -613,57 +821,249 @@ const Api = {
   approveTransaksi(idTrx, keputusan) {
     return this.call('approveTransaksi', { id_transaksi: idTrx, keputusan: keputusan });
   },
-  getMyScanHistory(limit) { return this.call('getMyScanHistory', { limit: limit || 50 }); }
+  getMyScanHistory(limit) { return this.call('getMyScanHistory', { limit: limit || 50 }); },
+
+  // Pesanan Ruang
+  getBarangUntukPesan() { return this.call('getBarangUntukPesan', {}); },
+  kirimPesanan(payload) { return this.call('kirimPesanan', payload); },
+  getPesananSaya(limit) { return this.call('getPesananSaya', { limit: limit || 20 }); },
+  getPesananMasuk(payload) { return this.call('getPesananMasuk', payload || {}); },
+  getPesananDetail(idPesanan) {
+    return this.call('getPesananDetail', { id_pesanan: idPesanan });
+  },
+  updateStatusPesanan(idPesanan, status) {
+    return this.call('updateStatusPesanan', { id_pesanan: idPesanan, status: status });
+  },
+
+  // Laporan (v5.4)
+  getLaporan(payload) {
+    return this.call('getLaporan', payload || {});
+  },
+  getLaporanStokTerkini(payload) {
+    return this.call('getLaporan', Object.assign({ tipe: 'stok_terkini' }, payload || {}));
+  },
+  getLaporanMutasiBulanan(payload) {
+    return this.call('getLaporan', Object.assign({ tipe: 'mutasi_bulanan' }, payload || {}));
+  },
+  getLaporanNilaiAset(payload) {
+    return this.call('getLaporan', Object.assign({ tipe: 'nilai_aset' }, payload || {}));
+  }
 };
 
 // ============================================================
-// QR SCANNER
+// LIB LOADER — multi-CDN fallback (v5.4: strict check)
+// ============================================================
+const LibLoader = {
+  _cache: {},
+  _sources: {
+    qrcode: [
+      'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
+      'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'
+    ],
+    sheetjs: [
+      'https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js',
+      'https://cdn.jsdelivr.net/npm/xlsx@0.20.0/dist/xlsx.full.min.js',
+      'https://unpkg.com/xlsx@0.20.0/dist/xlsx.full.min.js'
+    ],
+    jsqr: [
+      'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js',
+      'https://unpkg.com/jsqr@1.4.0/dist/jsQR.min.js'
+    ]
+  },
+  _globals: { qrcode: 'QRCode', sheetjs: 'XLSX', jsqr: 'jsQR' },
+
+  load(name) {
+    if (this._cache[name]) return this._cache[name];
+    const urls = this._sources[name];
+    const globalName = this._globals[name];
+    if (!urls || !globalName) return Promise.reject(new Error('Unknown lib: ' + name));
+
+    this._cache[name] = this._trySequential(urls, name, globalName, 0);
+    return this._cache[name];
+  },
+
+  // v5.4: strict check supaya global yang "stale" (mis. window.XLSX = {} dari script lain)
+  // tidak dianggap valid.
+  _isValidGlobal(name, globalName) {
+    const g = window[globalName];
+    if (!g) return false;
+    if (name === 'qrcode' && typeof g.toDataURL !== 'function') return false;
+    if (name === 'sheetjs' && (!g.utils || typeof g.utils.book_new !== 'function')) return false;
+    if (name === 'jsqr' && typeof g !== 'function') return false;
+    return true;
+  },
+
+  _trySequential(urls, name, globalName, idx) {
+    if (idx >= urls.length) {
+      delete LibLoader._cache[name];
+      return Promise.reject(new Error('Semua CDN gagal untuk ' + name));
+    }
+    return new Promise((resolve, reject) => {
+      if (this._isValidGlobal(name, globalName)) {
+        resolve(window[globalName]);
+        return;
+      }
+
+      const existing = document.querySelector('script[data-lib="' + name + '-' + idx + '"]');
+      if (existing) {
+        existing.addEventListener('load', () => {
+          if (this._isValidGlobal(name, globalName)) resolve(window[globalName]);
+          else this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
+        });
+        existing.addEventListener('error', () => {
+          this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
+        });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = urls[idx];
+      script.async = true;
+      script.setAttribute('data-lib', name + '-' + idx);
+      script.onload = () => {
+        if (this._isValidGlobal(name, globalName)) {
+          dbg('Lib ' + name + ' loaded dari CDN #' + (idx + 1));
+          resolve(window[globalName]);
+        } else {
+          dbgWarn('CDN #' + (idx + 1) + ' tidak expose global valid, coba berikutnya');
+          this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
+        }
+      };
+      script.onerror = () => {
+        dbgWarn('CDN #' + (idx + 1) + ' gagal: ' + urls[idx]);
+        this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
+      };
+      document.head.appendChild(script);
+    });
+  }
+};
+
+// ============================================================
+// QR SCANNER — native BarcodeDetector + jsQR fallback
 // ============================================================
 const QRScanner = {
-  _stream: null, _videoEl: null, _rafId: null, _detector: null,
-  _running: false, _lastText: '', _lastTime: 0, _onDetected: null,
+  _stream: null,
+  _videoEl: null,
+  _rafId: null,
+  _detector: null,
+  _jsQR: null,
+  _canvas: null,
+  _ctx: null,
+  _mode: null,
+  _running: false,
+  _lastText: '',
+  _lastTime: 0,
+  _onDetected: null,
+  _lastDetectTime: 0,
+  _detectIntervalMs: 100,
 
   async start(videoEl, onDetected, onError) {
     this.stop();
     this._videoEl = videoEl;
     this._onDetected = onDetected;
     this._running = true;
+    this._lastDetectTime = 0;
 
     try {
       const constraints = {
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 960 },
+          height: { ideal: 540 }
+        }
       };
       this._stream = await navigator.mediaDevices.getUserMedia(constraints);
       videoEl.srcObject = this._stream;
       videoEl.setAttribute('playsinline', '');
       videoEl.muted = true;
       await videoEl.play();
-
-      if ('BarcodeDetector' in window) {
-        try {
-          this._detector = new BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13'] });
-          dbg('Scanner pakai BarcodeDetector native');
-        } catch (e) { this._detector = null; }
-      }
-      if (!this._detector) {
-        dbgWarn('BarcodeDetector tidak tersedia di browser ini');
-      }
-
-      this._loop();
     } catch (err) {
-      if (onError) onError(err);
+      this._running = false;
+      if (onError) onError(new Error('Kamera tidak dapat diakses: ' + err.message));
+      return;
     }
+
+    if ('BarcodeDetector' in window) {
+      try {
+        this._detector = new BarcodeDetector({ formats: ['qr_code'] });
+        this._mode = 'native';
+        dbg('Scanner: pakai BarcodeDetector native');
+      } catch (e) {
+        dbgWarn('BarcodeDetector init gagal:', e.message);
+        this._detector = null;
+      }
+    }
+
+    if (!this._detector) {
+      try {
+        this._jsQR = await LibLoader.load('jsqr');
+        this._canvas = document.createElement('canvas');
+        this._ctx = this._canvas.getContext('2d', { willReadFrequently: true });
+        this._mode = 'jsqr';
+        dbg('Scanner: pakai jsQR fallback');
+      } catch (err) {
+        this._running = false;
+        if (this._stream) {
+          this._stream.getTracks().forEach(t => t.stop());
+          this._stream = null;
+        }
+        if (onError) onError(new Error(
+          'Browser ini tidak mendukung pemindaian QR otomatis. ' +
+          'Gunakan tombol "Manual" untuk input kode barang.'
+        ));
+        return;
+      }
+    }
+
+    this._loop();
   },
 
-  async _loop() {
+  _loop() {
     if (!this._running) return;
-    if (this._detector && this._videoEl && this._videoEl.readyState === 4) {
-      try {
-        const codes = await this._detector.detect(this._videoEl);
-        if (codes && codes.length > 0) this._handle(codes[0].rawValue);
-      } catch (e) { /* ignore */ }
+
+    const now = performance.now();
+    if (now - this._lastDetectTime >= this._detectIntervalMs) {
+      this._lastDetectTime = now;
+      if (this._mode === 'native') this._detectNative();
+      else if (this._mode === 'jsqr') this._detectJsQR();
     }
+
     this._rafId = requestAnimationFrame(() => this._loop());
+  },
+
+  async _detectNative() {
+    const video = this._videoEl;
+    if (!video || video.readyState !== 4 || !this._detector) return;
+    try {
+      const codes = await this._detector.detect(video);
+      if (codes && codes.length > 0) this._handle(codes[0].rawValue);
+    } catch (e) { /* ignore per-frame */ }
+  },
+
+  _detectJsQR() {
+    const video = this._videoEl;
+    if (!video || video.readyState !== 4 || !this._jsQR) return;
+    const w = video.videoWidth;
+    const h = video.videoHeight;
+    if (!w || !h) return;
+
+    const maxDim = 640;
+    let cw = w, ch = h;
+    if (w > maxDim || h > maxDim) {
+      if (w > h) { ch = Math.round(h * maxDim / w); cw = maxDim; }
+      else { cw = Math.round(w * maxDim / h); ch = maxDim; }
+    }
+
+    if (this._canvas.width !== cw) this._canvas.width = cw;
+    if (this._canvas.height !== ch) this._canvas.height = ch;
+
+    try {
+      this._ctx.drawImage(video, 0, 0, cw, ch);
+      const imgData = this._ctx.getImageData(0, 0, cw, ch);
+      const code = this._jsQR(imgData.data, cw, ch, { inversionAttempts: 'dontInvert' });
+      if (code && code.data) this._handle(code.data);
+    } catch (e) { /* ignore */ }
   },
 
   _handle(text) {
@@ -686,6 +1086,10 @@ const QRScanner = {
       try { this._videoEl.srcObject = null; } catch (e) {}
     }
     this._detector = null;
+    this._jsQR = null;
+    this._canvas = null;
+    this._ctx = null;
+    this._mode = null;
   },
 
   async toggleFlash() {
@@ -703,7 +1107,7 @@ const QRScanner = {
 };
 
 // ============================================================
-// BATCH SELECTOR
+// BATCH SELECTOR (FEFO)
 // ============================================================
 const BatchSelector = {
   _batches: [],
@@ -949,7 +1353,7 @@ const LoginForm = {
                   '<div class="split-feature">' + U.icon('check', 18) + '<span>Batch &amp; ED obat otomatis</span></div>' +
                   '<div class="split-feature">' + U.icon('check', 18) + '<span>FEFO — First Expired First Out</span></div>' +
                   '<div class="split-feature">' + U.icon('check', 18) + '<span>Kartu stok, opname, dan LPLPO</span></div>' +
-                  '<div class="split-feature">' + U.icon('check', 18) + '<span>QR Code &amp; scan cepat</span></div>' +
+                  '<div class="split-feature">' + U.icon('check', 18) + '<span>Pesanan ruang &amp; notifikasi Telegram</span></div>' +
                 '</div>' +
               '</div>' +
             '</div>' +
@@ -968,6 +1372,7 @@ const LoginForm = {
 
     U.$$('#login-keypad .key-btn', ctx).forEach(btn => {
       btn.addEventListener('click', () => {
+        if (this._submitting) return;
         const key = btn.dataset.key;
         if (key === 'back') this._backspace();
         else if (key === 'enter') this._submit();
@@ -977,6 +1382,7 @@ const LoginForm = {
 
     this._keydownHandler = (e) => {
       if (!this._mounted || !this._container) return;
+      if (this._submitting) return;
       if (!this._container.querySelector('.login-screen')) return;
       const tag = (e.target && e.target.tagName) || '';
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
@@ -1018,6 +1424,7 @@ const LoginForm = {
   },
 
   _append(digit) {
+    if (this._submitting) return;
     if (this._pin.length >= this._maxPinLen) return;
     this._pin += digit;
     U.vibrate(15);
@@ -1025,6 +1432,7 @@ const LoginForm = {
   },
 
   _backspace() {
+    if (this._submitting) return;
     this._pin = this._pin.slice(0, -1);
     this._render();
   },
@@ -1063,11 +1471,13 @@ const LoginForm = {
     this._submitting = true;
 
     const ctx = this._container;
+    const formEl = U.$('#login-form', ctx);
     const usernameEl = U.$('#login-username', ctx);
     const username = usernameEl.value.trim().toLowerCase();
 
     FormError.clear(usernameEl);
 
+    // Validasi input — reset _submitting di setiap early return
     if (!username) {
       FormError.set(usernameEl, 'Username wajib diisi');
       this._submitting = false;
@@ -1086,7 +1496,7 @@ const LoginForm = {
 
     const submitBtn = U.$('#login-submit', ctx);
     if (submitBtn) submitBtn.disabled = true;
-    Loading.show();
+    if (formEl) formEl.classList.add('busy');
     dbg('Login: ' + username);
 
     try {
@@ -1107,7 +1517,7 @@ const LoginForm = {
       this._pin = '';
       this._render();
 
-      Loading.hide();
+      if (formEl) formEl.classList.remove('busy');
       if (submitBtn) submitBtn.disabled = false;
       Toast.success('Selamat datang, ' + res.nama);
 
@@ -1119,9 +1529,6 @@ const LoginForm = {
           }
         } catch (e) { dbgErr('onSuccess throw:', e); }
       }
-
-      const self = this;
-      setTimeout(() => { self._submitting = false; }, 500);
       return;
 
     } catch (err) {
@@ -1131,11 +1538,12 @@ const LoginForm = {
       Toast.error(err.message || 'Login gagal');
       this._pin = '';
       this._render();
-      Loading.hide();
+      if (formEl) formEl.classList.remove('busy');
       if (submitBtn) submitBtn.disabled = false;
     } finally {
-      if (Loading._count > 0) Loading.forceHide();
-      if (this._submitting && !this._onSuccess) this._submitting = false;
+      // v5.4 FIX: SELALU reset — sebelumnya hanya direset kalau _onSuccess kosong,
+      // sehingga user terkunci permanen kalau login gagal.
+      this._submitting = false;
     }
   }
 };
@@ -1152,12 +1560,17 @@ const AuthGuard = {
       setTimeout(() => location.replace('scan.html'), 500);
       return null;
     }
+    if (session.role === 'Ruang' && currentPage === 'index') {
+      Toast.warning('Role Ruang hanya bisa mengakses halaman Pesan Barang.');
+      setTimeout(() => location.replace('pesan.html'), 500);
+      return null;
+    }
     return session;
   }
 };
 
 // ============================================================
-// GLOBAL LISTENERS
+// GLOBAL LISTENERS + BOOT
 // ============================================================
 function setupCoreListeners() {
   const overlay = U.$('#modal-overlay');
@@ -1170,8 +1583,18 @@ function setupCoreListeners() {
   window.addEventListener('unhandledrejection', (e) => dbgErr('UNHANDLED_PROMISE:', e.reason));
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', setupCoreListeners);
-} else {
+function bootCore() {
   setupCoreListeners();
+
+  if (typeof CS !== 'undefined' && CS.init) {
+    CS.init();
+  }
+
+  dbg('[CORE] v' + CONFIG.APP_VERSION + ' booted');
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootCore);
+} else {
+  bootCore();
 }
