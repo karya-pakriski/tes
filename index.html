@@ -57,15 +57,13 @@
 }
 @keyframes bootspin { to { transform: rotate(360deg); } }
 
-/* ============================================================
-   LAYOUT — 100% VIEWPORT + PROPORTIONAL SCROLL
-   ============================================================ */
+/* ---------- 100% VIEWPORT LAYOUT ---------- */
 html, body {
   height: 100%;
   overflow: hidden;
 }
-
 #app {
+  height: 100vh;
   height: 100dvh;
   width: 100%;
   overflow: hidden;
@@ -74,6 +72,7 @@ html, body {
 .app-shell {
   display: grid;
   grid-template-columns: 272px 1fr;
+  height: 100vh;
   height: 100dvh;
   width: 100%;
   overflow: hidden;
@@ -84,6 +83,7 @@ html, body {
 
 /* ---------- SIDEBAR ---------- */
 .sidebar {
+  height: 100vh;
   height: 100dvh;
   overflow: hidden;
   display: flex; flex-direction: column;
@@ -193,14 +193,8 @@ html, body {
   border-radius: 10px; font-weight: 700;
   flex-shrink: 0; min-width: 18px; text-align: center;
   line-height: 1.4;
-  animation: badgePulse 2s ease-in-out infinite;
-}
-@keyframes badgePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
 }
 
-/* Collapsed sidebar */
 .app-shell.sidebar-collapsed .sidebar-brand,
 .app-shell.sidebar-collapsed .sidebar-group-title,
 .app-shell.sidebar-collapsed .item-label,
@@ -254,6 +248,7 @@ html, body {
 .main-wrapper {
   display: flex;
   flex-direction: column;
+  height: 100vh;
   height: 100dvh;
   min-width: 0;
   overflow: hidden;
@@ -367,7 +362,6 @@ html, body {
   }
 }
 
-/* Page entrance animation */
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -500,7 +494,7 @@ html, body {
   margin-top: 5px; font-weight: 500;
 }
 
-/* ---------- ORDER CARD (Pesanan Ruang) ---------- */
+/* ---------- ORDER CARD ---------- */
 .order-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -599,7 +593,7 @@ html, body {
   background: currentColor;
 }
 
-/* ---------- TAB FILTER (modern pill) ---------- */
+/* ---------- TAB FILTER ---------- */
 .tab-filter {
   display: flex; gap: 6px; flex-wrap: wrap;
   margin-bottom: 16px;
@@ -685,7 +679,7 @@ html, body {
 }
 .report-tab svg { width: 16px; height: 16px; }
 
-/* ---------- ORDER DETAIL LIST (modal) ---------- */
+/* ---------- ORDER DETAIL LIST ---------- */
 .order-detail-list {
   background: var(--surface-2);
   border-radius: 12px;
@@ -779,7 +773,7 @@ html, body {
 }
 .autocomplete-item:hover { background: var(--primary-bg-soft); }
 .autocomplete-item .ac-id {
-  font-family: ui-monospace, monospace;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
   font-size: 11px; color: var(--primary-dark);
   font-weight: 700; flex-shrink: 0;
 }
@@ -792,7 +786,7 @@ html, body {
   color: var(--text-muted); font-size: 12px;
 }
 
-/* ---------- EMPTY STATE REFINED ---------- */
+/* ---------- EMPTY STATE ---------- */
 .empty-state {
   text-align: center;
   padding: 56px 24px;
@@ -809,7 +803,7 @@ html, body {
 }
 .empty-state p { font-size: 13px; max-width: 320px; margin: 0 auto; }
 
-/* ---------- MONTH NAV (Kartu Stok) ---------- */
+/* ---------- MONTH NAV ---------- */
 .month-nav {
   display: flex; align-items: center; gap: 8px;
   padding: 12px;
@@ -842,7 +836,7 @@ html, body {
   letter-spacing: -0.2px;
 }
 
-/* ---------- CARD REFINED ---------- */
+/* ---------- CARD ---------- */
 .card {
   background: var(--surface);
   border-radius: 16px;
@@ -861,40 +855,6 @@ html, body {
   letter-spacing: -0.2px;
 }
 .card-title > span:first-child { color: var(--text); }
-
-/* ---------- PAGE SKELETON ENHANCED ---------- */
-.skeleton {
-  background: linear-gradient(90deg, var(--surface-2) 0%, #eef2f7 50%, var(--surface-2) 100%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.4s ease-in-out infinite;
-  border-radius: 8px;
-}
-@keyframes skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* ---------- INLINE LOADER ---------- */
-.inline-loading {
-  display: flex; align-items: center; justify-content: center;
-  gap: 10px;
-  padding: 40px 20px;
-  color: var(--text-muted);
-  font-size: 13px;
-}
-.inline-loading .spinner {
-  width: 20px; height: 20px;
-  border-width: 2.5px;
-  color: var(--primary);
-}
-.inline-loading-sm {
-  display: inline-flex; align-items: center; gap: 6px;
-  color: var(--text-muted); font-size: 12px;
-}
-.inline-loading-sm .spinner {
-  width: 13px; height: 13px;
-  border-width: 2px;
-}
 
 /* ---------- KARTU STOK PREVIEW ---------- */
 .kartu-stok-preview {
@@ -976,14 +936,6 @@ html, body {
     max-width: none; padding: 8mm;
     page-break-inside: avoid;
   }
-  .qr-page {
-    box-shadow: none; margin: 0;
-    padding: 8mm;
-    page-break-after: always;
-    width: 210mm; height: 297mm;
-  }
-  .qr-page:last-child { page-break-after: auto; }
-  .qr-label { border-color: #e5e5e5; }
   @page { margin: 0; }
 }
 </style>
@@ -1001,7 +953,7 @@ html, body {
 <div id="app"></div>
 
 <div class="toast-container" id="toast-container"></div>
-<!-- v5.4: loading-overlay removed -->
+<!-- v5.4: loading-overlay removed — pakai .busy class / inline loader -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal"></div>
 </div>
@@ -1013,11 +965,8 @@ html, body {
 
 /* ============================================================
    INDEX v5.4
-   - Tidak mendefinisikan ulang U/Api/Store/Toast/Modal/Btn/
-     FormError/CS/LibLoader/LoginForm/AuthGuard (dari core.js)
-   - Semua loading pakai Btn.setLoading / Helper.loader / .busy
-   - Terintegrasi backend v5.4: getPesananDetail, getLaporan,
-     PARTIAL_WRITE, approximate audit, pagination
+   Tidak redeclare U/Api/Store/Toast/Modal/Btn/FormError/CS/
+   LibLoader/LoginForm/AuthGuard — semua dari core.js.
    ============================================================ */
 
 /* ============================================================
@@ -1083,7 +1032,7 @@ const Helper = {
 };
 
 /* ============================================================
-   MENU (v5.4: tambah Laporan)
+   MENU
    ============================================================ */
 const MENU = [
   { group: 'Operasional', items: [
@@ -1143,13 +1092,15 @@ const AdminApp = {
   pesananBaruCount: 0,
   _suppressHashChange: false,
   _routeRenderId: 0,
+  _masterListeners: [],
+  _masterLoadPromise: null,
+  _shellListeners: null,
 
   async init() {
     dbg('AdminApp v5.4 init');
     const session = Store.getSession();
 
     if (session && session.token) {
-      dbg('Ada session, verifikasi...');
       try {
         const res = await Api.whoAmI();
         if (res && res.code === 200 && res.data) {
@@ -1171,10 +1122,15 @@ const AdminApp = {
             expiry: res.data.expiry
           };
           Store.setSession(this.session);
-          await this._loadMaster();
+
+          // v5.4: shell dulu, master background
           this._hideBootSplash();
           this._initShell();
           this.route(location.hash ? location.hash.substring(2) : 'dashboard');
+
+          this._loadMaster()
+            .then(() => this._notifyMasterLoaded())
+            .catch(err => dbgWarn('BG master load gagal:', err.message));
           return;
         }
       } catch (err) {
@@ -1196,40 +1152,76 @@ const AdminApp = {
     }, 400);
   },
 
+  /* ---------- MASTER LOAD ---------- */
   async _loadMaster() {
+    // v5.4: guard anti-concurrent
+    if (this._masterLoadPromise) return this._masterLoadPromise;
+
     const cached = Store.getMaster();
     if (cached) {
       dbg('Master dari cache lokal');
       this.master = cached;
-      return;
+      return Promise.resolve();
     }
+
     this.masterLoading = true;
-    try {
-      const res = await Api.getMasterData();
-      this.master = res.data;
-      Store.setMaster(this.master);
-      dbg('Master loaded dari server');
-    } catch (err) {
-      dbgWarn('Gagal load master:', err.message);
-      Toast.warning('Data master belum termuat.');
-      this.master = {
-        obat: [], bmhp: [], atk: [], supplier: [],
-        unit: [], rak: [], petugas: [], ruang: []
-      };
-    } finally {
-      this.masterLoading = false;
-    }
+    this._masterLoadPromise = (async () => {
+      try {
+        const res = await Api.getMasterData();
+        this.master = res.data;
+        Store.setMaster(this.master);
+        dbg('Master loaded dari server');
+      } catch (err) {
+        dbgWarn('Gagal load master:', err.message);
+        Toast.warning('Data master belum termuat.');
+        this.master = {
+          obat: [], bmhp: [], atk: [], supplier: [],
+          unit: [], rak: [], petugas: [], ruang: []
+        };
+      } finally {
+        this.masterLoading = false;
+        this._masterLoadPromise = null;
+      }
+    })();
+
+    return this._masterLoadPromise;
   },
 
   async refreshMaster() {
     Store.clearMaster();
     this.master = null;
+    this._masterLoadPromise = null;
     await this._loadMaster();
   },
 
+  /**
+   * v5.4: pub/sub untuk page yang butuh master data.
+   * Kalau master sudah ada, callback dipanggil langsung.
+   */
+  onMasterLoaded(callback) {
+    if (this.master && !this.masterLoading) {
+      try { callback(this.master); }
+      catch (e) { dbgErr('onMasterLoaded sync:', e); }
+      return;
+    }
+    this._masterListeners.push(callback);
+  },
+
+  _notifyMasterLoaded() {
+    const cbs = this._masterListeners.slice();
+    this._masterListeners = [];
+    cbs.forEach(cb => {
+      try { cb(this.master); }
+      catch (e) { dbgErr('master listener:', e); }
+    });
+  },
+
+  /* ---------- LOGIN ---------- */
   _showLogin() {
     const root = U.$('#app');
-    LoginForm.mount(root, async (session) => {
+    LoginForm.mount(root, (session) => {
+      // v5.4 FIX: callback NON-async — shell HARUS render segera,
+      // jangan tunggu master load (bisa timeout 20s+ dan user stuck di login).
       if (session.role === 'Scanner') {
         Toast.info('Mengalihkan ke Scanner...');
         setTimeout(() => location.replace('scan.html'), 500);
@@ -1241,12 +1233,19 @@ const AdminApp = {
         return;
       }
       this.session = session;
-      await this._loadMaster();
+
+      // 1) Render shell + route SEGERA
       this._initShell();
       this.route('dashboard');
+
+      // 2) Master load di BACKGROUND (tidak blocking UI)
+      this._loadMaster()
+        .then(() => this._notifyMasterLoaded())
+        .catch(err => dbgWarn('BG master load gagal:', err.message));
     }, { variant: 'split' });
   },
 
+  /* ---------- SHELL ---------- */
   _initShell() {
     const root = U.$('#app');
     root.innerHTML = this._renderShell();
@@ -1291,7 +1290,7 @@ const AdminApp = {
                 U.icon('qr', 16) +
                 '<span class="label">Scanner</span>' +
               '</a>' +
-              '<button class="app-icon-btn danger" id="btn-logout" title="Keluar">' +
+              '<button class="app-icon-btn danger" id="btn-logout-topbar" title="Keluar">' +
                 U.icon('logout', 20) +
               '</button>' +
             '</div>' +
@@ -1327,6 +1326,17 @@ const AdminApp = {
   },
 
   _attachShellListeners() {
+    // v5.4: detach listener lama dulu supaya tidak duplikat saat re-init shell
+    if (this._shellListeners) {
+      const old = this._shellListeners;
+      if (old.hashchange) window.removeEventListener('hashchange', old.hashchange);
+      if (old.online) {
+        window.removeEventListener('online', old.online);
+        window.removeEventListener('offline', old.online);
+      }
+      this._shellListeners = null;
+    }
+
     const toggleBtn = U.$('#toggle-sidebar');
     if (toggleBtn) {
       toggleBtn.addEventListener('click', () => {
@@ -1351,7 +1361,7 @@ const AdminApp = {
       });
     }
 
-    const logoutBtn = U.$('#btn-logout');
+    const logoutBtn = U.$('#btn-logout-topbar');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
         Modal.confirm('Keluar', 'Yakin ingin keluar dari aplikasi?',
@@ -1369,15 +1379,18 @@ const AdminApp = {
       });
     });
 
-    window.addEventListener('hashchange', () => {
+    const hashchangeHandler = () => {
       if (this._suppressHashChange) return;
       const route = location.hash ? location.hash.substring(2) : 'dashboard';
       if (this.session) this.route(route);
-    });
+    };
+    window.addEventListener('hashchange', hashchangeHandler);
 
-    this._onlineHandler = () => this._checkOnline();
-    window.addEventListener('online', this._onlineHandler);
-    window.addEventListener('offline', this._onlineHandler);
+    const onlineHandler = () => this._checkOnline();
+    window.addEventListener('online', onlineHandler);
+    window.addEventListener('offline', onlineHandler);
+
+    this._shellListeners = { hashchange: hashchangeHandler, online: onlineHandler };
   },
 
   _checkOnline() {
@@ -1386,49 +1399,59 @@ const AdminApp = {
     if (badge) badge.classList.toggle('visible', !online);
   },
 
+  /* ---------- BADGES (v5.4: parallel) ---------- */
   async _updateBadges() {
     if (!this.session) return;
     const role = this.session.role;
+    const tasks = [];
 
-    // Approval badge
     if (role === 'SuperAdmin' || role === 'Apoteker') {
-      try {
-        const res = await Api.getPendingApprovals();
-        const total = (res.data && res.data.total) || 0;
-        this.approvalCount = total;
-        const badge = U.$('#approval-badge');
-        if (badge) {
-          if (total > 0) {
-            badge.textContent = total;
-            badge.style.display = 'inline-block';
-          } else {
-            badge.style.display = 'none';
-          }
-        }
-      } catch (err) {
-        dbgWarn('Approval badge error:', err.message);
-      }
+      tasks.push(this._badgeApproval());
+    }
+    if (role === 'SuperAdmin' || role === 'Apoteker' || role === 'Gudang') {
+      tasks.push(this._badgePesananBaru());
     }
 
-    // Pesanan Ruang badge (hitung "Baru")
-    if (role === 'SuperAdmin' || role === 'Apoteker' || role === 'Gudang') {
-      try {
-        const res = await Api.getPesananMasuk({ status: 'Baru', limit: 300 });
-        const items = (res.data && res.data.items) || [];
-        const total = items.length;
-        this.pesananBaruCount = total;
-        const badge = U.$('#pesanan-badge');
-        if (badge) {
-          if (total > 0) {
-            badge.textContent = total;
-            badge.style.display = 'inline-block';
-          } else {
-            badge.style.display = 'none';
-          }
+    // v5.4: parallel — semuaSettled supaya satu gagal tidak cancel yang lain
+    await Promise.allSettled(tasks);
+  },
+
+  async _badgeApproval() {
+    try {
+      const res = await Api.getPendingApprovals();
+      const total = (res.data && res.data.total) || 0;
+      this.approvalCount = total;
+      const badge = U.$('#approval-badge');
+      if (badge) {
+        if (total > 0) {
+          badge.textContent = total;
+          badge.style.display = 'inline-block';
+        } else {
+          badge.style.display = 'none';
         }
-      } catch (err) {
-        dbgWarn('Pesanan badge error:', err.message);
       }
+    } catch (err) {
+      dbgWarn('Approval badge error:', err.message);
+    }
+  },
+
+  async _badgePesananBaru() {
+    try {
+      const res = await Api.getPesananMasuk({ status: 'Baru', limit: 300 });
+      const items = (res.data && res.data.items) || [];
+      const total = items.length;
+      this.pesananBaruCount = total;
+      const badge = U.$('#pesanan-badge');
+      if (badge) {
+        if (total > 0) {
+          badge.textContent = total;
+          badge.style.display = 'inline-block';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    } catch (err) {
+      dbgWarn('Pesanan badge error:', err.message);
     }
   },
 
@@ -1445,6 +1468,7 @@ const AdminApp = {
     if (s) s.textContent = subtitle;
   },
 
+  /* ---------- ROUTE ---------- */
   async route(route) {
     if (!this.session) return;
 
@@ -1532,6 +1556,8 @@ const AdminApp = {
     Store.clearMaster();
     this.session = null;
     this.master = null;
+    this._masterListeners = [];
+    this._masterLoadPromise = null;
     Toast.info('Anda telah keluar.');
     this._showLogin();
   }
@@ -1555,6 +1581,7 @@ const PageDashboard = {
         Api.getDashboardSummary(),
         Api.getExpiringItems(3)
       ]);
+      if (renderId !== AdminApp._routeRenderId) return;
       if (resS.status === 'fulfilled' && resS.value && resS.value.code === 200) {
         summary = resS.value.data || summary;
       }
@@ -1673,7 +1700,7 @@ const PageDashboard = {
 };
 
 /* ============================================================
-   PAGE: PESANAN RUANG (v5.4: pagination + getPesananDetail)
+   PAGE: PESANAN RUANG (v5.4: pagination + getPesananDetail + requestID)
    ============================================================ */
 const PagePesananRuang = {
   _items: [],
@@ -1685,6 +1712,7 @@ const PagePesananRuang = {
   _limit: 100,
   _hasMore: false,
   _loadingMore: false,
+  _detailRequestId: 0,
 
   async render(container, renderId) {
     this._container = container;
@@ -1723,11 +1751,8 @@ const PagePesananRuang = {
       if (this._renderId !== AdminApp._routeRenderId) return;
       const newItems = (res.data && res.data.items) || [];
       this._hasMore = !!(res.data && res.data.has_more);
-      if (initial) {
-        this._items = newItems;
-      } else {
-        this._items = this._items.concat(newItems);
-      }
+      if (initial) this._items = newItems;
+      else this._items = this._items.concat(newItems);
       this._offset = this._items.length;
       if (initial) this._renderFull();
       else this._renderList();
@@ -1947,12 +1972,14 @@ const PagePesananRuang = {
   },
 
   /**
-   * v5.4: pakai Api.getPesananDetail (backend endpoint baru).
-   * Modal dibuka dengan loading state, lalu body/footer di-update.
+   * v5.4 FIX: request ID supaya tidak ada race antar-modal.
+   * Modal dibuka dengan loading, di-update setelah data siap.
    */
   async _openDetail(idPesanan) {
     const it = this._items.find(x => x.id_pesanan === idPesanan);
     if (!it) return;
+
+    const myRequestId = ++this._detailRequestId;
 
     Modal.open({
       title: 'Detail Pesanan',
@@ -1969,8 +1996,10 @@ const PagePesananRuang = {
     let detail = null;
     try {
       const res = await Api.getPesananDetail(idPesanan);
+      if (myRequestId !== this._detailRequestId) return; // stale
       detail = res.data;
     } catch (err) {
+      if (myRequestId !== this._detailRequestId) return;
       const el = U.$('#order-detail-container');
       if (el) el.innerHTML = Helper.emptyState('Gagal memuat detail',
         err.message, 'alertCircle');
@@ -2212,36 +2241,49 @@ const PageApproval = {
     });
   },
 
+  /**
+   * v5.4: pakai keepOpen: true supaya modal tidak nutup sebelum API resolve.
+   * Loading state di tombol modal tetap terlihat.
+   */
   _handleApprove(idTrx, keputusan, container, triggerBtn) {
     const isApprove = keputusan === 'Approved';
-    Modal.confirm(
-      isApprove ? 'Setujui Transaksi' : 'Tolak Transaksi',
-      'Yakin ingin ' + (isApprove ? 'menyetujui' : 'menolak') +
-      ' transaksi ' + idTrx + '?',
-      async () => {
-        Btn.setLoading(triggerBtn, isApprove ? 'Menyetujui...' : 'Menolak...');
-        try {
-          await Api.approveTransaksi(idTrx, keputusan);
-          Toast.success('Transaksi ' + idTrx + ' telah di-' + keputusan);
-          AdminApp._updateBadges();
-          await this.render(container, ++AdminApp._routeRenderId);
-        } catch (err) {
-          Toast.error('Gagal: ' + err.message);
-          Btn.stopLoading(triggerBtn, isApprove ? 'Setujui' : 'Tolak');
+    const self = this;
+    Modal.open({
+      title: isApprove ? 'Setujui Transaksi' : 'Tolak Transaksi',
+      subtitle: isApprove ? 'Stok akan langsung berkurang' : 'Transaksi dibatalkan',
+      icon: isApprove ? 'success' : 'danger',
+      body: '<p style="font-size:var(--fs-md);line-height:1.6;color:var(--text)">' +
+        'Yakin ingin ' + (isApprove ? 'menyetujui' : 'menolak') +
+        ' transaksi <strong style="font-family:ui-monospace,monospace">' +
+        U.escapeHtml(idTrx) + '</strong>?</p>',
+      actions: [
+        { label: 'Batal', class: 'btn-secondary' },
+        {
+          label: isApprove ? 'Ya, Setujui' : 'Ya, Tolak',
+          class: isApprove ? 'btn-primary' : 'btn-danger',
+          close: false,
+          icon: isApprove ? 'check' : 'x',
+          onClick: async (btn) => {
+            Btn.setLoading(btn, isApprove ? 'Menyetujui...' : 'Menolak...');
+            try {
+              await Api.approveTransaksi(idTrx, keputusan);
+              Modal.close();
+              Toast.success('Transaksi ' + idTrx + ' telah di-' + keputusan);
+              AdminApp._updateBadges();
+              await self.render(container, ++AdminApp._routeRenderId);
+            } catch (err) {
+              Toast.error('Gagal: ' + err.message);
+              Btn.stopLoading(btn, isApprove ? 'Ya, Setujui' : 'Ya, Tolak');
+            }
+          }
         }
-      },
-      isApprove ? 'Ya, Setujui' : 'Ya, Tolak',
-      !isApprove,
-      {
-        icon: isApprove ? 'success' : 'danger',
-        subtitle: isApprove ? 'Stok akan langsung berkurang' : 'Transaksi dibatalkan'
-      }
-    );
+      ]
+    });
   }
 };
 
 /* ============================================================
-   PAGE: OPNAME (v5.4: no overlay, pakai .busy)
+   PAGE: OPNAME (v5.4: no overlay, pakai .busy + master guard)
    ============================================================ */
 const PageOpname = {
   _entries: {},
@@ -2253,6 +2295,17 @@ const PageOpname = {
     this._entries = {};
     this._filter = '';
     this._search = '';
+
+    // v5.4: tunggu master siap
+    if (!AdminApp.master) {
+      container.innerHTML = Helper.loader('Memuat data master...');
+      const self = this;
+      AdminApp.onMasterLoaded(() => {
+        if (renderId !== AdminApp._routeRenderId) return;
+        self.render(container, renderId);
+      });
+      return;
+    }
 
     container.innerHTML = '' +
       '<div class="page-header">' +
@@ -2423,12 +2476,14 @@ const PageOpname = {
       return;
     }
 
+    const self = this;
     Modal.confirm(
       'Konfirmasi Opname',
       'Stok fisik akan dicatat untuk ' + ids.length + ' item. Sistem akan menghitung ' +
       'selisih dan membuat penyesuaian otomatis.\n\nLanjutkan?',
       async () => {
-        this._submitting = true;
+        if (self._submitting) return;
+        self._submitting = true;
         const btn = U.$('#btn-submit-opname');
         Btn.setLoading(btn, 'Menyimpan...');
         const tableWrap = U.$('#opname-table-container');
@@ -2437,19 +2492,19 @@ const PageOpname = {
         try {
           const payload = ids.map(id => ({
             id_barang: id,
-            stok_fisik: this._entries[id],
+            stok_fisik: self._entries[id],
             keterangan: 'Opname via aplikasi'
           }));
           const res = await Api.simpanOpnameBulk(payload);
           Toast.success(res.message || 'Opname tersimpan');
-          this._entries = {};
-          this.render(container, ++AdminApp._routeRenderId);
+          self._entries = {};
+          self.render(container, ++AdminApp._routeRenderId);
         } catch (err) {
           Toast.error('Gagal: ' + err.message);
           Btn.stopLoading(btn, 'Simpan Opname (' + ids.length + ')', 'check');
         } finally {
           if (tableWrap) tableWrap.classList.remove('busy', 'busy-plain');
-          this._submitting = false;
+          self._submitting = false;
         }
       },
       'Ya, Simpan', false,
@@ -2459,23 +2514,22 @@ const PageOpname = {
 };
 
 /* ============================================================
-   PAGE: LAPORAN (BARU v5.4)
+   PAGE: LAPORAN (v5.4: tab race fix + preload sheetjs)
    ============================================================ */
 const PageLaporan = {
   _tab: 'stok',
   _container: null,
   _renderId: 0,
-  _data: {
-    stok: null,
-    mutasi: null,
-    aset: null
-  },
+  _tabRenderId: 0,
   _filterStok: { group: 'all', only_kritis: false, only_expiring: false },
   _filterMutasi: { bulan: new Date().getMonth() + 1, tahun: new Date().getFullYear() },
 
   async render(container, renderId) {
     this._container = container;
     this._renderId = renderId;
+
+    // v5.4: preload sheetjs supaya export pertama tidak delay 3-5s
+    LibLoader.load('sheetjs').catch(() => {});
 
     container.innerHTML =
       '<div class="page-header">' +
@@ -2514,15 +2568,19 @@ const PageLaporan = {
   async _renderTab() {
     const target = U.$('#laporan-content');
     if (!target) return;
+
+    // v5.4 FIX: request ID supaya tidak ada race antar-tab
+    const myTabId = ++this._tabRenderId;
+
     target.innerHTML = Helper.loader('Memuat laporan...');
 
-    if (this._tab === 'stok') await this._renderStokTerkini(target);
-    else if (this._tab === 'mutasi') await this._renderMutasiBulanan(target);
-    else if (this._tab === 'aset') await this._renderNilaiAset(target);
+    if (this._tab === 'stok') await this._renderStokTerkini(target, myTabId);
+    else if (this._tab === 'mutasi') await this._renderMutasiBulanan(target, myTabId);
+    else if (this._tab === 'aset') await this._renderNilaiAset(target, myTabId);
   },
 
   /* ---------- STOK TERKINI ---------- */
-  async _renderStokTerkini(target) {
+  async _renderStokTerkini(target, myTabId) {
     const f = this._filterStok;
     try {
       const res = await Api.getLaporanStokTerkini({
@@ -2531,8 +2589,8 @@ const PageLaporan = {
         only_expiring: f.only_expiring
       });
       if (this._renderId !== AdminApp._routeRenderId) return;
+      if (myTabId !== this._tabRenderId) return; // v5.4: stale tab
       const data = res.data;
-      this._data.stok = data;
 
       const items = data.items || [];
       const filtersHtml =
@@ -2630,6 +2688,7 @@ const PageLaporan = {
       CS.enhanceAll(target);
     } catch (err) {
       if (this._renderId !== AdminApp._routeRenderId) return;
+      if (myTabId !== this._tabRenderId) return;
       target.innerHTML = Helper.emptyState('Gagal memuat', err.message, 'alertCircle');
     }
   },
@@ -2662,13 +2721,14 @@ const PageLaporan = {
   },
 
   /* ---------- MUTASI BULANAN ---------- */
-  async _renderMutasiBulanan(target) {
+  async _renderMutasiBulanan(target, myTabId) {
     const f = this._filterMutasi;
     try {
       const res = await Api.getLaporanMutasiBulanan({
         bulan: f.bulan, tahun: f.tahun, group: 'all'
       });
       if (this._renderId !== AdminApp._routeRenderId) return;
+      if (myTabId !== this._tabRenderId) return;
       const data = res.data;
 
       const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1)
@@ -2768,6 +2828,7 @@ const PageLaporan = {
       CS.enhanceAll(target);
     } catch (err) {
       if (this._renderId !== AdminApp._routeRenderId) return;
+      if (myTabId !== this._tabRenderId) return;
       target.innerHTML = Helper.emptyState('Gagal memuat', err.message, 'alertCircle');
     }
   },
@@ -2802,10 +2863,11 @@ const PageLaporan = {
   },
 
   /* ---------- NILAI ASET ---------- */
-  async _renderNilaiAset(target) {
+  async _renderNilaiAset(target, myTabId) {
     try {
       const res = await Api.getLaporanNilaiAset({});
       if (this._renderId !== AdminApp._routeRenderId) return;
+      if (myTabId !== this._tabRenderId) return;
       const data = res.data;
 
       const statsHtml =
@@ -2856,6 +2918,7 @@ const PageLaporan = {
         this._exportNilaiAset(data, e.currentTarget));
     } catch (err) {
       if (this._renderId !== AdminApp._routeRenderId) return;
+      if (myTabId !== this._tabRenderId) return;
       target.innerHTML = Helper.emptyState('Gagal memuat', err.message, 'alertCircle');
     }
   },
@@ -2867,7 +2930,6 @@ const PageLaporan = {
       const XLSX = await LibLoader.load('sheetjs');
       const wb = XLSX.utils.book_new();
 
-      // Sheet per grup
       const byGroup = [['Grup', 'Jumlah Item', 'Total Nilai']];
       ['obat', 'bmhp', 'atk'].forEach(g => {
         const item = data.by_group[g];
@@ -2875,7 +2937,6 @@ const PageLaporan = {
       });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(byGroup), 'By Grup');
 
-      // Sheet per kategori
       const byKat = [['Kategori', 'Grup', 'Jumlah Item', 'Total Nilai']];
       (data.by_kategori || []).forEach(it => {
         byKat.push([it.kategori, it.group, it.total_item, it.total_nilai]);
@@ -2893,7 +2954,7 @@ const PageLaporan = {
 };
 
 /* ============================================================
-   PAGE: KARTU STOK (v5.4: preload sheetjs)
+   PAGE: KARTU STOK (v5.4: renderId + null guard)
    ============================================================ */
 const PageKartuStok = {
   _currentData: null,
@@ -2907,8 +2968,9 @@ const PageKartuStok = {
     const now = new Date();
     this._selectedBulan = now.getMonth() + 1;
     this._selectedTahun = now.getFullYear();
+    this._renderId = renderId;
 
-    // v5.4: preload sheetjs supaya tidak breaking user gesture saat download
+    // v5.4: preload sheetjs
     LibLoader.load('sheetjs').catch(() => {});
 
     container.innerHTML = '' +
@@ -2967,6 +3029,7 @@ const PageKartuStok = {
     const searchEl = U.$('#ks-search');
     const suggestEl = U.$('#ks-suggestions');
     const idEl = U.$('#ks-id');
+    if (!searchEl) return;
 
     if (this._searchHandler) searchEl.removeEventListener('input', this._searchHandler);
 
@@ -3073,17 +3136,24 @@ const PageKartuStok = {
 
   async _loadData() {
     if (!this._selectedId) return;
+    const myRenderId = this._renderId;
     const btn = U.$('#ks-load');
     Btn.setLoading(btn, 'Memuat...');
-    U.$('#ks-result').innerHTML = Helper.loader('Memuat kartu stok...');
+    const resultEl = U.$('#ks-result');
+    if (resultEl) resultEl.innerHTML = Helper.loader('Memuat kartu stok...');
 
     try {
       const res = await Api.getKartuStokBulanan(
         this._selectedId, this._selectedBulan, this._selectedTahun);
+      // v5.4: guard — user mungkin sudah navigasi away
+      if (myRenderId !== AdminApp._routeRenderId) return;
+      if (!U.$('#ks-result')) return;
       this._currentData = res.data;
       this._renderMonthNav();
       this._renderPreview(res.data);
     } catch (err) {
+      if (myRenderId !== AdminApp._routeRenderId) return;
+      if (!U.$('#ks-result')) return;
       Toast.error('Gagal memuat: ' + err.message);
       U.$('#ks-result').innerHTML = Helper.emptyState(
         'Gagal memuat data', err.message, 'alertCircle');
@@ -3093,6 +3163,9 @@ const PageKartuStok = {
   },
 
   _renderPreview(data) {
+    const target = U.$('#ks-result');
+    if (!target) return;
+
     const bulanNama = U.formatMonthName(data.bulan).toUpperCase();
     const logo = Store.getLogo();
 
@@ -3205,7 +3278,7 @@ const PageKartuStok = {
         '</div>' +
       '</div>';
 
-    U.$('#ks-result').innerHTML = html;
+    target.innerHTML = html;
     U.$('#ks-print').addEventListener('click', () => window.print());
     U.$('#ks-xlsx').addEventListener('click', (e) =>
       this._downloadXLSX(data, e.currentTarget));
@@ -3262,19 +3335,32 @@ const PageKartuStok = {
 };
 
 /* ============================================================
-   PAGE: CETAK QR (v5.4: delayed revoke URL)
+   PAGE: CETAK QR (v5.4: master guard + null guard + fallback)
    ============================================================ */
 const PageCetakQR = {
   _selected: null,
   _mode: 'mode-24',
   _qrCache: null,
   _rendering: false,
+  _renderId: 0,
 
   async render(container, renderId) {
     this._selected = new Set();
     this._qrCache = {};
+    this._renderId = renderId;
 
-    // Preload qrcode lib untuk hindari delay saat generate pertama
+    // v5.4: master guard
+    if (!AdminApp.master) {
+      container.innerHTML = Helper.loader('Memuat data master...');
+      const self = this;
+      AdminApp.onMasterLoaded(() => {
+        if (renderId !== AdminApp._routeRenderId) return;
+        self.render(container, renderId);
+      });
+      return;
+    }
+
+    // Preload qrcode lib
     LibLoader.load('qrcode').catch(() => {});
 
     container.innerHTML =
@@ -3420,9 +3506,12 @@ const PageCetakQR = {
 
   _getFilteredItems() {
     const master = AdminApp.master || {};
-    const tipe = U.$('#qr-filter-tipe').value;
-    const rak = U.$('#qr-filter-rak').value;
-    const q = (U.$('#qr-filter-search').value || '').toLowerCase().trim();
+    const tipeEl = U.$('#qr-filter-tipe');
+    const rakEl = U.$('#qr-filter-rak');
+    const searchEl = U.$('#qr-filter-search');
+    const tipe = tipeEl ? tipeEl.value : '';
+    const rak = rakEl ? rakEl.value : '';
+    const q = (searchEl ? searchEl.value : '').toLowerCase().trim();
 
     const items = [];
     if (tipe !== 'bmhp' && tipe !== 'atk') {
@@ -3511,42 +3600,47 @@ const PageCetakQR = {
     this._renderPreview();
   },
 
+  /**
+   * v5.4 FIX: null guard + try/finally supaya _rendering selalu di-reset,
+   * bahkan kalau user navigasi away di tengah proses.
+   */
   async _renderPreview() {
     if (this._rendering) return;
     this._rendering = true;
 
-    const preview = U.$('#qr-preview');
-    const selectedIds = Array.from(this._selected);
-
-    if (selectedIds.length === 0) {
-      preview.innerHTML = Helper.emptyState(
-        'Belum ada label dipilih',
-        'Pilih item di panel kiri untuk melihat preview.', 'qr');
-      this._rendering = false;
-      return;
-    }
-
-    const master = AdminApp.master || {};
-    const allItems = {};
-    (master.obat || []).forEach(o => {
-      allItems[o.ID_Obat] = { id: o.ID_Obat, nama: o.Nama_Obat, rak: o.Lokasi_Rak, satuan: o.Satuan };
-    });
-    (master.bmhp || []).forEach(o => {
-      allItems[o.ID_BMHP] = { id: o.ID_BMHP, nama: o.Nama_Barang, rak: o.Lokasi_Rak, satuan: o.Satuan };
-    });
-    (master.atk || []).forEach(o => {
-      allItems[o.ID_ATK] = { id: o.ID_ATK, nama: o.Nama_Barang, rak: o.Lokasi_Rak, satuan: o.Satuan };
-    });
-
-    const items = selectedIds.map(id => allItems[id]).filter(Boolean);
-
-    preview.innerHTML =
-      '<div class="inline-loading">' +
-        '<span class="spinner"></span>' +
-        '<span id="qr-progress">Menyiapkan QR... 0/' + items.length + '</span>' +
-      '</div>';
-
     try {
+      const preview = U.$('#qr-preview');
+      if (!preview) return; // navigasi away
+
+      const selectedIds = Array.from(this._selected);
+
+      if (selectedIds.length === 0) {
+        preview.innerHTML = Helper.emptyState(
+          'Belum ada label dipilih',
+          'Pilih item di panel kiri untuk melihat preview.', 'qr');
+        return;
+      }
+
+      const master = AdminApp.master || {};
+      const allItems = {};
+      (master.obat || []).forEach(o => {
+        allItems[o.ID_Obat] = { id: o.ID_Obat, nama: o.Nama_Obat, rak: o.Lokasi_Rak, satuan: o.Satuan };
+      });
+      (master.bmhp || []).forEach(o => {
+        allItems[o.ID_BMHP] = { id: o.ID_BMHP, nama: o.Nama_Barang, rak: o.Lokasi_Rak, satuan: o.Satuan };
+      });
+      (master.atk || []).forEach(o => {
+        allItems[o.ID_ATK] = { id: o.ID_ATK, nama: o.Nama_Barang, rak: o.Lokasi_Rak, satuan: o.Satuan };
+      });
+
+      const items = selectedIds.map(id => allItems[id]).filter(Boolean);
+
+      preview.innerHTML =
+        '<div class="inline-loading">' +
+          '<span class="spinner"></span>' +
+          '<span id="qr-progress">Menyiapkan QR... 0/' + items.length + '</span>' +
+        '</div>';
+
       const toGenerate = items.filter(it => !this._qrCache[it.id]);
       const chunkSize = 6;
 
@@ -3563,6 +3657,9 @@ const PageCetakQR = {
         }
         await new Promise(r => setTimeout(r, 0));
       }
+
+      // Re-check preview setelah async loop
+      if (!U.$('#qr-preview')) return;
 
       const perPage = this._mode === 'mode-24' ? 24 : 40;
       const pages = Math.ceil(items.length / perPage);
@@ -3588,26 +3685,106 @@ const PageCetakQR = {
       }
       preview.innerHTML = html;
     } catch (err) {
+      dbgErr('Render QR gagal:', err);
+      const preview = U.$('#qr-preview');
+      if (!preview) return;
+
+      const isLibFail = (err && err.message && err.message.indexOf('Library QR') !== -1);
+      const fallbackBtn = isLibFail
+        ? '<button class="btn btn-secondary" id="qr-print-nofallback">' +
+          U.icon('printer', 16) + ' Cetak Tanpa QR' +
+          '</button>'
+        : '';
+
       preview.innerHTML =
         '<div class="empty-state" style="padding:40px">' +
           U.icon('alertCircle', 48) +
           '<h3>Gagal generate QR</h3>' +
-          '<p style="margin-bottom:16px">' + U.escapeHtml(err.message) + '</p>' +
-          '<button class="btn btn-primary" id="qr-retry">' +
-            U.icon('refresh', 16) + ' Coba Lagi' +
-          '</button>' +
+          '<p style="margin-bottom:16px;max-width:400px">' +
+            U.escapeHtml(err.message || 'Terjadi kesalahan tidak dikenal') +
+          '</p>' +
+          '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
+            '<button class="btn btn-primary" id="qr-retry">' +
+              U.icon('refresh', 16) + ' Coba Lagi' +
+            '</button>' +
+            fallbackBtn +
+          '</div>' +
         '</div>';
+
       const retryBtn = U.$('#qr-retry');
       if (retryBtn) {
         retryBtn.addEventListener('click', () => {
           LibLoader._cache = {};
+          if (LibLoader._cleanupOldScripts) LibLoader._cleanupOldScripts('qrcode');
           this._qrCache = {};
           this._renderPreview();
+        });
+      }
+
+      const noFallbackBtn = U.$('#qr-print-nofallback');
+      if (noFallbackBtn) {
+        noFallbackBtn.addEventListener('click', () => {
+          this._renderPreviewWithoutQR(Array.from(this._selected));
         });
       }
     } finally {
       this._rendering = false;
     }
+  },
+
+  /**
+   * v5.4 — Fallback: render label tanpa QR image (hanya ID besar).
+   * Dipakai kalau library QR tidak bisa dimuat (offline CDN).
+   */
+  _renderPreviewWithoutQR(selectedIds) {
+    const preview = U.$('#qr-preview');
+    if (!preview) return;
+
+    const master = AdminApp.master || {};
+    const allItems = {};
+    (master.obat || []).forEach(o => {
+      allItems[o.ID_Obat] = { id: o.ID_Obat, nama: o.Nama_Obat,
+                              rak: o.Lokasi_Rak, satuan: o.Satuan };
+    });
+    (master.bmhp || []).forEach(o => {
+      allItems[o.ID_BMHP] = { id: o.ID_BMHP, nama: o.Nama_Barang,
+                              rak: o.Lokasi_Rak, satuan: o.Satuan };
+    });
+    (master.atk || []).forEach(o => {
+      allItems[o.ID_ATK] = { id: o.ID_ATK, nama: o.Nama_Barang,
+                             rak: o.Lokasi_Rak, satuan: o.Satuan };
+    });
+
+    const items = selectedIds.map(id => allItems[id]).filter(Boolean);
+    const perPage = this._mode === 'mode-24' ? 24 : 40;
+    const pages = Math.ceil(items.length / perPage);
+    let html = '';
+
+    for (let p = 0; p < pages; p++) {
+      const pageItems = items.slice(p * perPage, (p + 1) * perPage);
+      html += '<div class="qr-page ' + this._mode + '">';
+      pageItems.forEach(it => {
+        html += '<div class="qr-label ' + this._mode + '">' +
+          '<div class="qr-img-wrap" style="background:#f0f0f0;' +
+            'display:flex;align-items:center;justify-content:center;' +
+            'font-size:8pt;color:#999;font-weight:700">NO&nbsp;QR</div>' +
+          '<div class="label-text">' +
+            '<div class="label-id" style="font-size:12pt">' +
+              U.escapeHtml(it.id) + '</div>' +
+            '<div class="label-name" style="font-size:8pt">' +
+              U.escapeHtml(it.nama) + '</div>' +
+            '<div class="label-meta">' +
+              U.escapeHtml(it.satuan || '') +
+              (it.rak ? ' · ' + U.escapeHtml(it.rak) : '') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      });
+      html += '</div>';
+    }
+
+    preview.innerHTML = html;
+    Toast.warning('QR tidak tersedia. Label dicetak tanpa QR — kode barang tetap terbaca.');
   },
 
   _generateQR(text, size) {
@@ -3639,10 +3816,6 @@ const PageCetakQR = {
     });
   },
 
-  /**
-   * v5.4: delayed revoke URL supaya browser (Safari/Firefox lama)
-   * masih sempat membaca blob sebelum URL di-revoke.
-   */
   _downloadHTML(btn) {
     const preview = U.$('#qr-preview');
     if (!preview) return;
@@ -3683,7 +3856,7 @@ const PageCetakQR = {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      // v5.4: delayed revoke
+      // v5.4: delayed revoke supaya browser sempat baca blob
       setTimeout(() => URL.revokeObjectURL(url), 1500);
       Toast.success('File HTML berhasil diunduh.');
     } catch (err) {
@@ -3695,7 +3868,7 @@ const PageCetakQR = {
 };
 
 /* ============================================================
-   PAGE: MASTER CRUD
+   PAGE: MASTER CRUD (v5.4: master guard)
    ============================================================ */
 const PageMaster = {
   CONFIG: {
@@ -3847,6 +4020,17 @@ const PageMaster = {
     const cfg = this.CONFIG[sheetName];
     if (!cfg) {
       container.innerHTML = Helper.emptyState('Config tidak ditemukan');
+      return;
+    }
+
+    // v5.4: master guard
+    if (!AdminApp.master) {
+      container.innerHTML = Helper.loader('Memuat data master...');
+      const self = this;
+      AdminApp.onMasterLoaded(() => {
+        if (renderId !== AdminApp._routeRenderId) return;
+        self.render(container, sheetName, renderId);
+      });
       return;
     }
 
@@ -4036,6 +4220,7 @@ const PageMaster = {
       fieldsHtml +
     '</form>';
 
+    const self = this;
     Modal.open({
       title: isEdit ? 'Edit ' + cfg.title : 'Tambah ' + cfg.title,
       icon: 'primary',
@@ -4081,7 +4266,7 @@ const PageMaster = {
                 ? 'Data diperbarui.'
                 : 'Data ditambahkan: ' + (res.data && res.data.id || ''));
               await AdminApp.refreshMaster();
-              PageMaster.render(container, sheetName, ++AdminApp._routeRenderId);
+              self.render(container, sheetName, ++AdminApp._routeRenderId);
             } catch (err) {
               Toast.error('Gagal: ' + err.message);
               Btn.stopLoading(btn, isEdit ? 'Simpan Perubahan' : 'Simpan', 'check');
@@ -4100,6 +4285,7 @@ const PageMaster = {
 
   _confirmDelete(sheetName, item, container) {
     const cfg = this.CONFIG[sheetName];
+    const self = this;
     Modal.confirm(
       'Nonaktifkan Item',
       'Item "' + (item[cfg.nameField] || item[cfg.idField]) + '" akan dinonaktifkan ' +
@@ -4113,7 +4299,7 @@ const PageMaster = {
           });
           Toast.success('Item dinonaktifkan.');
           await AdminApp.refreshMaster();
-          PageMaster.render(container, sheetName, ++AdminApp._routeRenderId);
+          self.render(container, sheetName, ++AdminApp._routeRenderId);
         } catch (err) {
           Toast.error('Gagal: ' + err.message);
         }
@@ -4125,11 +4311,9 @@ const PageMaster = {
   },
 
   /**
-   * v5.4: modal loading state — modal confirm tetap buka saat API call,
-   * tombol "Ya, Reset" jadi loading. Tidak ada flicker modal → overlay → modal.
+   * v5.4: modal loading state — modal tetap buka saat API call.
    */
   _resetPin(idPetugas, container) {
-    let resetBtn = null;
     Modal.open({
       title: 'Reset PIN Petugas',
       subtitle: 'PIN baru akan di-generate acak untuk ' + idPetugas,
@@ -4147,12 +4331,10 @@ const PageMaster = {
           close: false,
           icon: 'refresh',
           onClick: async (btn) => {
-            resetBtn = btn;
             Btn.setLoading(btn, 'Mereset...');
             try {
               const res = await Api.resetPin(idPetugas);
               Modal.close();
-              // Tampilkan modal PIN baru (delay sedikit untuk transisi halus)
               setTimeout(() => {
                 Modal.open({
                   title: 'PIN Baru',
@@ -4178,7 +4360,7 @@ const PageMaster = {
 };
 
 /* ============================================================
-   PAGE: AUDIT LOG (v5.4: handle approximate flag)
+   PAGE: AUDIT LOG (v5.4: handle approximate + fast path)
    ============================================================ */
 const PageAudit = {
   _page: 0,
@@ -4192,6 +4374,7 @@ const PageAudit = {
     this._approximate = false;
     this._totalRecords = 0;
     this._hasMore = false;
+    this._renderId = renderId;
 
     container.innerHTML =
       '<div class="page-header">' +
@@ -4224,6 +4407,7 @@ const PageAudit = {
         limit: this._perPage,
         offset: this._page * this._perPage
       });
+      if (!U.$('#audit-result')) return;
       const items = (res.data && res.data.items) || [];
       const d = res.data || {};
 
@@ -4237,7 +4421,6 @@ const PageAudit = {
         return;
       }
 
-      // Label total
       let totalLabel = '';
       if (this._approximate) {
         totalLabel = 'Menampilkan ' + items.length + ' baris terbaru' +
@@ -4288,16 +4471,18 @@ const PageAudit = {
 
       const prev = U.$('#audit-prev');
       const next = U.$('#audit-next');
-      if (prev) prev.addEventListener('click', () => { this._page--; this._load(); });
-      if (next) next.addEventListener('click', () => { this._page++; this._load(); });
+      const self = this;
+      if (prev) prev.addEventListener('click', () => { self._page--; self._load(); });
+      if (next) next.addEventListener('click', () => { self._page++; self._load(); });
     } catch (err) {
+      if (!U.$('#audit-result')) return;
       target.innerHTML = Helper.emptyState('Gagal', err.message, 'alertCircle');
     }
   }
 };
 
 /* ============================================================
-   PAGE: SETTINGS
+   PAGE: SETTINGS (v5.4: card Aksi dihapus, tombol logout di topbar)
    ============================================================ */
 const PageSettings = {
   async render(container, renderId) {
@@ -4356,12 +4541,6 @@ const PageSettings = {
         '</div>' +
       '</div>' +
       '<div class="card">' +
-        '<div class="card-title">Aksi</div>' +
-        '<button class="btn btn-danger" id="btn-logout">' +
-          U.icon('logout', 16) + ' Keluar dari Aplikasi' +
-        '</button>' +
-      '</div>' +
-      '<div class="card">' +
         '<div class="card-title">Informasi</div>' +
         '<div class="field"><label class="field-label">Versi Aplikasi</label>' +
           '<div>' + CONFIG.APP_VERSION + '</div></div>' +
@@ -4382,11 +4561,6 @@ const PageSettings = {
       Toast.info('Logo dihapus');
     });
     U.$('#btn-ubah-pin').addEventListener('click', (e) => this._ubahPin(e.currentTarget));
-    U.$('#btn-logout').addEventListener('click', () => {
-      Modal.confirm('Keluar', 'Yakin ingin keluar dari aplikasi?',
-        () => AdminApp.logout(), 'Ya, Keluar', true,
-        { icon: 'danger', subtitle: 'Anda harus login ulang' });
-    });
   },
 
   _refreshLogo() {
@@ -4495,9 +4669,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById('boot-splash');
     if (el) el.classList.add('hide');
     document.getElementById('app').innerHTML =
-      '<div style="padding:32px;text-align:center;color:#d32f2f">' +
-        '<h2>Gagal memuat sistem</h2>' +
-        '<p>File <code>shared/core.js</code> tidak ditemukan.</p>' +
+      '<div style="padding:32px;text-align:center;color:#d32f2f;' +
+      'font-family:system-ui,sans-serif">' +
+        '<h2 style="margin-bottom:12px">Gagal memuat sistem</h2>' +
+        '<p style="color:#666">File <code>shared/core.js</code> tidak ditemukan.</p>' +
       '</div>';
     return;
   }
