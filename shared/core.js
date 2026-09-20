@@ -1,15 +1,21 @@
 /**
  * ============================================================
- * SHARED CORE JS — Sistem Gudang Puskesmas v5.4
+ * SHARED CORE JS — Sistem Gudang Puskesmas v5.4.1
  * ============================================================
  * Termasuk: config, utilities, store, toast, modal, btn,
  *           form error, API client, CustomSelect, QR scanner,
  *           LoginForm, AuthGuard, LibLoader, BatchSelector.
  *
+ * Changelog v5.4.1:
+ *   - LibLoader: local (shared/vendor) first, CDN fallback,
+ *     cooldown 30s anti-retry-storm, per-CDN timeout 5s,
+ *     reset() untuk tombol retry
+ *   - LoginForm: welcome Toast opsional via opts.welcomeToast
+ *     (default true backward-compat). Caller seperti index.html
+ *     bisa set false + handle sendiri setelah shell siap.
+ *
  * Changelog v5.4:
  *   - Fix LoginForm._submitting (user tidak terkunci saat login gagal)
- *   - LibLoader overhaul: per-CDN timeout 8s, cleanup script tag,
- *     strict global check, no hang on retry
  *   - LoginForm: ganti Loading overlay -> .busy class
  *   - Loading object deprecated (no-op + dbgWarn)
  *   - Api.getPesananDetail() + Api.getLaporan() (backend v5.4)
@@ -27,12 +33,12 @@
 const CONFIG = Object.freeze({
   API_URL: 'https://script.google.com/macros/s/AKfycbxX6oAam5bFHR4ngUEWwZ7TXXzuo9mGxBrXtnj1e6y8BT9Fm3rw7JWDKsxYpZwTb45pSw/exec',
   API_KEY: 'PKM_SANDEN_26',
-  APP_VERSION: '5.4',
+  APP_VERSION: '5.4.1',
 
   // Timeouts per endpoint (ms)
   REQUEST_TIMEOUT_MS: 15000,
   LOGIN_TIMEOUT_MS: 12000,
-  MASTER_TIMEOUT_MS: 20000,       // v5.4: master payload besar, network kadang lambat
+  MASTER_TIMEOUT_MS: 20000,
   WHOAMI_TIMEOUT_MS: 6000,
   RETRY_ATTEMPTS: 2,
 
@@ -391,9 +397,6 @@ const Modal = {
  *
  *   3. Inline placeholder:
  *        el.innerHTML = Helper.loader('Memuat...');
- *
- * Objek ini tetap ada untuk backward-compat — kalau ada kode
- * lama yang masih mereferensikan Loading.show/hide, tidak error.
  */
 const Loading = {
   _count: 0,
@@ -673,11 +676,6 @@ class ApiError extends Error {
 const Api = {
   _warmedUp: false,
 
-  /**
-   * Warmup — 1 request health ke backend.
-   * Gunakan GET supaya tidak masuk hitungan doPost.
-   * Skip kalau baru warmup <30s lalu (cegah spam).
-   */
   warmup() {
     if (this._warmedUp) return;
     this._warmedUp = true;
@@ -742,7 +740,6 @@ const Api = {
     opts = opts || {};
     const body = this._buildRequest(action, payload, opts);
 
-    // Endpoint dengan timeout khusus
     if (action === 'login' || action === 'loginRuang') {
       return await this._fetch(body, CONFIG.LOGIN_TIMEOUT_MS);
     }
@@ -875,28 +872,49 @@ const Api = {
 };
 
 // ============================================================
-// LIB LOADER — multi-CDN fallback (v5.4: hang-proof)
+// LIB LOADER — multi-source dengan local-first + CDN fallback
 // ============================================================
+/**
+ * v5.4.1 — Local first strategy:
+ *   - Coba `shared/vendor/*.js` dulu (self-host, 0 dependency CDN)
+ *   - Fallback ke CDN kalau file lokal tidak ada (404)
+ *   - Cooldown 30s: kalau gagal semua, jangan retry sampai 30s
+ *     supaya tidak retry storm (preload + user click = 2x percobaan)
+ *   - reset() untuk clear cache + cooldown (dipanggil dari tombol "Coba Lagi")
+ *
+ * Setup:
+ *   Download 3 file berikut ke `shared/vendor/`:
+ *     - qrcode.min.js       (40 KB)  → https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js
+ *     - xlsx.full.min.js    (900 KB) → https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js
+ *     - jsQR.min.js         (260 KB) → https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js
+ */
 const LibLoader = {
   _cache: {},
+  _failedAt: {},              // v5.4.1: waktu kegagalan terakhir per lib
+  _failureCacheMs: 30000,     // v5.4.1: cooldown 30s
+  _cdnTimeoutMs: 5000,        // v5.4.1: turun dari 8s → 5s (fail faster)
+
+  // Local first, CDN sebagai fallback
   _sources: {
     qrcode: [
+      'shared/vendor/qrcode.min.js',
       'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
       'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js',
       'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'
     ],
     sheetjs: [
+      'shared/vendor/xlsx.full.min.js',
       'https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js',
       'https://cdn.jsdelivr.net/npm/xlsx@0.20.0/dist/xlsx.full.min.js',
       'https://unpkg.com/xlsx@0.20.0/dist/xlsx.full.min.js'
     ],
     jsqr: [
+      'shared/vendor/jsQR.min.js',
       'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js',
       'https://unpkg.com/jsqr@1.4.0/dist/jsQR.min.js'
     ]
   },
   _globals: { qrcode: 'QRCode', sheetjs: 'XLSX', jsqr: 'jsQR' },
-  _cdnTimeoutMs: 8000,
 
   load(name) {
     if (this._cache[name]) return this._cache[name];
@@ -906,16 +924,41 @@ const LibLoader = {
       return Promise.reject(new Error('Unknown lib: ' + name));
     }
 
-    // v5.4: bersihkan script tag lama yang mungkin stale
-    // dari retry sebelumnya — supaya tidak bocor di DOM.
+    // v5.4.1: cooldown — kalau baru gagal <30s lalu, langsung reject
+    // supaya tidak retry storm (preload + user click = 2x failure)
+    const failTime = this._failedAt[name];
+    if (failTime && (Date.now() - failTime) < this._failureCacheMs) {
+      const remainSec = Math.ceil((this._failureCacheMs - (Date.now() - failTime)) / 1000);
+      dbgWarn('Lib ' + name + ' cooldown — skip retry (' + remainSec + 's left)');
+      return Promise.reject(new Error('Library ' + name +
+        ' gagal dimuat. Coba lagi dalam ' + remainSec + 's atau klik "Coba Lagi".'));
+    }
+
     this._cleanupOldScripts(name);
 
     this._cache[name] = this._trySequential(urls, name, globalName, 0);
     return this._cache[name];
   },
 
-  // v5.4: strict check supaya global "stale" (mis. window.XLSX = {})
-  // dari script lain tidak dianggap valid.
+  /**
+   * v5.4.1: reset manual — dipanggil dari tombol "Coba Lagi".
+   * Clear cache + cooldown + script tag lama.
+   */
+  reset(name) {
+    if (name) {
+      delete this._cache[name];
+      delete this._failedAt[name];
+      this._cleanupOldScripts(name);
+      dbg('LibLoader.reset: ' + name);
+    } else {
+      this._cache = {};
+      this._failedAt = {};
+      Object.keys(this._sources).forEach(n => this._cleanupOldScripts(n));
+      dbg('LibLoader.reset: all');
+    }
+  },
+
+  // v5.4.1: strict check supaya global "stale" tidak dianggap valid
   _isValidGlobal(name, globalName) {
     const g = window[globalName];
     if (!g) return false;
@@ -931,25 +974,29 @@ const LibLoader = {
   },
 
   /**
-   * v5.4: SELALU buat script baru per attempt.
-   * JANGAN reuse tag lama — event load/error sudah fired,
-   * listener baru tidak akan trigger -> promise hang selamanya.
-   * Timeout per-CDN 8s supaya tidak hang kalau script diam-diam fail.
+   * v5.4.1: SELALU buat script baru per attempt.
+   * JANGAN reuse tag lama — event load/error sudah fired.
+   * Timeout per-source 5s.
    */
   _trySequential(urls, name, globalName, idx) {
     if (idx >= urls.length) {
       delete LibLoader._cache[name];
-      return Promise.reject(new Error('Semua CDN gagal untuk ' + name));
+      // v5.4.1: catat waktu kegagalan untuk cooldown
+      LibLoader._failedAt[name] = Date.now();
+      return Promise.reject(new Error('Semua sumber gagal untuk ' + name));
     }
     return new Promise((resolve, reject) => {
-      // Cek global dulu — kalau sudah valid, selesai
       if (this._isValidGlobal(name, globalName)) {
         resolve(window[globalName]);
         return;
       }
 
+      const url = urls[idx];
+      const isLocal = url.indexOf('shared/vendor') === 0;
+      const label = isLocal ? 'LOCAL' : 'CDN #' + (idx);
+
       const script = document.createElement('script');
-      script.src = urls[idx];
+      script.src = url;
       script.async = true;
       script.setAttribute('data-lib', name + '-' + idx);
 
@@ -957,8 +1004,7 @@ const LibLoader = {
       const tid = setTimeout(() => {
         if (settled) return;
         settled = true;
-        dbgWarn('CDN #' + (idx + 1) + ' TIMEOUT (' +
-          Math.round(this._cdnTimeoutMs / 1000) + 's): ' + urls[idx]);
+        dbgWarn(label + ' TIMEOUT (' + Math.round(this._cdnTimeoutMs / 1000) + 's): ' + url);
         try { script.remove(); } catch (e) {}
         this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
       }, this._cdnTimeoutMs);
@@ -968,10 +1014,10 @@ const LibLoader = {
         settled = true;
         clearTimeout(tid);
         if (this._isValidGlobal(name, globalName)) {
-          dbg('Lib ' + name + ' loaded dari CDN #' + (idx + 1));
+          dbg('Lib ' + name + ' loaded dari ' + label + ' (' + url + ')');
           resolve(window[globalName]);
         } else {
-          dbgWarn('CDN #' + (idx + 1) + ' tidak expose global valid, coba berikutnya');
+          dbgWarn(label + ' tidak expose global valid, coba berikutnya');
           this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
         }
       };
@@ -980,7 +1026,7 @@ const LibLoader = {
         if (settled) return;
         settled = true;
         clearTimeout(tid);
-        dbgWarn('CDN #' + (idx + 1) + ' gagal: ' + urls[idx]);
+        dbgWarn(label + ' gagal: ' + url);
         this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
       };
 
@@ -1313,15 +1359,20 @@ const LoginForm = {
   _variant: 'compact',
   _submitting: false,
   _mounted: false,
+  _showWelcomeToast: true,   // v5.4.1: default true untuk backward-compat
 
   mount(containerOrSelector, onSuccess, opts) {
     const container = typeof containerOrSelector === 'string'
       ? U.$(containerOrSelector) : containerOrSelector;
     if (!container) return;
 
+    opts = opts || {};
     this._container = container;
     this._onSuccess = onSuccess;
-    this._variant = (opts && opts.variant) || 'compact';
+    this._variant = opts.variant || 'compact';
+    // v5.4.1: caller bisa matikan welcome toast (mis. index.html yang mau
+    // tampilkan toast setelah shell siap, bukan sebelum layer transition)
+    this._showWelcomeToast = (opts.welcomeToast !== undefined) ? opts.welcomeToast : true;
     this._pin = '';
     this._submitting = false;
     this._mounted = true;
@@ -1331,7 +1382,7 @@ const LoginForm = {
     this._render();
 
     Api.warmup();
-    dbg('LoginForm mounted (' + this._variant + ')');
+    dbg('LoginForm mounted (' + this._variant + ', welcomeToast=' + this._showWelcomeToast + ')');
   },
 
   _renderHTML() {
@@ -1570,7 +1621,13 @@ const LoginForm = {
 
       if (formEl) formEl.classList.remove('busy');
       if (submitBtn) submitBtn.disabled = false;
-      Toast.success('Selamat datang, ' + res.nama);
+
+      // v5.4.1: welcome toast opsional.
+      // index.html set welcomeToast=false dan tampilkan sendiri setelah
+      // shell siap. scan.html pakai default (true) — toast sebelum layer ganti.
+      if (this._showWelcomeToast) {
+        Toast.success('Selamat datang, ' + res.nama);
+      }
 
       if (this._onSuccess) {
         try {
