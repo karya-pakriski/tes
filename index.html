@@ -7,20 +7,18 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="Sistem Gudang Puskesmas Sanden — Admin Panel v5.4">
+<meta name="description" content="Sistem Gudang Puskesmas Sanden — Admin Panel v5.4.1">
 <title>Sistem Gudang — Puskesmas Sanden</title>
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%A5%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="preconnect" href="https://script.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://cdn.sheetjs.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="shared/core.css">
 
 <style>
 /* ============================================================
-   INDEX v5.4 — FRESH MODERN THEME
+   INDEX v5.4.1 — FRESH MODERN THEME
    100% viewport, proporsional scrolling, clean & fast
    ============================================================ */
 
@@ -860,7 +858,7 @@ html, body {
 .kartu-stok-preview {
   background: white;
   padding: 14px;
-  max-width: 620px;
+  max-width: 720px;
   margin: 0 auto;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -896,6 +894,13 @@ html, body {
 }
 .kartu-stok-table th { background: #f0f0f0; font-weight: 700; }
 .kartu-stok-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.kartu-stok-table td.ket {
+  text-align: left;
+  font-size: 9px;
+  max-width: 140px;
+  word-break: break-word;
+  line-height: 1.2;
+}
 .kartu-stok-summary {
   display: grid; grid-template-columns: auto 1fr;
   gap: 4px 12px; font-size: 11px;
@@ -919,24 +924,83 @@ html, body {
   text-align: right; margin-top: 6px;
 }
 
-/* ---------- PRINT ---------- */
+/* ============================================================
+   PRINT OVERRIDE — v5.4.1
+   Fix blank page: core.css set .app-shell { display:none } di print
+   yang menyembunyikan seluruh konten. Override di sini karena
+   file ini dimuat setelah core.css.
+   ============================================================ */
 @media print {
-  html, body { overflow: visible; height: auto; }
-  .app-shell, .sidebar, .app-topbar, .sidebar-backdrop,
-  .no-print, .toast-container, .modal-overlay {
+  /* Reset html/body */
+  html, body {
+    overflow: visible !important;
+    height: auto !important;
+    background: white !important;
+  }
+
+  /* Sembunyikan UI, TAPI jangan .app-shell */
+  .sidebar,
+  .app-topbar,
+  .sidebar-backdrop,
+  .no-print,
+  .toast-container,
+  .loading-overlay,
+  .modal-overlay {
     display: none !important;
   }
-  .main-wrapper, .page-container {
-    height: auto; overflow: visible;
-    padding: 0 !important;
+
+  /* Reset wrapper agar semua konten bisa mengalir untuk print */
+  .app-shell {
+    display: block !important;
+    grid-template-columns: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
   }
-  .page-inner > * { animation: none; }
+  .main-wrapper {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .page-container {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  .page-inner {
+    display: block !important;
+    max-width: none !important;
+  }
+  .page-inner > * {
+    animation: none !important;
+  }
+
+  /* Kartu stok preview — bersih tanpa shadow/border container */
   .kartu-stok-preview {
-    box-shadow: none; border: none;
-    max-width: none; padding: 8mm;
+    box-shadow: none !important;
+    border: none !important;
+    max-width: none !important;
+    padding: 8mm !important;
+    margin: 0 !important;
+    page-break-inside: auto !important;
+  }
+
+  /* Table header repeat di setiap halaman */
+  .kartu-stok-table thead {
+    display: table-header-group;
+  }
+
+  /* Baris tidak boleh terpotong antar halaman */
+  .kartu-stok-table tr {
     page-break-inside: avoid;
   }
-  @page { margin: 0; }
+
+  @page {
+    margin: 10mm;
+    size: A4 portrait;
+  }
 }
 </style>
 </head>
@@ -945,7 +1009,7 @@ html, body {
 <div class="boot-splash" id="boot-splash">
   <div class="boot-splash-inner">
     <div class="boot-splash-logo">PKM</div>
-    <div class="boot-splash-text">Memuat sistem v5.4...</div>
+    <div class="boot-splash-text">Memuat sistem v5.4.1...</div>
     <div class="boot-splash-spinner"></div>
   </div>
 </div>
@@ -964,7 +1028,7 @@ html, body {
 'use strict';
 
 /* ============================================================
-   INDEX v5.4
+   INDEX v5.4.1
    Tidak redeclare U/Api/Store/Toast/Modal/Btn/FormError/CS/
    LibLoader/LoginForm/AuthGuard — semua dari core.js.
    ============================================================ */
@@ -1097,7 +1161,7 @@ const AdminApp = {
   _shellListeners: null,
 
   async init() {
-    dbg('AdminApp v5.4 init');
+    dbg('AdminApp v5.4.1 init');
     const session = Store.getSession();
 
     if (session && session.token) {
@@ -1196,7 +1260,6 @@ const AdminApp = {
 
   /**
    * v5.4: pub/sub untuk page yang butuh master data.
-   * Kalau master sudah ada, callback dipanggil langsung.
    */
   onMasterLoaded(callback) {
     if (this.master && !this.masterLoading) {
@@ -1234,15 +1297,23 @@ const AdminApp = {
       }
       this.session = session;
 
-      // 1) Render shell + route SEGERA
+      // 1) Render shell + route SEGERA (login form hilang dalam <50ms)
       this._initShell();
       this.route('dashboard');
 
-      // 2) Master load di BACKGROUND (tidak blocking UI)
+      // 2) v5.4.1: welcome toast DIPINDAH ke sini (layer dulu, baru toast)
+      // karena core.js dipanggil dengan welcomeToast: false
+      Toast.success('Selamat datang, ' + session.nama);
+
+      // 3) Master load di BACKGROUND (tidak blocking UI)
       this._loadMaster()
         .then(() => this._notifyMasterLoaded())
         .catch(err => dbgWarn('BG master load gagal:', err.message));
-    }, { variant: 'split' });
+    }, {
+      variant: 'split',
+      // v5.4.1: matikan welcome toast di core.js, kita handle sendiri
+      welcomeToast: false
+    });
   },
 
   /* ---------- SHELL ---------- */
@@ -1412,7 +1483,6 @@ const AdminApp = {
       tasks.push(this._badgePesananBaru());
     }
 
-    // v5.4: parallel — semuaSettled supaya satu gagal tidak cancel yang lain
     await Promise.allSettled(tasks);
   },
 
@@ -1971,10 +2041,6 @@ const PagePesananRuang = {
     return U.formatDate(ts);
   },
 
-  /**
-   * v5.4 FIX: request ID supaya tidak ada race antar-modal.
-   * Modal dibuka dengan loading, di-update setelah data siap.
-   */
   async _openDetail(idPesanan) {
     const it = this._items.find(x => x.id_pesanan === idPesanan);
     if (!it) return;
@@ -1996,7 +2062,7 @@ const PagePesananRuang = {
     let detail = null;
     try {
       const res = await Api.getPesananDetail(idPesanan);
-      if (myRequestId !== this._detailRequestId) return; // stale
+      if (myRequestId !== this._detailRequestId) return;
       detail = res.data;
     } catch (err) {
       if (myRequestId !== this._detailRequestId) return;
@@ -2007,7 +2073,7 @@ const PagePesananRuang = {
     }
 
     const container = U.$('#order-detail-container');
-    if (!container) return; // modal closed
+    if (!container) return;
 
     const items = detail.items || [];
     const itemsHtml = items.length === 0
@@ -2080,7 +2146,6 @@ const PagePesananRuang = {
 
     container.innerHTML = detailInfo;
 
-    // Update footer actions berdasarkan status
     const footer = U.$('#modal-footer');
     if (footer) {
       footer.innerHTML = '';
@@ -2241,10 +2306,6 @@ const PageApproval = {
     });
   },
 
-  /**
-   * v5.4: pakai keepOpen: true supaya modal tidak nutup sebelum API resolve.
-   * Loading state di tombol modal tetap terlihat.
-   */
   _handleApprove(idTrx, keputusan, container, triggerBtn) {
     const isApprove = keputusan === 'Approved';
     const self = this;
@@ -2283,7 +2344,7 @@ const PageApproval = {
 };
 
 /* ============================================================
-   PAGE: OPNAME (v5.4: no overlay, pakai .busy + master guard)
+   PAGE: OPNAME
    ============================================================ */
 const PageOpname = {
   _entries: {},
@@ -2296,7 +2357,6 @@ const PageOpname = {
     this._filter = '';
     this._search = '';
 
-    // v5.4: tunggu master siap
     if (!AdminApp.master) {
       container.innerHTML = Helper.loader('Memuat data master...');
       const self = this;
@@ -2514,7 +2574,7 @@ const PageOpname = {
 };
 
 /* ============================================================
-   PAGE: LAPORAN (v5.4: tab race fix + preload sheetjs)
+   PAGE: LAPORAN
    ============================================================ */
 const PageLaporan = {
   _tab: 'stok',
@@ -2528,7 +2588,6 @@ const PageLaporan = {
     this._container = container;
     this._renderId = renderId;
 
-    // v5.4: preload sheetjs supaya export pertama tidak delay 3-5s
     LibLoader.load('sheetjs').catch(() => {});
 
     container.innerHTML =
@@ -2569,9 +2628,7 @@ const PageLaporan = {
     const target = U.$('#laporan-content');
     if (!target) return;
 
-    // v5.4 FIX: request ID supaya tidak ada race antar-tab
     const myTabId = ++this._tabRenderId;
-
     target.innerHTML = Helper.loader('Memuat laporan...');
 
     if (this._tab === 'stok') await this._renderStokTerkini(target, myTabId);
@@ -2589,7 +2646,7 @@ const PageLaporan = {
         only_expiring: f.only_expiring
       });
       if (this._renderId !== AdminApp._routeRenderId) return;
-      if (myTabId !== this._tabRenderId) return; // v5.4: stale tab
+      if (myTabId !== this._tabRenderId) return;
       const data = res.data;
 
       const items = data.items || [];
@@ -2954,7 +3011,7 @@ const PageLaporan = {
 };
 
 /* ============================================================
-   PAGE: KARTU STOK (v5.4: renderId + null guard)
+   PAGE: KARTU STOK (v5.4.1: print fix + kolom Keterangan + filename PDF)
    ============================================================ */
 const PageKartuStok = {
   _currentData: null,
@@ -2963,6 +3020,7 @@ const PageKartuStok = {
   _selectedTahun: null,
   _searchHandler: null,
   _clickHandler: null,
+  _renderId: 0,
 
   async render(container, renderId) {
     const now = new Date();
@@ -2970,7 +3028,6 @@ const PageKartuStok = {
     this._selectedTahun = now.getFullYear();
     this._renderId = renderId;
 
-    // v5.4: preload sheetjs
     LibLoader.load('sheetjs').catch(() => {});
 
     container.innerHTML = '' +
@@ -3145,7 +3202,6 @@ const PageKartuStok = {
     try {
       const res = await Api.getKartuStokBulanan(
         this._selectedId, this._selectedBulan, this._selectedTahun);
-      // v5.4: guard — user mungkin sudah navigasi away
       if (myRenderId !== AdminApp._routeRenderId) return;
       if (!U.$('#ks-result')) return;
       this._currentData = res.data;
@@ -3181,6 +3237,7 @@ const PageKartuStok = {
       const tgl = isNaN(d.getTime()) ? '-' :
         String(d.getDate()).padStart(2, '0') + '/' +
         String(d.getMonth() + 1).padStart(2, '0');
+      const ket = r.Keterangan || '';
       return '<tr>' +
         '<td>' + tgl + '</td>' +
         '<td class="mono">' +
@@ -3190,6 +3247,7 @@ const PageKartuStok = {
         '<td class="num">' + (isMasuk ? qty : '') + '</td>' +
         '<td class="num">' + (isKeluar ? qty : '') + '</td>' +
         '<td class="num">' + running + '</td>' +
+        '<td class="ket">' + U.escapeHtml(ket) + '</td>' +
         '<td></td>' +
       '</tr>';
     }).join('');
@@ -3197,7 +3255,7 @@ const PageKartuStok = {
     const html =
       '<div class="card no-print" style="display:flex;gap:8px;flex-wrap:wrap">' +
         '<button class="btn btn-primary" id="ks-print">' +
-          U.icon('printer', 16) + ' Cetak' +
+          U.icon('printer', 16) + ' Cetak / PDF' +
         '</button>' +
         '<button class="btn btn-secondary" id="ks-xlsx">' +
           U.icon('download', 16) + ' Unduh XLSX' +
@@ -3225,25 +3283,26 @@ const PageKartuStok = {
           '</div>' +
           '<table class="kartu-stok-table">' +
             '<thead><tr>' +
-              '<th style="width:8%">Tgl</th>' +
-              '<th style="width:20%">No Trx</th>' +
-              '<th style="width:14%">Batch</th>' +
-              '<th style="width:12%">ED</th>' +
-              '<th style="width:9%">Masuk</th>' +
-              '<th style="width:9%">Keluar</th>' +
-              '<th style="width:9%">Sisa</th>' +
-              '<th style="width:19%">Paraf</th>' +
+              '<th style="width:6%">Tgl</th>' +
+              '<th style="width:15%">No Trx</th>' +
+              '<th style="width:10%">Batch</th>' +
+              '<th style="width:8%">ED</th>' +
+              '<th style="width:7%">Masuk</th>' +
+              '<th style="width:7%">Keluar</th>' +
+              '<th style="width:7%">Sisa</th>' +
+              '<th style="width:22%">Keterangan</th>' +
+              '<th style="width:18%">Paraf</th>' +
             '</tr></thead>' +
             '<tbody>' +
               '<tr>' +
-                '<td colspan="6" style="text-align:right"><strong>Saldo Awal</strong></td>' +
+                '<td colspan="7" style="text-align:right"><strong>Saldo Awal</strong></td>' +
                 '<td class="num"><strong>' + data.saldo_awal + '</strong></td>' +
                 '<td></td>' +
               '</tr>' +
-              (rows || '<tr><td colspan="8" style="text-align:center;padding:8px">' +
+              (rows || '<tr><td colspan="9" style="text-align:center;padding:8px">' +
                 'Tidak ada transaksi bulan ini</td></tr>') +
               '<tr>' +
-                '<td colspan="4" style="text-align:right"><strong>Total</strong></td>' +
+                '<td colspan="5" style="text-align:right"><strong>Total</strong></td>' +
                 '<td class="num"><strong>' + data.total_in + '</strong></td>' +
                 '<td class="num"><strong>' + data.total_out + '</strong></td>' +
                 '<td class="num"><strong>' + data.saldo_akhir + '</strong></td>' +
@@ -3279,7 +3338,17 @@ const PageKartuStok = {
       '</div>';
 
     target.innerHTML = html;
-    U.$('#ks-print').addEventListener('click', () => window.print());
+
+    // v5.4.1: print button dengan filename PDF informatif
+    U.$('#ks-print').addEventListener('click', () => {
+      const oldTitle = document.title;
+      document.title = 'KartuStok_' + data.id_barang + '_' +
+                       data.tahun + '-' + String(data.bulan).padStart(2, '0');
+      window.print();
+      // Restore title setelah print dialog ditutup
+      setTimeout(() => { document.title = oldTitle; }, 1000);
+    });
+
     U.$('#ks-xlsx').addEventListener('click', (e) =>
       this._downloadXLSX(data, e.currentTarget));
   },
@@ -3335,7 +3404,7 @@ const PageKartuStok = {
 };
 
 /* ============================================================
-   PAGE: CETAK QR (v5.4: master guard + null guard + fallback)
+   PAGE: CETAK QR (v5.4.1: master guard + null guard + fallback)
    ============================================================ */
 const PageCetakQR = {
   _selected: null,
@@ -3349,7 +3418,6 @@ const PageCetakQR = {
     this._qrCache = {};
     this._renderId = renderId;
 
-    // v5.4: master guard
     if (!AdminApp.master) {
       container.innerHTML = Helper.loader('Memuat data master...');
       const self = this;
@@ -3360,7 +3428,6 @@ const PageCetakQR = {
       return;
     }
 
-    // Preload qrcode lib
     LibLoader.load('qrcode').catch(() => {});
 
     container.innerHTML =
@@ -3600,17 +3667,13 @@ const PageCetakQR = {
     this._renderPreview();
   },
 
-  /**
-   * v5.4 FIX: null guard + try/finally supaya _rendering selalu di-reset,
-   * bahkan kalau user navigasi away di tengah proses.
-   */
   async _renderPreview() {
     if (this._rendering) return;
     this._rendering = true;
 
     try {
       const preview = U.$('#qr-preview');
-      if (!preview) return; // navigasi away
+      if (!preview) return;
 
       const selectedIds = Array.from(this._selected);
 
@@ -3658,7 +3721,6 @@ const PageCetakQR = {
         await new Promise(r => setTimeout(r, 0));
       }
 
-      // Re-check preview setelah async loop
       if (!U.$('#qr-preview')) return;
 
       const perPage = this._mode === 'mode-24' ? 24 : 40;
@@ -3689,7 +3751,7 @@ const PageCetakQR = {
       const preview = U.$('#qr-preview');
       if (!preview) return;
 
-      const isLibFail = (err && err.message && err.message.indexOf('Library QR') !== -1);
+      const isLibFail = (err && err.message && err.message.indexOf('Library') !== -1);
       const fallbackBtn = isLibFail
         ? '<button class="btn btn-secondary" id="qr-print-nofallback">' +
           U.icon('printer', 16) + ' Cetak Tanpa QR' +
@@ -3714,8 +3776,12 @@ const PageCetakQR = {
       const retryBtn = U.$('#qr-retry');
       if (retryBtn) {
         retryBtn.addEventListener('click', () => {
-          LibLoader._cache = {};
-          if (LibLoader._cleanupOldScripts) LibLoader._cleanupOldScripts('qrcode');
+          // v5.4.1: pakai reset() untuk clear cache + cooldown
+          if (LibLoader.reset) LibLoader.reset('qrcode');
+          else {
+            LibLoader._cache = {};
+            if (LibLoader._cleanupOldScripts) LibLoader._cleanupOldScripts('qrcode');
+          }
           this._qrCache = {};
           this._renderPreview();
         });
@@ -3732,10 +3798,6 @@ const PageCetakQR = {
     }
   },
 
-  /**
-   * v5.4 — Fallback: render label tanpa QR image (hanya ID besar).
-   * Dipakai kalau library QR tidak bisa dimuat (offline CDN).
-   */
   _renderPreviewWithoutQR(selectedIds) {
     const preview = U.$('#qr-preview');
     if (!preview) return;
@@ -3809,8 +3871,10 @@ const PageCetakQR = {
     }).catch(err => {
       dbgErr('QR generate error:', err);
       const msg = (err && err.message) || String(err);
-      if (msg.indexOf('Semua CDN gagal') !== -1) {
-        throw new Error('Library QR tidak dapat dimuat. Periksa koneksi internet Anda.');
+      if (msg.indexOf('Semua sumber gagal') !== -1 ||
+          msg.indexOf('Semua CDN gagal') !== -1) {
+        throw new Error('Library QR tidak dapat dimuat. Cek koneksi internet ' +
+          'atau pastikan file shared/vendor/qrcode.min.js ada.');
       }
       throw err;
     });
@@ -4023,7 +4087,6 @@ const PageMaster = {
       return;
     }
 
-    // v5.4: master guard
     if (!AdminApp.master) {
       container.innerHTML = Helper.loader('Memuat data master...');
       const self = this;
@@ -4310,9 +4373,6 @@ const PageMaster = {
     );
   },
 
-  /**
-   * v5.4: modal loading state — modal tetap buka saat API call.
-   */
   _resetPin(idPetugas, container) {
     Modal.open({
       title: 'Reset PIN Petugas',
@@ -4368,6 +4428,7 @@ const PageAudit = {
   _totalRecords: 0,
   _approximate: false,
   _hasMore: false,
+  _renderId: 0,
 
   async render(container, renderId) {
     this._page = 0;
@@ -4411,7 +4472,6 @@ const PageAudit = {
       const items = (res.data && res.data.items) || [];
       const d = res.data || {};
 
-      // v5.4: fast path bisa return total_records: null + approximate: true
       this._approximate = !!d.approximate;
       this._totalRecords = this._approximate ? null : (d.total_records || 0);
       this._hasMore = !!d.has_more;
@@ -4482,7 +4542,7 @@ const PageAudit = {
 };
 
 /* ============================================================
-   PAGE: SETTINGS (v5.4: card Aksi dihapus, tombol logout di topbar)
+   PAGE: SETTINGS (v5.4: card Aksi dihapus)
    ============================================================ */
 const PageSettings = {
   async render(container, renderId) {
@@ -4663,7 +4723,7 @@ const PageSettings = {
    BOOTSTRAP
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
-  dbg('[ADMIN] v5.4 DOM ready');
+  dbg('[ADMIN] v5.4.1 DOM ready');
 
   if (typeof U === 'undefined' || typeof Api === 'undefined') {
     const el = document.getElementById('boot-splash');
