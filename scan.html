@@ -13,8 +13,6 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%B7%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="preconnect" href="https://script.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="shared/core.css">
 
 <style>
@@ -55,6 +53,7 @@
 .scan-app {
   display: grid;
   grid-template-rows: auto 1fr;
+  min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
 }
@@ -246,11 +245,10 @@
 </head>
 <body>
 
-<!-- BOOT SPLASH -->
 <div class="boot-splash" id="boot-splash">
   <div class="boot-splash-inner">
     <div class="boot-splash-logo">PKM</div>
-    <div class="boot-splash-text">Memuat aplikasi...</div>
+    <div class="boot-splash-text">Memuat aplikasi v5.5.1...</div>
     <div class="boot-splash-spinner"></div>
   </div>
 </div>
@@ -258,7 +256,6 @@
 <div id="scan-root"></div>
 
 <div class="toast-container" id="toast-container"></div>
-<div class="loading-overlay" id="loading-overlay"><div class="spinner"></div></div>
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal"></div>
 </div>
@@ -270,25 +267,22 @@
 
 /* ============================================================
    SMART SCANNER — BarcodeDetector native + jsQR fallback
-   Menggantikan QRScanner dari core.js (yang hanya native).
-   Dipakai hanya di halaman ini.
    ============================================================ */
 const SmartScanner = {
   _stream: null,
   _videoEl: null,
   _rafId: null,
-  _detector: null,      // BarcodeDetector instance
-  _jsQR: null,          // jsQR function
+  _detector: null,
+  _jsQR: null,
   _canvas: null,
   _ctx: null,
-  _mode: null,          // 'native' | 'jsqr' | null
+  _mode: null,
   _running: false,
   _lastText: '',
   _lastTime: 0,
   _onDetected: null,
   _lastDetectTime: 0,
-  _detectIntervalMs: 100, // detect ~10x/detik
-  _useNative: false,
+  _detectIntervalMs: 100,
 
   async start(videoEl, onDetected, onError) {
     this.stop();
@@ -297,7 +291,6 @@ const SmartScanner = {
     this._running = true;
     this._lastDetectTime = 0;
 
-    // Buka kamera — resolusi 960×540 (hemat CPU/baterai)
     try {
       const constraints = {
         video: {
@@ -317,12 +310,10 @@ const SmartScanner = {
       return;
     }
 
-    // Coba native BarcodeDetector
     if ('BarcodeDetector' in window) {
       try {
         this._detector = new BarcodeDetector({ formats: ['qr_code'] });
         this._mode = 'native';
-        this._useNative = true;
         dbg('Scanner: pakai BarcodeDetector native');
       } catch (e) {
         dbgWarn('BarcodeDetector init gagal:', e.message);
@@ -330,18 +321,15 @@ const SmartScanner = {
       }
     }
 
-    // Fallback ke jsQR
     if (!this._detector) {
       try {
-        await this._loadJsQR();
+        this._jsQR = await LibLoader.load('jsqr');
         this._canvas = document.createElement('canvas');
         this._ctx = this._canvas.getContext('2d', { willReadFrequently: true });
         this._mode = 'jsqr';
-        this._useNative = false;
         dbg('Scanner: pakai jsQR fallback');
       } catch (err) {
         this._running = false;
-        // Tutup kamera karena tidak bisa dipakai
         if (this._stream) {
           this._stream.getTracks().forEach(t => t.stop());
           this._stream = null;
@@ -358,47 +346,14 @@ const SmartScanner = {
     this._loop();
   },
 
-  _loadJsQR() {
-    if (window.jsQR) {
-      this._jsQR = window.jsQR;
-      return Promise.resolve();
-    }
-    return new Promise((resolve, reject) => {
-      const existing = document.querySelector('script[data-lib="jsqr"]');
-      if (existing) {
-        existing.addEventListener('load', () => {
-          if (window.jsQR) { this._jsQR = window.jsQR; resolve(); }
-          else reject(new Error('jsQR tidak tersedia'));
-        });
-        existing.addEventListener('error', () => reject(new Error('Gagal load jsQR')));
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
-      script.async = true;
-      script.setAttribute('data-lib', 'jsqr');
-      script.onload = () => {
-        if (window.jsQR) { this._jsQR = window.jsQR; resolve(); }
-        else reject(new Error('jsQR tidak tersedia'));
-      };
-      script.onerror = () => reject(new Error('Gagal load jsQR dari CDN'));
-      document.head.appendChild(script);
-    });
-  },
-
   _loop() {
     if (!this._running) return;
-
     const now = performance.now();
     if (now - this._lastDetectTime >= this._detectIntervalMs) {
       this._lastDetectTime = now;
-      if (this._mode === 'native') {
-        this._detectNative();
-      } else if (this._mode === 'jsqr') {
-        this._detectJsQR();
-      }
+      if (this._mode === 'native') this._detectNative();
+      else if (this._mode === 'jsqr') this._detectJsQR();
     }
-
     this._rafId = requestAnimationFrame(() => this._loop());
   },
 
@@ -407,9 +362,7 @@ const SmartScanner = {
     if (!video || video.readyState !== 4 || !this._detector) return;
     try {
       const codes = await this._detector.detect(video);
-      if (codes && codes.length > 0) {
-        this._handle(codes[0].rawValue);
-      }
+      if (codes && codes.length > 0) this._handle(codes[0].rawValue);
     } catch (e) { /* ignore per-frame */ }
   },
 
@@ -420,7 +373,6 @@ const SmartScanner = {
     const h = video.videoHeight;
     if (!w || !h) return;
 
-    // Downscale ke max 640px agar cepat
     const maxDim = 640;
     let cw = w, ch = h;
     if (w > maxDim || h > maxDim) {
@@ -434,12 +386,8 @@ const SmartScanner = {
     try {
       this._ctx.drawImage(video, 0, 0, cw, ch);
       const imgData = this._ctx.getImageData(0, 0, cw, ch);
-      const code = this._jsQR(imgData.data, cw, ch, {
-        inversionAttempts: 'dontInvert'
-      });
-      if (code && code.data) {
-        this._handle(code.data);
-      }
+      const code = this._jsQR(imgData.data, cw, ch, { inversionAttempts: 'dontInvert' });
+      if (code && code.data) this._handle(code.data);
     } catch (e) { /* ignore */ }
   },
 
@@ -487,7 +435,6 @@ const SmartScanner = {
 
 /* ============================================================
    DISABLE Api.warmup() — hemat request Apps Script
-   (LoginForm.mount di core.js memanggil Api.warmup().)
    ============================================================ */
 function disableWarmup() {
   if (typeof Api !== 'undefined' && Api.warmup) {
@@ -514,7 +461,7 @@ const ScanApp = {
 
   /* -------------------------------------------------- INIT */
   async init() {
-    dbg('ScanApp init');
+    dbg('[SCAN] v5.5.1 init');
     disableWarmup();
 
     const session = Store.getSession();
@@ -525,7 +472,6 @@ const ScanApp = {
         const res = await Api.whoAmI();
         if (res && res.code === 200 && res.data) {
           if (res.data.role === 'Ruang') {
-            // Role Ruang tidak boleh di scan.html
             Store.clearSession();
           } else {
             this.session = {
@@ -569,7 +515,6 @@ const ScanApp = {
       return this._masterLoadPromise;
     }
 
-    // Cache check (sync)
     const cached = Store.getMaster();
     if (cached) {
       dbg('Master dari cache lokal');
@@ -963,7 +908,6 @@ const ScanApp = {
               return;
             }
 
-            // Validasi master (memory, instan)
             const master = self.master || {};
             let item = null;
             if (self.selectedGroup === 'obat') {
@@ -982,8 +926,6 @@ const ScanApp = {
               return;
             }
 
-            // Modal close otomatis karena close: true
-            // Beri jeda kecil supaya transisi halus
             setTimeout(() => self._handleScannedCode(val, true), 100);
           }
         }
@@ -1038,10 +980,7 @@ const ScanApp = {
     this.availableBatches = [];
     this.stockInfo = { total_stok: 0, batches: [], is_obat: false };
 
-    // Render form dengan loading state (batch info di-fetch background)
     this._renderFormAreaWithLoading();
-
-    // Fetch stock info di background
     this._fetchStockInfo(code);
 
     return true;
@@ -1051,7 +990,6 @@ const ScanApp = {
     const group = this.selectedGroup;
     try {
       const res = await Api.getAvailableBatches(code);
-      // Cek masih di item yang sama
       if (!this.selectedItem) return;
       const idField = group === 'obat' ? 'ID_Obat' : group === 'bmhp' ? 'ID_BMHP' : 'ID_ATK';
       if (this.selectedItem[idField] !== code) return;
@@ -1114,7 +1052,6 @@ const ScanApp = {
     const totalStok = Number(this.stockInfo.total_stok) || 0;
     const hasStok = totalStok > 0;
 
-    // Selected item card
     let html = '' +
       '<div class="selected-item-card">' +
         '<div class="selected-item-name">' + U.escapeHtml(item[nameField] || '-') + '</div>' +
@@ -1127,7 +1064,6 @@ const ScanApp = {
         '</div>' +
       '</div>';
 
-    // Stock info card
     html += '' +
       '<div class="stock-info-card' + (hasStok ? '' : ' empty') + '">' +
         '<div class="stock-info-left">' +
@@ -1142,7 +1078,6 @@ const ScanApp = {
         '</div>' +
       '</div>';
 
-    // Form
     html += '<form class="card" id="scan-form">';
 
     html += '' +
@@ -1181,7 +1116,6 @@ const ScanApp = {
       '<option value="' + s + '">' + s + '</option>'
     ).join('');
 
-    // Sumber Dana — hanya untuk Masuk
     html += '' +
       '<div class="field" id="field-sumber">' +
         '<label class="field-label">Sumber Dana</label>' +
@@ -1190,7 +1124,6 @@ const ScanApp = {
         '</select>' +
       '</div>';
 
-    // Supplier — untuk Masuk
     html += '' +
       '<div class="field" id="field-supplier" style="display:block">' +
         '<label class="field-label">Supplier <span class="required">*</span></label>' +
@@ -1199,7 +1132,6 @@ const ScanApp = {
         '</select>' +
       '</div>';
 
-    // Unit Tujuan — untuk Keluar
     html += '' +
       '<div class="field" id="field-unit" style="display:none">' +
         '<label class="field-label">Unit Tujuan <span class="required">*</span></label>' +
@@ -1231,7 +1163,6 @@ const ScanApp = {
     html += '</form>';
     area.innerHTML = html;
 
-    // Attach type toggle
     U.$$('[data-tipe]', area).forEach(btn => {
       btn.addEventListener('click', () => {
         this.currentTipe = btn.dataset.tipe;
@@ -1246,7 +1177,6 @@ const ScanApp = {
       });
     });
 
-    // Mount BatchSelector untuk Obat Keluar
     const batchWrap = U.$('#batch-selector-wrap', area);
     if (batchWrap && this.availableBatches.length > 0) {
       BatchSelector.mount(
@@ -1295,7 +1225,6 @@ const ScanApp = {
     const needVVM = String(item.Wajib_VVM) === 'Ya';
     let html = '';
 
-    // Masuk — input manual batch & ED
     html += '' +
       '<div id="field-batch-masuk">' +
         '<div class="field-row">' +
@@ -1322,7 +1251,6 @@ const ScanApp = {
         : '') +
       '</div>';
 
-    // Keluar — BatchSelector modern
     html += '<div id="field-batch-keluar" style="display:none">';
     if (this.availableBatches.length === 0) {
       html += '' +
@@ -1512,13 +1440,13 @@ const ScanApp = {
    BOOT
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
-  dbg('DOM ready, boot ScanApp');
+  dbg('[SCAN] v5.5.1 DOM ready');
 
   if (typeof U === 'undefined' || typeof Api === 'undefined') {
     const el = document.getElementById('boot-splash');
     if (el) el.classList.add('hide');
     document.getElementById('scan-root').innerHTML =
-      '<div style="padding:32px;text-align:center;color:#d32f2f">' +
+      '<div style="padding:32px;text-align:center;color:#d32f2f;font-family:system-ui,sans-serif">' +
         '<h2>Gagal memuat sistem</h2>' +
         '<p>File <code>shared/core.js</code> tidak ditemukan.</p>' +
         '<p>Pastikan <code>scan.html</code> dan folder <code>shared/</code> sejajar.</p>' +
@@ -1532,7 +1460,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (splash) splash.classList.add('hide');
     Toast.error('Gagal memuat aplikasi: ' + err.message);
   });
-  dbg('[SCAN] v5.0 booted');
 });
 </script>
 </body>
