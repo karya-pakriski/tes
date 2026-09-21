@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#0d7377">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Pesan Barang — Puskesmas Sanden">
 <title>Pesan Barang — Puskesmas Sanden</title>
 
@@ -17,10 +16,11 @@
 
 <style>
 /* ============================================================
-   PESAN.HTML v5.5.1 — FRESH MODERN
-   100% viewport, proporsional scrolling
+   PESAN v5.5.1 — FRESH MODERN
+   100% viewport (height fixed) + scrolling proporsional
    ============================================================ */
 
+/* ---------- BOOT SPLASH ---------- */
 .boot-splash {
   position: fixed; inset: 0;
   display: flex; align-items: center; justify-content: center;
@@ -53,12 +53,22 @@
 }
 @keyframes bootspin { to { transform: rotate(360deg); } }
 
-html, body { height: 100%; overflow: hidden; }
-#pesan-root { height: 100vh; height: 100dvh; width: 100%; overflow: hidden; }
+/* ---------- 100% VIEWPORT LAYOUT (v5.5.1 FIX) ---------- */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+#pesan-root {
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}
 
-/* ---------- LOGIN RUANG ---------- */
+/* ---------- LOGIN ---------- */
 .login-ruang {
-  min-height: 100vh; min-height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
   padding-top: calc(20px + var(--safe-top));
@@ -72,7 +82,8 @@ html, body { height: 100%; overflow: hidden; }
 }
 .login-ruang-card {
   background: var(--surface);
-  width: 100%; max-width: 420px;
+  width: 100%;
+  max-width: 420px;
   border-radius: 24px;
   padding: 36px 28px 28px;
   box-shadow: 0 24px 60px rgba(0,0,0,0.22);
@@ -86,7 +97,8 @@ html, body { height: 100%; overflow: hidden; }
   width: 68px; height: 68px;
   margin: 0 auto 18px;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-  color: white; border-radius: 20px;
+  color: white;
+  border-radius: 20px;
   display: flex; align-items: center; justify-content: center;
   font-size: 26px; font-weight: 800;
   letter-spacing: -1px;
@@ -112,7 +124,10 @@ html, body { height: 100%; overflow: hidden; }
   margin-top: 20px;
   padding-top: 18px;
   border-top: 1px dashed var(--border);
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 .pj-hint {
   display: flex; align-items: center; gap: 8px;
@@ -140,16 +155,23 @@ html, body { height: 100%; overflow: hidden; }
 .ruang-error-block button {
   color: var(--primary);
   text-decoration: underline;
-  background: none; border: none; cursor: pointer;
-  padding: 0; font-size: 13px;
-  margin-top: 6px; font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 13px;
+  margin-top: 6px;
+  font-weight: 600;
 }
 
-/* ---------- APP LAYOUT ---------- */
+/* ---------- APP LAYOUT (100dvh, scrolling proporsional) ---------- */
 .pesan-app {
-  display: flex; flex-direction: column;
-  height: 100vh; height: 100dvh;
-  width: 100%; overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
   background: var(--bg);
 }
 
@@ -179,7 +201,8 @@ html, body { height: 100%; overflow: hidden; }
 .pesan-topbar-info { flex: 1; min-width: 0; }
 .pesan-topbar-title {
   font-weight: 700; font-size: 14px;
-  color: var(--text); line-height: 1.2;
+  color: var(--text);
+  line-height: 1.2;
   letter-spacing: -0.2px;
 }
 .pesan-topbar-sub {
@@ -196,7 +219,8 @@ html, body { height: 100%; overflow: hidden; }
 .pesan-tabbar-inner {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px; padding: 4px;
+  gap: 4px;
+  padding: 4px;
   background: var(--surface-2);
   border-radius: 12px;
 }
@@ -204,9 +228,11 @@ html, body { height: 100%; overflow: hidden; }
   position: relative;
   padding: 10px 12px;
   border-radius: 9px;
-  font-size: 13px; font-weight: 600;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-muted);
-  background: transparent; border: none;
+  background: transparent;
+  border: none;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -223,15 +249,18 @@ html, body { height: 100%; overflow: hidden; }
   align-items: center; justify-content: center;
   min-width: 18px; height: 18px;
   padding: 0 6px;
-  background: var(--danger); color: white;
+  background: var(--danger);
+  color: white;
   border-radius: 9px;
-  font-size: 10px; font-weight: 700;
+  font-size: 10px;
+  font-weight: 700;
   line-height: 1;
 }
 
 .pesan-content {
   flex: 1;
-  overflow-y: auto; overflow-x: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   padding: 4px 16px 20px;
@@ -276,7 +305,9 @@ html, body { height: 100%; overflow: hidden; }
 .pesan-cart-inner {
   max-width: 720px;
   margin: 0 auto;
-  display: flex; align-items: center; gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .pesan-cart-info { flex: 1; min-width: 0; }
 .pesan-cart-count {
@@ -285,7 +316,8 @@ html, body { height: 100%; overflow: hidden; }
   margin-bottom: 2px;
 }
 .pesan-cart-total {
-  font-size: 17px; font-weight: 800;
+  font-size: 17px;
+  font-weight: 800;
   color: var(--primary-dark);
   letter-spacing: -0.3px;
 }
@@ -293,8 +325,25 @@ html, body { height: 100%; overflow: hidden; }
   flex-shrink: 0;
   min-height: 48px;
   padding: 12px 22px;
-  font-size: 14px; font-weight: 700;
+  font-size: 14px;
+  font-weight: 700;
   border-radius: 12px;
+}
+
+/* ---------- WELCOME ---------- */
+.welcome { padding: 14px 0 16px; }
+.welcome-greet { font-size: var(--fs-sm); color: var(--text-muted); margin-bottom: 2px; }
+.welcome-name {
+  font-size: var(--fs-xl); font-weight: 700;
+  line-height: 1.2; word-break: break-word;
+  letter-spacing: -0.3px;
+}
+.welcome-room {
+  display: inline-block; margin-top: 8px;
+  padding: 4px 12px;
+  background: var(--primary-bg); color: var(--primary-dark);
+  border-radius: var(--r-full);
+  font-size: var(--fs-xs); font-weight: 600;
 }
 
 /* ---------- SEARCH ---------- */
@@ -307,7 +356,8 @@ html, body { height: 100%; overflow: hidden; }
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: 0 16px 40px rgba(0,0,0,0.12);
-  max-height: 360px; overflow-y: auto;
+  max-height: 360px;
+  overflow-y: auto;
   z-index: 100;
   padding: 6px;
   animation: dropdownIn 0.16s ease-out;
@@ -343,10 +393,12 @@ html, body { height: 100%; overflow: hidden; }
   font-weight: 700;
 }
 .search-stok-badge {
-  display: inline-flex; align-items: center;
+  display: inline-flex;
+  align-items: center;
   padding: 2px 7px;
   border-radius: 999px;
-  font-size: 10.5px; font-weight: 700;
+  font-size: 10.5px;
+  font-weight: 700;
   letter-spacing: 0.1px;
 }
 .search-stok-badge.ok { background: var(--success-bg); color: var(--success); }
@@ -359,15 +411,14 @@ html, body { height: 100%; overflow: hidden; }
   font-size: 13px;
 }
 
-/* ---------- CART ---------- */
+/* ---------- CART LIST ---------- */
 .cart-empty {
   text-align: center;
   padding: 56px 24px;
   color: var(--text-muted);
 }
 .cart-empty svg {
-  width: 48px; height: 48px;
-  color: var(--text-light);
+  width: 48px; height: 48px; color: var(--text-light);
   margin: 0 auto 14px;
   opacity: 0.6;
 }
@@ -378,7 +429,8 @@ html, body { height: 100%; overflow: hidden; }
 .cart-empty p { font-size: 13px; }
 
 .cart-list {
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 .cart-item {
@@ -434,7 +486,8 @@ html, body { height: 100%; overflow: hidden; }
   display: flex; align-items: center; justify-content: center;
   color: var(--primary); font-size: 18px; font-weight: 700;
   background: transparent;
-  border: none; cursor: pointer;
+  border: none;
+  cursor: pointer;
   transition: background 0.15s;
   line-height: 1;
 }
@@ -458,7 +511,8 @@ html, body { height: 100%; overflow: hidden; }
   width: 36px; height: 36px;
   border-radius: 9px;
   color: var(--danger);
-  background: transparent; border: none;
+  background: transparent;
+  border: none;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
@@ -467,6 +521,7 @@ html, body { height: 100%; overflow: hidden; }
 .cart-del:hover { background: var(--danger-bg); }
 .cart-del svg { width: 16px; height: 16px; }
 
+/* ---------- NOTE ---------- */
 .note-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -504,7 +559,8 @@ html, body { height: 100%; overflow: hidden; }
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 3px; background: transparent;
+  width: 3px;
+  background: transparent;
   transition: background 0.2s;
 }
 .riwayat-card:hover {
@@ -525,7 +581,8 @@ html, body { height: 100%; overflow: hidden; }
 }
 .riwayat-card-id {
   font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  font-size: 13px; font-weight: 700;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--primary-dark);
   letter-spacing: -0.2px;
   margin-bottom: 3px;
@@ -533,7 +590,9 @@ html, body { height: 100%; overflow: hidden; }
 .riwayat-card-date {
   font-size: 11.5px;
   color: var(--text-muted);
-  display: flex; align-items: center; gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .riwayat-card-date svg { width: 11px; height: 11px; }
 .riwayat-card-body {
@@ -575,28 +634,13 @@ html, body { height: 100%; overflow: hidden; }
   border-radius: 50%;
   background: currentColor;
 }
-.status-baru {
-  background: var(--warning-bg);
-  color: var(--warning-dark, var(--warning));
-}
-.status-diproses {
-  background: var(--info-bg);
-  color: var(--info);
-}
-.status-selesai {
-  background: var(--success-bg);
-  color: var(--success);
-}
-.status-ditolak {
-  background: var(--danger-bg);
-  color: var(--danger);
-}
-.status-gagal {
-  background: var(--surface-2);
-  color: var(--text-muted);
-}
+.status-baru { background: var(--warning-bg); color: var(--warning-dark, var(--warning)); }
+.status-diproses { background: var(--info-bg); color: var(--info); }
+.status-selesai { background: var(--success-bg); color: var(--success); }
+.status-ditolak { background: var(--danger-bg); color: var(--danger); }
+.status-gagal { background: var(--surface-2); color: var(--text-muted); }
 
-/* ---------- DETAIL MODAL ---------- */
+/* ---------- MODAL DETAIL ---------- */
 .detail-section {
   padding: 12px 14px;
   background: var(--surface-2);
@@ -611,13 +655,8 @@ html, body { height: 100%; overflow: hidden; }
   padding: 7px 0;
   font-size: 13px;
 }
-.detail-row + .detail-row {
-  border-top: 1px dashed var(--border);
-}
-.detail-label {
-  font-size: 12.5px;
-  color: var(--text-muted);
-}
+.detail-row + .detail-row { border-top: 1px dashed var(--border); }
+.detail-label { font-size: 12.5px; color: var(--text-muted); }
 .detail-value {
   font-weight: 600;
   color: var(--text);
@@ -697,7 +736,15 @@ html, body { height: 100%; overflow: hidden; }
   gap: 8px;
 }
 .detail-hint svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+.detail-empty {
+  text-align: center;
+  padding: 20px 12px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
 
+/* ---------- SUCCESS / CONFIRM MODAL ---------- */
 .modal-success-info {
   text-align: center;
   padding: 8px 0;
@@ -758,53 +805,6 @@ html, body { height: 100%; overflow: hidden; }
 }
 .confirm-warning svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
 .confirm-warning strong { font-weight: 700; }
-
-/* ---------- UTILITIES ---------- */
-.text-muted { color: var(--text-muted); }
-.text-center { text-align: center; }
-
-.inline-loading {
-  display: flex; align-items: center; justify-content: center;
-  gap: 10px;
-  padding: 40px 20px;
-  color: var(--text-muted);
-  font-size: 13px;
-}
-.inline-loading .spinner {
-  width: 20px; height: 20px;
-  border-width: 2.5px;
-  color: var(--primary);
-}
-.inline-loading-sm {
-  display: inline-flex; align-items: center; gap: 6px;
-  color: var(--text-muted); font-size: 12px;
-}
-.inline-loading-sm .spinner {
-  width: 13px; height: 13px;
-  border-width: 2px;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 48px 24px;
-  color: var(--text-muted);
-}
-.empty-state svg {
-  width: 48px; height: 48px;
-  color: var(--text-light);
-  margin: 0 auto 14px;
-  opacity: 0.65;
-}
-.empty-state h3 {
-  font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px;
-}
-.empty-state p { font-size: 13px; max-width: 300px; margin: 0 auto; line-height: 1.5; }
-
-@media print {
-  html, body { overflow: visible; height: auto; }
-  .pesan-app, .pesan-topbar, .pesan-tabbar, .pesan-cart,
-  .toast-container, .modal-overlay { display: none !important; }
-}
 </style>
 </head>
 <body>
@@ -820,6 +820,7 @@ html, body { height: 100%; overflow: hidden; }
 <div id="pesan-root"></div>
 
 <div class="toast-container" id="toast-container"></div>
+<!-- v5.5.1: loading-overlay dihapus — pakai .busy / inline loader -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal"></div>
 </div>
@@ -830,15 +831,13 @@ html, body { height: 100%; overflow: hidden; }
 'use strict';
 
 /* ============================================================
-   PESAN.HTML v5.5.1
-   - Tidak redeclare U/Api/Store/Toast/Modal/Btn/FormError/CS/
-     LibLoader/LoginForm/AuthGuard
-   - 100% viewport, proporsional scroll
-   - Terintegrasi backend v5.5.1
+   PESAN v5.5.1 — Pesan Barang Ruang
+   Tidak redeclare U/Api/Store/Toast/Modal/Btn/FormError/CS/
+   LibLoader/LoginForm/AuthGuard — dari core.js.
    ============================================================ */
 
 /* ---------- HELPER ---------- */
-const Helper = {
+const H = {
   loader(text) {
     return '<div class="inline-loading">' +
       '<span class="spinner"></span>' +
@@ -858,7 +857,9 @@ const Helper = {
   }
 };
 
-/* ---------- SESSION RUANG ---------- */
+/* ============================================================
+   RUANG STORE
+   ============================================================ */
 const RUANG_SESSION_KEY = 'pkm_ruang_session';
 const RUANG_CACHE_KEY = 'pkm_ruang_list';
 const RUANG_CACHE_TTL_MS = 86400000;
@@ -901,14 +902,15 @@ const RuangCache = {
   set(items) {
     try {
       localStorage.setItem(RUANG_CACHE_KEY, JSON.stringify({
-        items: items,
-        expires: Date.now() + RUANG_CACHE_TTL_MS
+        items: items, expires: Date.now() + RUANG_CACHE_TTL_MS
       }));
     } catch (e) {}
   }
 };
 
-/* ---------- SNAPSHOT ---------- */
+/* ============================================================
+   SNAPSHOT PESANAN
+   ============================================================ */
 const SnapshotStore = {
   KEY: 'pkm_psn_snapshots',
   MAX: 50,
@@ -921,7 +923,9 @@ const SnapshotStore = {
       const parsed = raw ? JSON.parse(raw) : {};
       this._cache = (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
         ? parsed : {};
-    } catch (e) { this._cache = {}; }
+    } catch (e) {
+      this._cache = {};
+    }
     return this._cache;
   },
 
@@ -930,7 +934,7 @@ const SnapshotStore = {
       const keys = Object.keys(this._cache);
       if (keys.length > this.MAX) {
         const sorted = keys
-          .map(k => ({ k: k, t: (this._cache[k] && this._cache[k].waktu) || 0 }))
+          .map(k => ({ k, t: (this._cache[k] && this._cache[k].waktu) || 0 }))
           .sort((a, b) => b.t - a.t);
         const keep = sorted.slice(0, this.MAX).map(x => x.k);
         const next = {};
@@ -951,15 +955,12 @@ const SnapshotStore = {
   get(idPesanan) {
     if (!idPesanan) return null;
     return this._load()[idPesanan] || null;
-  },
-
-  clear() {
-    this._cache = {};
-    try { localStorage.removeItem(this.KEY); } catch (e) {}
   }
 };
 
-/* ---------- API OVERRIDE (pakai session ruang) ---------- */
+/* ============================================================
+   OVERRIDE Api._buildRequest — pakai session ruang
+   ============================================================ */
 function installRuangApiOverride() {
   if (typeof Api === 'undefined') {
     dbgErr('Api tidak tersedia — core.js gagal dimuat?');
@@ -969,8 +970,7 @@ function installRuangApiOverride() {
     const ruangSession = RuangStore.get();
     return {
       auth_token: CONFIG.API_KEY,
-      session_token: (opts && opts.public) ? undefined :
-                     (ruangSession ? ruangSession.token : undefined),
+      session_token: (opts && opts.public) ? undefined : (ruangSession ? ruangSession.token : undefined),
       action: action,
       uuid: (opts && opts.noUuid) ? undefined : U.uuid(),
       timestamp_client: U.nowISO(),
@@ -980,14 +980,17 @@ function installRuangApiOverride() {
   return true;
 }
 
-/* ---------- PESAN API ---------- */
+/* ============================================================
+   PESAN API
+   ============================================================ */
 const PesanApi = {
   getRuangList() {
     return Api.call('getRuangList', {}, { public: true });
   },
   loginRuang(kode, pin) {
     return Api.call('loginRuang',
-      { kode_ruang: kode, pin_plaintext: pin }, { public: true });
+      { kode_ruang: kode, pin_plaintext: pin },
+      { public: true });
   },
   getBarangUntukPesan() {
     return Api.call('getBarangUntukPesan', {});
@@ -997,9 +1000,6 @@ const PesanApi = {
   },
   getPesananSaya(limit) {
     return Api.call('getPesananSaya', { limit: limit || 30 });
-  },
-  getPesananDetail(idPesanan) {
-    return Api.call('getPesananDetail', { id_pesanan: idPesanan });
   }
 };
 
@@ -1015,12 +1015,16 @@ const PesanApp = {
   currentTab: 'pesan',
   catatan: '',
   submitting: false,
+  _loggingIn: false,      // v5.5.1: guard double-submit login
   _riwayatItems: [],
   _pendingCount: 0,
   _renderId: 0,
+  _detailRequestId: 0,
+  _searchClickHandler: null,
 
+  /* -------------------------------------------------- INIT */
   async init() {
-    dbg('[PESAN] v5.5.1 init');
+    dbg('PesanApp v5.5.1 init');
     const stored = RuangStore.get();
 
     if (stored && stored.token) {
@@ -1076,13 +1080,14 @@ const PesanApp = {
     if (cached && cached.length > 0) {
       this.ruangList = cached;
       dbg('Ruang list dari cache: ' + cached.length);
+      // Refresh di background
       this._fetchRuangList().catch(err => dbgWarn('BG refresh ruang gagal:', err.message));
       return cached;
     }
     try {
       const items = await Promise.race([
         this._fetchRuangList(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
       ]);
       return items;
     } catch (err) {
@@ -1092,6 +1097,7 @@ const PesanApp = {
     }
   },
 
+  /* -------------------------------------------------- API ERROR */
   _handleApiError(err) {
     if (err && (err.code === 'UNAUTHORIZED' || err.code === 'UNAUTHORIZED_TOKEN')) {
       RuangStore.clear();
@@ -1104,16 +1110,16 @@ const PesanApp = {
     return false;
   },
 
-  /* ---------- LOGIN ---------- */
+  /* -------------------------------------------------- LOGIN */
   showLogin() {
     this.session = null;
     this.cart = {};
     this.catatan = '';
     this.currentTab = 'pesan';
+    this._loggingIn = false;
 
     const root = U.$('#pesan-root');
     root.innerHTML = this._renderLogin();
-
     this._populateRuangDropdown();
 
     const form = U.$('#form-login-ruang');
@@ -1123,7 +1129,6 @@ const PesanApp = {
         this._doLogin();
       });
     }
-
     setTimeout(() => {
       const pinEl = U.$('#login-pin');
       if (pinEl) pinEl.focus();
@@ -1198,6 +1203,7 @@ const PesanApp = {
     wrap.innerHTML = '';
     wrap.appendChild(select);
 
+    // CS auto-enhance via MutationObserver core.js — panggil manual sebagai safety
     if (typeof CS !== 'undefined' && CS.enhance) CS.enhance(select);
 
     const self = this;
@@ -1219,7 +1225,7 @@ const PesanApp = {
     const wrap = U.$('#login-ruang-wrap');
     if (wrap) {
       wrap.innerHTML = '<div style="padding:12px 0">' +
-        Helper.loaderSm('Memuat ulang ruang...') + '</div>';
+        H.loaderSm('Memuat ulang ruang...') + '</div>';
     }
     try {
       await this._fetchRuangList();
@@ -1231,6 +1237,10 @@ const PesanApp = {
   },
 
   async _doLogin() {
+    // v5.5.1: guard anti double-submit
+    if (this._loggingIn) { dbgWarn('Login sedang proses, abaikan'); return; }
+    this._loggingIn = true;
+
     const select = U.$('#login-ruang');
     const pinEl = U.$('#login-pin');
     const btn = U.$('#btn-login');
@@ -1238,10 +1248,16 @@ const PesanApp = {
     const kode = select ? select.value : '';
     const pin = pinEl ? pinEl.value : '';
 
-    FormError.clearAll(document);
-
-    if (!kode) { Toast.error('Pilih ruang dulu'); return; }
-    if (!pin || pin.length < 4) { Toast.error('PIN minimal 4 digit'); return; }
+    if (!kode) {
+      Toast.error('Pilih ruang dulu');
+      this._loggingIn = false;
+      return;
+    }
+    if (!pin || pin.length < 4) {
+      Toast.error('PIN minimal 4 digit');
+      this._loggingIn = false;
+      return;
+    }
 
     Btn.setLoading(btn, 'Memeriksa...');
     try {
@@ -1273,10 +1289,12 @@ const PesanApp = {
       Toast.error(err.message || 'Login gagal');
       if (pinEl) pinEl.value = '';
       Btn.stopLoading(btn, 'Masuk', 'check');
+    } finally {
+      this._loggingIn = false;
     }
   },
 
-  /* ---------- MAIN ---------- */
+  /* -------------------------------------------------- MAIN */
   async showMain() {
     const root = U.$('#pesan-root');
     root.innerHTML = this._renderMain();
@@ -1291,6 +1309,7 @@ const PesanApp = {
     this.barangLoading = true;
     this._renderTab();
 
+    // Fetch barang di background (tidak blocking UI)
     try {
       const res = await PesanApi.getBarangUntukPesan();
       this.barangList = (res.data && res.data.items) || [];
@@ -1303,6 +1322,7 @@ const PesanApp = {
       if (this.currentTab === 'pesan') this._renderTab();
     }
 
+    // Fetch pending count di background
     this._refreshPendingCount();
   },
 
@@ -1319,10 +1339,7 @@ const PesanApp = {
               (s.pj ? ' · PJ: ' + U.escapeHtml(s.pj) : '') +
             '</div>' +
           '</div>' +
-          '<button class="app-icon-btn danger" id="btn-logout" title="Keluar" ' +
-            'style="width:40px;height:40px;border-radius:10px;display:flex;' +
-            'align-items:center;justify-content:center;color:var(--text-muted);' +
-            'background:transparent;border:none;cursor:pointer">' +
+          '<button class="app-icon-btn danger" id="btn-logout" title="Keluar">' +
             U.icon('logout', 20) +
           '</button>' +
         '</header>' +
@@ -1367,6 +1384,18 @@ const PesanApp = {
       });
     }
 
+    // v5.5.1: btn-kirim pakai event delegation (1x attach, aman re-render)
+    const cartBar = U.$('#pesan-cart');
+    if (cartBar && !cartBar._bound) {
+      cartBar._bound = true;
+      cartBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('#btn-kirim');
+        if (!btn) return;
+        e.preventDefault();
+        this._confirmKirim();
+      });
+    }
+
     U.$$('.pesan-tabbar-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const t = btn.dataset.tab;
@@ -1375,6 +1404,8 @@ const PesanApp = {
         U.$$('.pesan-tabbar-btn').forEach(b =>
           b.classList.toggle('active', b === btn));
         this._renderTab();
+        const content = U.$('#pesan-content');
+        if (content) content.scrollTop = 0;
       });
     });
   },
@@ -1402,15 +1433,24 @@ const PesanApp = {
     }
   },
 
-  /* ---------- TAB: PESAN ---------- */
+  /* -------------------------------------------------- TAB: PESAN */
   _renderPesanTab(inner) {
+    const cartCount = Object.keys(this.cart).length;
+
     const searchPlaceholder = this.barangLoading
       ? 'Memuat daftar barang...'
       : 'Cari nama atau kode barang...';
     const searchDisabled = this.barangLoading ? ' disabled' : '';
 
-    inner.innerHTML = '' +
-      '<div style="display:flex;gap:8px;margin-bottom:14px;margin-top:10px">' +
+    inner.innerHTML =
+      '<div class="welcome">' +
+        '<div class="welcome-greet">Selamat datang,</div>' +
+        '<div class="welcome-name">' +
+          U.escapeHtml(this.session.pj || this.session.nama || '-') + '</div>' +
+        '<span class="welcome-room">' +
+          U.escapeHtml(this.session.nama_ruang || '') + '</span>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;margin-bottom:14px">' +
         '<div class="search-wrap" style="flex:1">' +
           '<input type="text" class="input" id="barang-search" ' +
             'placeholder="' + U.escapeHtml(searchPlaceholder) + '" ' +
@@ -1447,16 +1487,17 @@ const PesanApp = {
   async _refreshBarang(btn) {
     if (this.barangLoading) return;
     this.barangLoading = true;
-
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2.5px"></span>';
+      btn.innerHTML = '<span class="spinner" ' +
+        'style="width:16px;height:16px;border-width:2.5px"></span>';
     }
 
     try {
       const res = await PesanApi.getBarangUntukPesan();
       this.barangList = (res.data && res.data.items) || [];
 
+      // Update stok di cart kalau ada
       const byKode = {};
       this.barangList.forEach(b => { byKode[b.kode] = b; });
       Object.keys(this.cart).forEach(kode => {
@@ -1503,11 +1544,13 @@ const PesanApp = {
       results.style.display = 'block';
 
       if (this.barangLoading) {
-        results.innerHTML = '<div class="search-empty">' + Helper.loaderSm('Memuat...') + '</div>';
+        results.innerHTML = '<div class="search-empty">' +
+          H.loaderSm('Memuat...') + '</div>';
         return;
       }
       if (!this.barangList.length) {
-        results.innerHTML = '<div class="search-empty">Daftar barang belum termuat. Coba refresh.</div>';
+        results.innerHTML =
+          '<div class="search-empty">Daftar barang belum termuat. Coba refresh.</div>';
         return;
       }
 
@@ -1526,7 +1569,8 @@ const PesanApp = {
         const stok = Number(b.stok_tersedia) || 0;
         const stokCls = stok === 0 ? 'empty' : stok <= 5 ? 'low' : 'ok';
         return '' +
-          '<button type="button" class="search-item" data-kode="' + U.escapeHtml(b.kode) + '">' +
+          '<button type="button" class="search-item" data-kode="' +
+            U.escapeHtml(b.kode) + '">' +
             '<div class="search-item-main">' +
               '<div class="search-item-name">' + U.escapeHtml(b.nama) + '</div>' +
               '<div class="search-item-meta">' +
@@ -1534,7 +1578,8 @@ const PesanApp = {
                 '<span>·</span>' +
                 '<span>' + U.escapeHtml(b.tipe) + '</span>' +
                 (b.satuan ? '<span>·</span><span>' + U.escapeHtml(b.satuan) + '</span>' : '') +
-                '<span class="search-stok-badge ' + stokCls + '">Sisa ' + U.formatNumber(stok) + '</span>' +
+                '<span class="search-stok-badge ' + stokCls + '">Sisa ' +
+                  U.formatNumber(stok) + '</span>' +
               '</div>' +
             '</div>' +
             '<span class="badge ' + (inCart ? 'badge-success' : 'badge-primary') + '">' +
@@ -1554,8 +1599,12 @@ const PesanApp = {
     }, 180);
 
     input.addEventListener('input', handler);
+
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { input.value = ''; closeResults(); }
+      if (e.key === 'Escape') {
+        input.value = '';
+        closeResults();
+      }
     });
 
     const clickHandler = (e) => {
@@ -1573,8 +1622,15 @@ const PesanApp = {
       Toast.info('Sudah ada di keranjang');
       return;
     }
+    if (this.barangLoading) {
+      Toast.warning('Sedang memuat daftar barang, coba sebentar lagi');
+      return;
+    }
     const b = this.barangList.find(x => x.kode === kode);
-    if (!b) return;
+    if (!b) {
+      Toast.error('Barang tidak ditemukan di daftar');
+      return;
+    }
 
     const itemCount = Object.keys(this.cart).length;
     if (itemCount >= 20) {
@@ -1583,8 +1639,11 @@ const PesanApp = {
     }
 
     this.cart[kode] = {
-      kode: b.kode, nama: b.nama, tipe: b.tipe,
-      satuan: b.satuan || '', qty: 1,
+      kode: b.kode,
+      nama: b.nama,
+      tipe: b.tipe,
+      satuan: b.satuan || '',
+      qty: 1,
       stok_tersedia: Number(b.stok_tersedia) || 0
     };
 
@@ -1592,6 +1651,7 @@ const PesanApp = {
     this._renderCart();
     this._updateCartBar();
 
+    // Refresh dropdown kalau masih terbuka
     const results = U.$('#search-results');
     if (results && results.style.display === 'block') {
       const input = U.$('#barang-search');
@@ -1607,7 +1667,7 @@ const PesanApp = {
     const items = Object.values(this.cart);
 
     if (items.length === 0) {
-      area.innerHTML = Helper.empty('Keranjang kosong',
+      area.innerHTML = H.empty('Keranjang kosong',
         'Cari barang di atas untuk menambahkan.', 'package');
       return;
     }
@@ -1709,12 +1769,14 @@ const PesanApp = {
     if (btnKirim) btnKirim.disabled = count === 0;
   },
 
-  /* ---------- TAB: RIWAYAT ---------- */
+  /* -------------------------------------------------- TAB: RIWAYAT */
   async _renderRiwayatTab(inner) {
-    inner.innerHTML = Helper.loader('Memuat riwayat...');
+    const myId = ++this._renderId;
+    inner.innerHTML = H.loader('Memuat riwayat...');
 
     try {
       const res = await PesanApi.getPesananSaya(30);
+      if (myId !== this._renderId) return;
       const items = (res.data && res.data.items) || [];
       this._riwayatItems = items;
 
@@ -1723,7 +1785,7 @@ const PesanApp = {
       this._updateTabBadge();
 
       if (items.length === 0) {
-        inner.innerHTML = Helper.empty('Belum ada pesanan',
+        inner.innerHTML = H.empty('Belum ada pesanan',
           'Pesanan yang Anda kirim akan muncul di sini.', 'clipboard');
         return;
       }
@@ -1748,8 +1810,9 @@ const PesanApp = {
         });
       });
     } catch (err) {
+      if (myId !== this._renderId) return;
       if (this._handleApiError(err)) return;
-      inner.innerHTML = Helper.empty('Gagal memuat', err.message, 'alertCircle');
+      inner.innerHTML = H.empty('Gagal memuat', err.message, 'alertCircle');
     }
   },
 
@@ -1794,16 +1857,16 @@ const PesanApp = {
 
   _statusInfo(status) {
     const map = {
-      'Baru':     { cls: 'status-baru', modalIcon: 'warning',
-                    hint: 'Menunggu diproses gudang. Barang akan segera disiapkan.' },
+      'Baru': { cls: 'status-baru', modalIcon: 'warning',
+        hint: 'Menunggu diproses gudang. Barang akan segera disiapkan.' },
       'Diproses': { cls: 'status-diproses', modalIcon: 'info',
-                    hint: 'Sedang disiapkan oleh gudang.' },
-      'Selesai':  { cls: 'status-selesai', modalIcon: 'success',
-                    hint: 'Pesanan sudah selesai diproses.' },
-      'Ditolak':  { cls: 'status-ditolak', modalIcon: 'danger',
-                    hint: 'Pesanan ditolak. Silakan hubungi gudang untuk informasi lebih lanjut.' },
-      'Gagal':    { cls: 'status-gagal', modalIcon: 'warning',
-                    hint: 'Pesanan gagal dicatat. Silakan coba kirim ulang atau hubungi admin.' }
+        hint: 'Sedang disiapkan oleh gudang.' },
+      'Selesai': { cls: 'status-selesai', modalIcon: 'success',
+        hint: 'Pesanan sudah selesai diproses.' },
+      'Ditolak': { cls: 'status-ditolak', modalIcon: 'danger',
+        hint: 'Pesanan ditolak. Silakan hubungi gudang untuk informasi lebih lanjut.' },
+      'Gagal': { cls: 'status-gagal', modalIcon: 'warning',
+        hint: 'Pesanan gagal dicatat. Silakan coba kirim ulang atau hubungi admin.' }
     };
     return map[status] || map['Baru'];
   },
@@ -1823,149 +1886,84 @@ const PesanApp = {
     return U.formatDate(ts);
   },
 
-  async _openRiwayatDetail(idPesanan) {
+  _openRiwayatDetail(idPesanan) {
     const it = (this._riwayatItems || []).find(x => x.id_pesanan === idPesanan);
     if (!it) return;
 
-    const statusInfo = this._statusInfo(it.status);
     const snap = SnapshotStore.get(idPesanan);
+    const statusInfo = this._statusInfo(it.status);
+
+    let itemsHtml = '';
+    if (snap && Array.isArray(snap.items) && snap.items.length > 0) {
+      itemsHtml = snap.items.map(item => {
+        const stok = Number(item.stok_tersedia) || 0;
+        const kurang = item.qty > stok;
+        return '' +
+          '<div class="detail-item">' +
+            '<div class="detail-item-left">' +
+              '<div class="detail-item-name">' + U.escapeHtml(item.nama) + '</div>' +
+              '<div class="detail-item-meta">' +
+                U.escapeHtml(item.kode) + ' · ' + U.escapeHtml(item.tipe) +
+              '</div>' +
+              (kurang
+                ? '<div class="detail-item-warn">' +
+                  U.icon('alert', 11) +
+                  '<span>Stok saat pesan: ' + stok + '</span></div>'
+                : '') +
+            '</div>' +
+            '<div class="detail-item-qty">' + item.qty +
+              '<span>' + U.escapeHtml(item.satuan || '') + '</span>' +
+            '</div>' +
+          '</div>';
+      }).join('');
+    } else {
+      itemsHtml = '<div class="detail-empty">' +
+        'Detail item tidak tersedia.<br>' +
+        '<span style="font-size:11px">Mungkin pesanan ini dibuat dari perangkat lain.</span>' +
+        '</div>';
+    }
+
+    const body = '' +
+      '<div class="detail-section">' +
+        '<div class="detail-row">' +
+          '<div class="detail-label">Status</div>' +
+          '<div class="detail-value">' +
+            '<span class="status-pill ' + statusInfo.cls + '">' +
+              U.escapeHtml(it.status) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-row">' +
+          '<div class="detail-label">Waktu</div>' +
+          '<div class="detail-value">' + U.formatDateTime(it.timestamp) + '</div>' +
+        '</div>' +
+        '<div class="detail-row">' +
+          '<div class="detail-label">Total Item</div>' +
+          '<div class="detail-value">' + it.total_item + ' item</div>' +
+        '</div>' +
+        '<div class="detail-row">' +
+          '<div class="detail-label">Ruang</div>' +
+          '<div class="detail-value">' + U.escapeHtml(this.session.nama_ruang) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="detail-hint">' +
+        U.icon('info', 14) + '<span>' + U.escapeHtml(statusInfo.hint) + '</span>' +
+      '</div>' +
+      (snap && snap.catatan
+        ? '<div style="margin-bottom:14px">' +
+          '<div style="font-size:12.5px;font-weight:700;margin-bottom:6px;color:var(--text-muted)">Catatan:</div>' +
+          '<div class="detail-note">' + U.escapeHtml(snap.catatan) + '</div>' +
+          '</div>'
+        : '') +
+      '<div style="font-size:12.5px;font-weight:700;margin-bottom:8px;color:var(--text-muted)">Item:</div>' +
+      '<div class="detail-items">' + itemsHtml + '</div>';
 
     Modal.open({
       title: 'Detail Pesanan',
       icon: statusInfo.modalIcon,
       subtitle: idPesanan,
-      body: '<div id="riwayat-detail-container">' +
-              Helper.loader('Memuat detail...') +
-            '</div>',
+      body: body,
       actions: [{ label: 'Tutup', class: 'btn-primary' }]
     });
-
-    let detail = null;
-    let fetchErr = null;
-    try {
-      const res = await PesanApi.getPesananDetail(idPesanan);
-      detail = res.data;
-    } catch (err) {
-      fetchErr = err;
-      dbgWarn('Detail fetch gagal, fallback ke snapshot:', err.message);
-    }
-
-    const container = U.$('#riwayat-detail-container');
-    if (!container) return;
-
-    let items = [];
-    let catatan = '';
-    let totalQty = 0;
-
-    if (detail && Array.isArray(detail.items)) {
-      items = detail.items.map(x => ({
-        kode: x.kode_barang || '',
-        nama: x.nama_barang || '',
-        tipe: x.tipe || '',
-        satuan: x.satuan || '',
-        qty: Number(x.qty) || 0,
-        catatan: x.catatan || '',
-        stok_saat_pesan: x.stok_saat_pesan
-      }));
-      catatan = detail.keterangan || '';
-      totalQty = items.reduce((a, b) => a + b.qty, 0);
-    } else if (snap && Array.isArray(snap.items)) {
-      items = snap.items.map(x => ({
-        kode: x.kode || '',
-        nama: x.nama || '',
-        tipe: x.tipe || '',
-        satuan: x.satuan || '',
-        qty: Number(x.qty) || 0,
-        catatan: x.catatan || '',
-        stok_saat_pesan: x.stok_tersedia !== undefined ? x.stok_tersedia : null
-      }));
-      catatan = snap.catatan || '';
-      totalQty = snap.total_qty || items.reduce((a, b) => a + b.qty, 0);
-    }
-
-    let itemsHtml = '';
-    if (items.length === 0) {
-      itemsHtml = '<div class="detail-items" style="padding:20px;text-align:center">' +
-        '<div style="color:var(--text-muted);font-size:12.5px">' +
-          'Detail item tidak tersedia.' +
-          (fetchErr ? '<br><span style="font-size:11px;margin-top:6px;display:block">' +
-            'Gagal: ' + U.escapeHtml(fetchErr.message) + '</span>' : '') +
-        '</div>' +
-      '</div>';
-    } else {
-      itemsHtml = '<div class="detail-items">' +
-        items.map(item => {
-          const stok = item.stok_saat_pesan;
-          const kurang = stok !== null && stok !== undefined && item.qty > stok;
-          return '' +
-            '<div class="detail-item">' +
-              '<div class="detail-item-left">' +
-                '<div class="detail-item-name">' + U.escapeHtml(item.nama) + '</div>' +
-                '<div class="detail-item-meta">' +
-                  U.escapeHtml(item.kode) +
-                  (item.tipe ? ' · ' + U.escapeHtml(item.tipe) : '') +
-                  (item.catatan ? ' · ' + U.escapeHtml(item.catatan) : '') +
-                '</div>' +
-                (kurang
-                  ? '<div class="detail-item-warn">' +
-                    U.icon('alert', 11) +
-                    '<span>Stok saat pesan: ' + stok + '</span></div>'
-                  : '') +
-              '</div>' +
-              '<div class="detail-item-qty">' +
-                item.qty +
-                '<span>' + U.escapeHtml(item.satuan || '') + '</span>' +
-              '</div>' +
-            '</div>';
-        }).join('') +
-      '</div>';
-    }
-
-    const detailStatus = (detail && detail.status) || it.status;
-    const detailTimestamp = (detail && detail.timestamp) || it.timestamp;
-    const detailRuang = (detail && detail.nama_ruang) || this.session.nama_ruang;
-    const detailPemesan = (detail && detail.pemesan) || (this.session.pj || this.session.nama);
-    const detailTotalItem = (detail && detail.total_item) || items.length;
-
-    container.innerHTML =
-      '<div class="detail-section">' +
-        '<div class="detail-row">' +
-          '<div class="detail-label">Status</div>' +
-          '<div class="detail-value">' +
-            '<span class="status-pill ' + this._statusCls(detailStatus) + '">' +
-              U.escapeHtml(detailStatus) +
-            '</span>' +
-          '</div>' +
-        '</div>' +
-        '<div class="detail-row">' +
-          '<div class="detail-label">Waktu</div>' +
-          '<div class="detail-value">' + U.formatDateTime(detailTimestamp) + '</div>' +
-        '</div>' +
-        '<div class="detail-row">' +
-          '<div class="detail-label">Total Item</div>' +
-          '<div class="detail-value">' + detailTotalItem + ' item · ' + totalQty + ' pcs</div>' +
-        '</div>' +
-        '<div class="detail-row">' +
-          '<div class="detail-label">Ruang</div>' +
-          '<div class="detail-value">' + U.escapeHtml(detailRuang || '-') + '</div>' +
-        '</div>' +
-        '<div class="detail-row">' +
-          '<div class="detail-label">Pemesan</div>' +
-          '<div class="detail-value">' + U.escapeHtml(detailPemesan || '-') + '</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="detail-hint">' +
-        U.icon('info', 14) +
-        '<span>' + U.escapeHtml(statusInfo.hint) + '</span>' +
-      '</div>' +
-      (catatan
-        ? '<div style="margin-bottom:14px">' +
-          '<div style="font-size:12.5px;font-weight:700;margin-bottom:6px;color:var(--text-muted)">Catatan:</div>' +
-          '<div class="detail-note">' + U.escapeHtml(catatan) + '</div>' +
-          '</div>'
-        : '') +
-      '<div style="font-size:12.5px;font-weight:700;margin-bottom:8px;color:var(--text-muted)">Item (' + items.length + '):</div>' +
-      itemsHtml;
   },
 
   _updateTabBadge() {
@@ -1991,7 +1989,7 @@ const PesanApp = {
     }
   },
 
-  /* ---------- KIRIM ---------- */
+  /* -------------------------------------------------- KIRIM */
   _confirmKirim() {
     if (this.submitting) return;
     const items = Object.values(this.cart);
@@ -2011,7 +2009,8 @@ const PesanApp = {
     const body =
       '<div style="font-size:13.5px;line-height:1.6">' +
         'Pesanan dari <strong>' + U.escapeHtml(this.session.nama_ruang) + '</strong>:<br>' +
-        '<strong>' + items.length + ' item</strong> · total <strong>' + totalQty + ' pcs</strong>' +
+        '<strong>' + items.length + ' item</strong> · total <strong>' +
+        totalQty + ' pcs</strong>' +
       '</div>' +
       warnBlock +
       '<div class="confirm-list">' +
@@ -2019,7 +2018,8 @@ const PesanApp = {
           const stok = Number(it.stok_tersedia) || 0;
           const kurang = it.qty > stok;
           return '• ' + U.escapeHtml(it.nama) +
-            ' — <strong>' + it.qty + '</strong> ' + U.escapeHtml(it.satuan || '') +
+            ' — <strong>' + it.qty + '</strong> ' +
+            U.escapeHtml(it.satuan || '') +
             (kurang ? ' <span style="color:var(--warning)">(stok: ' + stok + ')</span>' : '');
         }).join('<br>') +
       '</div>';
@@ -2032,8 +2032,13 @@ const PesanApp = {
       body: body,
       actions: [
         { label: 'Periksa Lagi', class: 'btn-secondary' },
-        { label: 'Ya, Kirim', class: 'btn-primary', close: false, icon: 'check',
-          onClick: (btn) => self._kirim(btn) }
+        {
+          label: 'Ya, Kirim',
+          class: 'btn-primary',
+          close: false,
+          icon: 'check',
+          onClick: (btn) => self._kirim(btn)
+        }
       ]
     });
   },
@@ -2043,13 +2048,16 @@ const PesanApp = {
     this.submitting = true;
 
     const itemsSnapshot = Object.values(this.cart).map(it => ({
-      kode: it.kode, nama: it.nama, tipe: it.tipe,
-      satuan: it.satuan || '', qty: it.qty,
-      stok_tersedia: Number(it.stok_tersedia) || 0,
-      catatan: ''
+      kode: it.kode,
+      nama: it.nama,
+      tipe: it.tipe,
+      satuan: it.satuan || '',
+      qty: it.qty,
+      stok_tersedia: Number(it.stok_tersedia) || 0
     }));
     const items = itemsSnapshot.map(it => ({
-      kode_barang: it.kode, qty: it.qty
+      kode_barang: it.kode,
+      qty: it.qty
     }));
     const keterangan = this.catatan || '';
     const totalQty = itemsSnapshot.reduce((a, b) => a + b.qty, 0);
@@ -2062,18 +2070,21 @@ const PesanApp = {
       const notified = !!(res.data && res.data.notified);
       const itemsKurang = (res.data && res.data.items_kurang) || 0;
 
-      const snapshot = {
+      // Simpan snapshot untuk "Pesan Lagi" & offline fallback
+      SnapshotStore.set(idPesanan, {
         items: itemsSnapshot,
         catatan: keterangan,
         total_qty: totalQty,
         waktu: Date.now()
-      };
-      SnapshotStore.set(idPesanan, snapshot);
+      });
 
+      // Reset cart SEGERA setelah sukses
       this.cart = {};
       this.catatan = '';
 
-      if (this.currentTab === 'pesan') this._renderTab();
+      if (this.currentTab === 'pesan') {
+        this._renderTab();
+      }
 
       Modal.close();
       U.vibrate([50, 50, 50]);
@@ -2090,26 +2101,32 @@ const PesanApp = {
             '<div class="modal-success-info">' +
               '<div class="success-icon">' + U.icon('check', 40) + '</div>' +
               '<div class="success-title">Pesanan berhasil dikirim</div>' +
-              '<div class="success-id">ID: <strong>' + U.escapeHtml(idPesanan) + '</strong></div>' +
+              '<div class="success-id">ID: <strong>' +
+                U.escapeHtml(idPesanan) + '</strong></div>' +
               (notified
-                ? '<div class="badge badge-success" style="padding:8px 14px;font-size:12px">' +
+                ? '<div class="badge badge-success" ' +
+                  'style="padding:8px 14px;font-size:12px">' +
                   U.icon('check', 14) + ' Notifikasi Telegram terkirim</div>'
-                : '<div class="badge badge-warning" style="padding:8px 14px;font-size:12px">' +
+                : '<div class="badge badge-warning" ' +
+                  'style="padding:8px 14px;font-size:12px">' +
                   '⚠️ Notifikasi Telegram tidak terkirim</div>') +
               (itemsKurang > 0
                 ? '<div class="badge badge-warning" ' +
                   'style="padding:8px 14px;font-size:12px;margin-top:8px">' +
-                  U.icon('alert', 14) + ' ' + itemsKurang + ' item melebihi stok — gudang akan konfirmasi</div>'
+                  U.icon('alert', 14) + ' ' + itemsKurang +
+                  ' item melebihi stok — gudang akan konfirmasi</div>'
                 : '') +
             '</div>',
           actions: [
-            { label: 'Pesan Lagi', class: 'btn-secondary',
-              onClick: () => {
-                self._prefillCartFromSnapshot(snapshot);
-                self._switchTab('pesan');
-              }
+            {
+              label: 'Pesan Lagi',
+              class: 'btn-secondary',
+              onClick: () => { self._switchTab('pesan'); }
             },
-            { label: 'Lihat Riwayat', class: 'btn-primary', icon: 'clipboard',
+            {
+              label: 'Lihat Riwayat',
+              class: 'btn-primary',
+              icon: 'clipboard',
               onClick: () => { self._switchTab('riwayat'); }
             }
           ]
@@ -2121,7 +2138,9 @@ const PesanApp = {
 
       Toast.error('Gagal kirim: ' + err.message);
 
-      if (err.code === 'PARTIAL_WRITE' && err.raw && err.raw.data && err.raw.data.id_pesanan) {
+      // PARTIAL_WRITE: backend sudah beri id_pesanan di err.raw.data
+      if (err.code === 'PARTIAL_WRITE' &&
+          err.raw && err.raw.data && err.raw.data.id_pesanan) {
         Modal.close();
         const partialData = err.raw.data;
         setTimeout(() => {
@@ -2130,9 +2149,11 @@ const PesanApp = {
             icon: 'warning',
             body:
               '<div style="font-size:13.5px;line-height:1.6">' +
-                'ID pesanan <strong style="font-family:ui-monospace,monospace;color:var(--primary-dark)">' +
+                'ID pesanan <strong style="font-family:ui-monospace,monospace;' +
+                'color:var(--primary-dark)">' +
                   U.escapeHtml(partialData.id_pesanan) + '</strong> ' +
-                'tercatat di header, namun detail item gagal disimpan.<br><br>' +
+                'tercatat di header, namun detail item gagal disimpan.' +
+                '<br><br>' +
                 'Hubungi admin dengan ID ini untuk perbaikan manual.' +
               '</div>',
             actions: [{ label: 'Tutup', class: 'btn-primary' }]
@@ -2147,29 +2168,7 @@ const PesanApp = {
     }
   },
 
-  _prefillCartFromSnapshot(snapshot) {
-    if (!snapshot || !Array.isArray(snapshot.items)) return;
-    this.cart = {};
-    const byKode = {};
-    this.barangList.forEach(b => { byKode[b.kode] = b; });
-
-    let added = 0;
-    snapshot.items.forEach(it => {
-      const b = byKode[it.kode];
-      if (!b) return;
-      this.cart[it.kode] = {
-        kode: it.kode, nama: b.nama, tipe: b.tipe,
-        satuan: b.satuan || '',
-        qty: Math.max(1, Number(it.qty) || 1),
-        stok_tersedia: Number(b.stok_tersedia) || 0
-      };
-      added++;
-    });
-
-    if (added > 0) Toast.info(added + ' item dimasukkan ke keranjang');
-    else Toast.warning('Item dari pesanan sebelumnya tidak tersedia lagi');
-  },
-
+  /* -------------------------------------------------- LOGOUT */
   async logout() {
     try { await Api.logout(); } catch (e) {}
     RuangStore.clear();
@@ -2179,22 +2178,15 @@ const PesanApp = {
     this.barangList = [];
     this._riwayatItems = [];
     this._pendingCount = 0;
+    this._loggingIn = false;
     Toast.info('Anda telah keluar.');
     this.showLogin();
   }
 };
 
-/* ---------- Bind tombol kirim (cart bar di luar konten tab) ---------- */
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('#btn-kirim');
-  if (!btn) return;
-  e.preventDefault();
-  if (typeof PesanApp !== 'undefined' && PesanApp._confirmKirim) {
-    PesanApp._confirmKirim();
-  }
-});
-
-/* ---------- BOOT ---------- */
+/* ============================================================
+   BOOT
+   ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
   dbg('[PESAN] v5.5.1 DOM ready');
 
@@ -2202,11 +2194,13 @@ window.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById('boot-splash');
     if (el) el.classList.add('hide');
     document.getElementById('pesan-root').innerHTML =
-      '<div style="padding:32px;text-align:center;color:#d32f2f;font-family:system-ui,sans-serif">' +
+      '<div style="padding:32px;text-align:center;color:#d32f2f;' +
+      'font-family:system-ui,sans-serif">' +
         '<h2 style="margin-bottom:12px">Gagal memuat sistem</h2>' +
         '<p style="color:#666;line-height:1.6">' +
-          'File <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px">shared/core.js</code> ' +
-          'tidak ditemukan.<br><br>' +
+          'File <code style="background:#f0f0f0;padding:2px 6px;' +
+          'border-radius:4px">shared/core.js</code> tidak ditemukan.' +
+          '<br><br>' +
           'Pastikan struktur folder: <code>pesan.html</code> dan folder ' +
           '<code>shared/</code> sejajar.' +
         '</p>' +
