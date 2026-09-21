@@ -2744,12 +2744,21 @@ table.data-table {
 }
 
 /* ============================================================
-   33. PRINT
+   PRINT — v5.4.1
+   ============================================================
+   FIX: Jangan sembunyikan .app-shell di print — itu root container
+   yang membungkus .kartu-stok-preview. Kalau disembunyikan,
+   seluruh konten print hilang.
    ============================================================ */
 @media print {
-  body { background: white; }
+  /* Reset html/body — harus bisa flow untuk print */
+  html, body {
+    overflow: visible !important;
+    height: auto !important;
+    background: white !important;
+  }
 
-  .app-shell,
+  /* Sembunyikan UI. JANGAN sembunyikan .app-shell (root container) */
   .sidebar,
   .app-topbar,
   .sidebar-backdrop,
@@ -2760,29 +2769,58 @@ table.data-table {
     display: none !important;
   }
 
+  /* Reset semua wrapper — jadikan block biasa dengan height auto */
+  .app-shell {
+    display: block !important;
+    grid-template-columns: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+  .main-wrapper {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
   .page-container {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
     padding: 0 !important;
-    max-width: none;
+    max-width: none !important;
+  }
+  .page-inner {
+    display: block !important;
+    max-width: none !important;
   }
 
+  /* Matikan animasi supaya tidak glitch saat print */
+  .page-inner > * {
+    animation: none !important;
+  }
+
+  /* Kartu stok preview — bersih tanpa shadow/border container */
   .kartu-stok-preview {
-    box-shadow: none;
-    border: none;
-    max-width: none;
-    padding: 8mm;
+    box-shadow: none !important;
+    border: none !important;
+    max-width: none !important;
+    padding: 8mm !important;
+    margin: 0 !important;
+    page-break-inside: auto !important;
+  }
+
+  /* Table header repeat di setiap halaman */
+  .kartu-stok-table thead {
+    display: table-header-group;
+  }
+
+  /* Baris tidak boleh terpotong antar halaman */
+  .kartu-stok-table tr {
     page-break-inside: avoid;
   }
 
-  .qr-page {
-    box-shadow: none;
-    margin: 0;
-    padding: 8mm;
-    page-break-after: always;
-    width: 210mm;
-    height: 297mm;
+  @page {
+    margin: 10mm;
+    size: A4 portrait;
   }
-  .qr-page:last-child { page-break-after: auto; }
-  .qr-label { border-color: #e5e5e5; }
-
-  @page { margin: 0; }
 }
