@@ -1,28 +1,22 @@
 /**
  * ============================================================
- * SHARED CORE JS — Sistem Gudang Puskesmas v5.4.1
+ * SHARED CORE JS — Sistem Gudang Puskesmas v5.5.1
  * ============================================================
- * Termasuk: config, utilities, store, toast, modal, btn,
- *           form error, API client, CustomSelect, QR scanner,
- *           LoginForm, AuthGuard, LibLoader, BatchSelector.
+ * Changelog v5.5.1 (vs v5.4.1):
+ *   - Timeout tuning: LOGIN 12s→25s, MASTER 20s→25s, WHOAMI 6s→10s
+ *     (handle Apps Script cold start + queue)
+ *   - LoginForm: pesan "cold start" muncul kalau login >5s
+ *   - +Api.getBadgeCounts() — 1 call untuk badge approval + pesanan
+ *   - LibLoader cooldown 30s + local-first (shared/vendor/)
+ *   - LoginForm welcome toast opsional via opts.welcomeToast
  *
- * Changelog v5.4.1:
- *   - LibLoader: local (shared/vendor) first, CDN fallback,
- *     cooldown 30s anti-retry-storm, per-CDN timeout 5s,
- *     reset() untuk tombol retry
- *   - LoginForm: welcome Toast opsional via opts.welcomeToast
- *     (default true backward-compat). Caller seperti index.html
- *     bisa set false + handle sendiri setelah shell siap.
- *
- * Changelog v5.4:
- *   - Fix LoginForm._submitting (user tidak terkunci saat login gagal)
- *   - LoginForm: ganti Loading overlay -> .busy class
+ * Changelog v5.4.1 (base):
+ *   - Fix LoginForm._submitting (tidak terkunci saat login gagal)
+ *   - LibLoader overhaul: no-hang, per-source timeout 5s, reset()
+ *   - LoginForm pakai .busy class, bukan loading overlay
  *   - Loading object deprecated (no-op + dbgWarn)
- *   - Api.getPesananDetail() + Api.getLaporan() (backend v5.4)
- *   - Api.call skip retry untuk PARTIAL_WRITE
- *   - MASTER_TIMEOUT_MS 12s -> 20s
- *   - APP_VERSION 5.4
- *   - LoginForm: guard digit input saat submitting
+ *   - Api skip retry untuk PARTIAL_WRITE
+ *   - Api.getPesananDetail() + getLaporan() (backend v5.4)
  * ============================================================
  */
 'use strict';
@@ -33,17 +27,17 @@
 const CONFIG = Object.freeze({
   API_URL: 'https://script.google.com/macros/s/AKfycbxX6oAam5bFHR4ngUEWwZ7TXXzuo9mGxBrXtnj1e6y8BT9Fm3rw7JWDKsxYpZwTb45pSw/exec',
   API_KEY: 'PKM_SANDEN_26',
-  APP_VERSION: '5.4.1',
+  APP_VERSION: '5.5.1',
 
-  // Timeouts per endpoint (ms)
+  // Timeouts per endpoint (ms) — v5.5.1 tuned untuk GAS cold start
   REQUEST_TIMEOUT_MS: 15000,
-  LOGIN_TIMEOUT_MS: 12000,
-  MASTER_TIMEOUT_MS: 20000,
-  WHOAMI_TIMEOUT_MS: 6000,
+  LOGIN_TIMEOUT_MS: 25000,
+  MASTER_TIMEOUT_MS: 25000,
+  WHOAMI_TIMEOUT_MS: 10000,
   RETRY_ATTEMPTS: 2,
 
-  // Cache TTL
-  MASTER_CACHE_TTL_MS: 3600000,   // 1 jam
+  // Cache TTL (localStorage)
+  MASTER_CACHE_TTL_MS: 3600000,
 
   // localStorage keys
   LOGO_KEY: 'PKM_LOGO_DATAURL',
@@ -244,8 +238,7 @@ const Store = {
   setMaster(data) {
     try {
       localStorage.setItem(CONFIG.MASTER_KEY, JSON.stringify({
-        data: data,
-        expires: Date.now() + CONFIG.MASTER_CACHE_TTL_MS
+        data: data, expires: Date.now() + CONFIG.MASTER_CACHE_TTL_MS
       }));
     } catch (e) { dbgWarn('setMaster error', e); }
   },
@@ -386,27 +379,15 @@ const Modal = {
 /**
  * Overlay loading sudah TIDAK DIPAKAI lagi sejak v5.4.
  *
- * Pengganti (pilih sesuai konteks):
- *   1. Button loading state:
- *        Btn.setLoading(btn, 'Menyimpan...');
- *
- *   2. Container busy overlay:
- *        containerEl.classList.add('busy');
- *        // ... async work ...
- *        containerEl.classList.remove('busy');
- *
- *   3. Inline placeholder:
- *        el.innerHTML = Helper.loader('Memuat...');
+ * Pengganti:
+ *   1. Btn.setLoading(btn, 'Menyimpan...');
+ *   2. containerEl.classList.add('busy');
+ *   3. el.innerHTML = Helper.loader('Memuat...');
  */
 const Loading = {
   _count: 0,
-
-  show() {
-    dbgWarn('[DEPRECATED] Loading.show() — pakai Btn.setLoading() atau class .busy');
-  },
-  hide() {
-    dbgWarn('[DEPRECATED] Loading.hide() — pakai Btn.setLoading() atau class .busy');
-  },
+  show() { dbgWarn('[DEPRECATED] Loading.show() — pakai Btn.setLoading() atau class .busy'); },
+  hide() { dbgWarn('[DEPRECATED] Loading.hide() — pakai Btn.setLoading() atau class .busy'); },
   forceHide() {}
 };
 
@@ -453,7 +434,6 @@ const FormError = {
     inputEl.addEventListener('input', clearFn, { once: true });
     inputEl.addEventListener('change', clearFn, { once: true });
   },
-
   clear(inputEl) {
     if (!inputEl) return;
     inputEl.classList.remove('error');
@@ -462,7 +442,6 @@ const FormError = {
     const errEl = field.querySelector('.field-error');
     if (errEl) errEl.classList.remove('visible');
   },
-
   clearAll(container) {
     U.$$('.input.error, .textarea.error, .cs-trigger.error', container).forEach(el => {
       this.clear(el);
@@ -478,9 +457,7 @@ const CS = {
 
   init() {
     this.enhanceAll(document);
-
     if (this._observer) return;
-
     this._observer = new MutationObserver(mutations => {
       mutations.forEach(m => {
         m.addedNodes.forEach(node => {
@@ -492,7 +469,6 @@ const CS = {
         });
       });
     });
-
     if (document.body) {
       this._observer.observe(document.body, { childList: true, subtree: true });
       dbg('CS observer aktif');
@@ -531,11 +507,8 @@ const CS = {
 
     const render = () => {
       const opts = Array.from(selectEl.options).map(o => ({
-        value: o.value,
-        label: o.textContent.trim(),
-        disabled: o.disabled
+        value: o.value, label: o.textContent.trim(), disabled: o.disabled
       }));
-
       const cur = opts.find(o => o.value === selectEl.value) ||
                   (opts[0] && opts[0].value === '' ? opts[0] : null);
 
@@ -583,9 +556,8 @@ const CS = {
 
     const selectValue = (val) => {
       selectEl.value = val;
-      try {
-        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
-      } catch (e) {
+      try { selectEl.dispatchEvent(new Event('change', { bubbles: true })); }
+      catch (e) {
         const evt = document.createEvent('HTMLEvents');
         evt.initEvent('change', true, true);
         selectEl.dispatchEvent(evt);
@@ -622,15 +594,13 @@ const CS = {
     attrObserver.observe(selectEl, {
       attributes: true,
       attributeFilter: ['disabled', 'class'],
-      childList: true,
-      subtree: true
+      childList: true, subtree: true
     });
 
     wrapper.addEventListener('click', (e) => e.stopPropagation());
 
     selectEl._csRender = render;
     selectEl._csClose = close;
-
     render();
   },
 
@@ -772,9 +742,7 @@ const Api = {
           await U.sleep(3000);
           continue;
         }
-        // v5.4: PARTIAL_WRITE tidak boleh diretry.
-        // Kalau diretry, idempotency UUID akan return "duplikat diabaikan"
-        // (code 200) dan menutupi kegagalan awal. Frontend butuh info asli.
+        // v5.4: PARTIAL_WRITE tidak boleh diretry
         if (res.code >= 500 && res.error_code !== 'PARTIAL_WRITE'
             && attempt < CONFIG.RETRY_ATTEMPTS - 1) {
           lastError = new ApiError(res.error_code || 'SERVER_ERROR', res.message || 'Server error');
@@ -799,8 +767,7 @@ const Api = {
   },
   loginRuang(kode, pin) {
     return this.call('loginRuang',
-      { kode_ruang: kode, pin_plaintext: pin },
-      { public: true });
+      { kode_ruang: kode, pin_plaintext: pin }, { public: true });
   },
   getRuangList() {
     return this.call('getRuangList', {}, { public: true });
@@ -809,6 +776,7 @@ const Api = {
   whoAmI() { return this.call('whoAmI', {}); },
   getMasterData() { return this.call('getMasterData', {}); },
   getDashboardSummary() { return this.call('getDashboardSummary', {}); },
+  getBadgeCounts() { return this.call('getBadgeCounts', {}); },
   getKartuStokBulanan(idBarang, bulan, tahun) {
     return this.call('getKartuStokBulanan', { id_barang: idBarang, bulan: bulan, tahun: tahun });
   },
@@ -858,43 +826,31 @@ const Api = {
     return this.call('getLaporan', payload || {});
   },
   getLaporanStokTerkini(payload) {
-    return this.call('getLaporan',
-      Object.assign({ tipe: 'stok_terkini' }, payload || {}));
+    return this.call('getLaporan', Object.assign({ tipe: 'stok_terkini' }, payload || {}));
   },
   getLaporanMutasiBulanan(payload) {
-    return this.call('getLaporan',
-      Object.assign({ tipe: 'mutasi_bulanan' }, payload || {}));
+    return this.call('getLaporan', Object.assign({ tipe: 'mutasi_bulanan' }, payload || {}));
   },
   getLaporanNilaiAset(payload) {
-    return this.call('getLaporan',
-      Object.assign({ tipe: 'nilai_aset' }, payload || {}));
+    return this.call('getLaporan', Object.assign({ tipe: 'nilai_aset' }, payload || {}));
   }
 };
 
 // ============================================================
-// LIB LOADER — multi-source dengan local-first + CDN fallback
+// LIB LOADER — local-first + CDN fallback + cooldown anti-storm
 // ============================================================
 /**
- * v5.4.1 — Local first strategy:
- *   - Coba `shared/vendor/*.js` dulu (self-host, 0 dependency CDN)
- *   - Fallback ke CDN kalau file lokal tidak ada (404)
- *   - Cooldown 30s: kalau gagal semua, jangan retry sampai 30s
- *     supaya tidak retry storm (preload + user click = 2x percobaan)
- *   - reset() untuk clear cache + cooldown (dipanggil dari tombol "Coba Lagi")
- *
- * Setup:
- *   Download 3 file berikut ke `shared/vendor/`:
- *     - qrcode.min.js       (40 KB)  → https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js
- *     - xlsx.full.min.js    (900 KB) → https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js
- *     - jsQR.min.js         (260 KB) → https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js
+ * Setup: letakkan 3 file berikut di folder shared/vendor/:
+ *   - qrcode.min.js       (40 KB)  → https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js
+ *   - xlsx.full.min.js    (900 KB) → https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js
+ *   - jsQR.min.js         (260 KB) → https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js
  */
 const LibLoader = {
   _cache: {},
-  _failedAt: {},              // v5.4.1: waktu kegagalan terakhir per lib
-  _failureCacheMs: 30000,     // v5.4.1: cooldown 30s
-  _cdnTimeoutMs: 5000,        // v5.4.1: turun dari 8s → 5s (fail faster)
+  _failedAt: {},
+  _failureCacheMs: 30000,
+  _sourceTimeoutMs: 5000,
 
-  // Local first, CDN sebagai fallback
   _sources: {
     qrcode: [
       'shared/vendor/qrcode.min.js',
@@ -924,8 +880,6 @@ const LibLoader = {
       return Promise.reject(new Error('Unknown lib: ' + name));
     }
 
-    // v5.4.1: cooldown — kalau baru gagal <30s lalu, langsung reject
-    // supaya tidak retry storm (preload + user click = 2x failure)
     const failTime = this._failedAt[name];
     if (failTime && (Date.now() - failTime) < this._failureCacheMs) {
       const remainSec = Math.ceil((this._failureCacheMs - (Date.now() - failTime)) / 1000);
@@ -935,15 +889,10 @@ const LibLoader = {
     }
 
     this._cleanupOldScripts(name);
-
     this._cache[name] = this._trySequential(urls, name, globalName, 0);
     return this._cache[name];
   },
 
-  /**
-   * v5.4.1: reset manual — dipanggil dari tombol "Coba Lagi".
-   * Clear cache + cooldown + script tag lama.
-   */
   reset(name) {
     if (name) {
       delete this._cache[name];
@@ -958,7 +907,6 @@ const LibLoader = {
     }
   },
 
-  // v5.4.1: strict check supaya global "stale" tidak dianggap valid
   _isValidGlobal(name, globalName) {
     const g = window[globalName];
     if (!g) return false;
@@ -973,15 +921,9 @@ const LibLoader = {
     stale.forEach(s => { try { s.remove(); } catch (e) {} });
   },
 
-  /**
-   * v5.4.1: SELALU buat script baru per attempt.
-   * JANGAN reuse tag lama — event load/error sudah fired.
-   * Timeout per-source 5s.
-   */
   _trySequential(urls, name, globalName, idx) {
     if (idx >= urls.length) {
       delete LibLoader._cache[name];
-      // v5.4.1: catat waktu kegagalan untuk cooldown
       LibLoader._failedAt[name] = Date.now();
       return Promise.reject(new Error('Semua sumber gagal untuk ' + name));
     }
@@ -993,7 +935,7 @@ const LibLoader = {
 
       const url = urls[idx];
       const isLocal = url.indexOf('shared/vendor') === 0;
-      const label = isLocal ? 'LOCAL' : 'CDN #' + (idx);
+      const label = isLocal ? 'LOCAL' : 'CDN #' + idx;
 
       const script = document.createElement('script');
       script.src = url;
@@ -1004,10 +946,10 @@ const LibLoader = {
       const tid = setTimeout(() => {
         if (settled) return;
         settled = true;
-        dbgWarn(label + ' TIMEOUT (' + Math.round(this._cdnTimeoutMs / 1000) + 's): ' + url);
+        dbgWarn(label + ' TIMEOUT (' + Math.round(this._sourceTimeoutMs / 1000) + 's): ' + url);
         try { script.remove(); } catch (e) {}
         this._trySequential(urls, name, globalName, idx + 1).then(resolve, reject);
-      }, this._cdnTimeoutMs);
+      }, this._sourceTimeoutMs);
 
       script.onload = () => {
         if (settled) return;
@@ -1039,20 +981,10 @@ const LibLoader = {
 // QR SCANNER — native BarcodeDetector + jsQR fallback
 // ============================================================
 const QRScanner = {
-  _stream: null,
-  _videoEl: null,
-  _rafId: null,
-  _detector: null,
-  _jsQR: null,
-  _canvas: null,
-  _ctx: null,
-  _mode: null,
-  _running: false,
-  _lastText: '',
-  _lastTime: 0,
-  _onDetected: null,
-  _lastDetectTime: 0,
-  _detectIntervalMs: 100,
+  _stream: null, _videoEl: null, _rafId: null,
+  _detector: null, _jsQR: null, _canvas: null, _ctx: null,
+  _mode: null, _running: false, _lastText: '', _lastTime: 0,
+  _onDetected: null, _lastDetectTime: 0, _detectIntervalMs: 100,
 
   async start(videoEl, onDetected, onError) {
     this.stop();
@@ -1065,8 +997,7 @@ const QRScanner = {
       const constraints = {
         video: {
           facingMode: { ideal: 'environment' },
-          width: { ideal: 960 },
-          height: { ideal: 540 }
+          width: { ideal: 960 }, height: { ideal: 540 }
         }
       };
       this._stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -1106,25 +1037,21 @@ const QRScanner = {
         }
         if (onError) onError(new Error(
           'Browser ini tidak mendukung pemindaian QR otomatis. ' +
-          'Gunakan tombol "Manual" untuk input kode barang.'
-        ));
+          'Gunakan tombol "Manual" untuk input kode barang.'));
         return;
       }
     }
-
     this._loop();
   },
 
   _loop() {
     if (!this._running) return;
-
     const now = performance.now();
     if (now - this._lastDetectTime >= this._detectIntervalMs) {
       this._lastDetectTime = now;
       if (this._mode === 'native') this._detectNative();
       else if (this._mode === 'jsqr') this._detectJsQR();
     }
-
     this._rafId = requestAnimationFrame(() => this._loop());
   },
 
@@ -1134,32 +1061,28 @@ const QRScanner = {
     try {
       const codes = await this._detector.detect(video);
       if (codes && codes.length > 0) this._handle(codes[0].rawValue);
-    } catch (e) { /* ignore per-frame */ }
+    } catch (e) {}
   },
 
   _detectJsQR() {
     const video = this._videoEl;
     if (!video || video.readyState !== 4 || !this._jsQR) return;
-    const w = video.videoWidth;
-    const h = video.videoHeight;
+    const w = video.videoWidth, h = video.videoHeight;
     if (!w || !h) return;
-
     const maxDim = 640;
     let cw = w, ch = h;
     if (w > maxDim || h > maxDim) {
       if (w > h) { ch = Math.round(h * maxDim / w); cw = maxDim; }
       else { cw = Math.round(w * maxDim / h); ch = maxDim; }
     }
-
     if (this._canvas.width !== cw) this._canvas.width = cw;
     if (this._canvas.height !== ch) this._canvas.height = ch;
-
     try {
       this._ctx.drawImage(video, 0, 0, cw, ch);
       const imgData = this._ctx.getImageData(0, 0, cw, ch);
       const code = this._jsQR(imgData.data, cw, ch, { inversionAttempts: 'dontInvert' });
       if (code && code.data) this._handle(code.data);
-    } catch (e) { /* ignore */ }
+    } catch (e) {}
   },
 
   _handle(text) {
@@ -1178,9 +1101,7 @@ const QRScanner = {
       this._stream.getTracks().forEach(t => t.stop());
       this._stream = null;
     }
-    if (this._videoEl) {
-      try { this._videoEl.srcObject = null; } catch (e) {}
-    }
+    if (this._videoEl) { try { this._videoEl.srcObject = null; } catch (e) {} }
     this._detector = null;
     this._jsQR = null;
     this._canvas = null;
@@ -1206,10 +1127,7 @@ const QRScanner = {
 // BATCH SELECTOR (FEFO)
 // ============================================================
 const BatchSelector = {
-  _batches: [],
-  _value: '',
-  _onChange: null,
-  _satuan: '',
+  _batches: [], _value: '', _onChange: null, _satuan: '',
 
   mount(container, batches, onChange, satuan) {
     this._batches = batches || [];
@@ -1233,7 +1151,6 @@ const BatchSelector = {
   openPicker() {
     const batches = this._batches;
     const currentValue = this._value;
-
     let listHTML = '';
     if (batches.length === 0) {
       listHTML = '<div class="empty-state" style="padding:24px">' +
@@ -1248,36 +1165,26 @@ const BatchSelector = {
           const isNear = b.status_ed === 'near_expired';
           const isExp = b.status_ed === 'expired';
           const isSelected = b.no_batch === currentValue;
-
           let badges = '';
           if (isFEFO) badges += '<span class="batch-card-badge fefo">⭐ FEFO</span>';
           if (isExp) badges += '<span class="batch-card-badge expired">KEDALUWARSA</span>';
           else if (isNear) badges += '<span class="batch-card-badge near-ed">ED DEKAT</span>';
-
           let edInfo = '';
           if (b.exp_date) {
             edInfo = U.formatDate(b.exp_date);
-            if (b.days_to_ed !== null && b.days_to_ed >= 0) {
-              edInfo += ' · ' + b.days_to_ed + ' hari lagi';
-            } else if (b.days_to_ed !== null && b.days_to_ed < 0) {
-              edInfo = U.formatDate(b.exp_date) + ' · sudah lewat';
-            }
-          } else {
-            edInfo = 'tidak ada';
-          }
-
+            if (b.days_to_ed !== null && b.days_to_ed >= 0) edInfo += ' · ' + b.days_to_ed + ' hari lagi';
+            else if (b.days_to_ed !== null && b.days_to_ed < 0) edInfo = U.formatDate(b.exp_date) + ' · sudah lewat';
+          } else { edInfo = 'tidak ada'; }
           const selClass = isSelected ? ' selected' : '';
           const expClass = isExp ? ' expired' : '';
           const fefoClass = isFEFO ? ' fefo' : '';
           const dis = isExp ? ' disabled' : '';
-
           return '' +
             '<button type="button" class="batch-card' + fefoClass + selClass + expClass + '"' +
               ' data-batch="' + U.escapeHtml(b.no_batch) + '"' + dis + '>' +
               '<div class="batch-card-body">' +
                 '<div class="batch-card-header">' +
-                  '<div class="batch-card-id">' + U.escapeHtml(b.no_batch) + '</div>' +
-                  badges +
+                  '<div class="batch-card-id">' + U.escapeHtml(b.no_batch) + '</div>' + badges +
                 '</div>' +
                 '<div class="batch-card-meta">' +
                   '<div class="batch-card-meta-item">' +
@@ -1324,7 +1231,6 @@ const BatchSelector = {
       let sub = 'Sisa ' + U.formatNumber(batch.sisa_stok);
       if (this._satuan) sub += ' ' + this._satuan;
       if (batch.exp_date) sub += ' · ED ' + U.formatDate(batch.exp_date);
-
       trigger.querySelector('.select-trigger-content').innerHTML =
         '<div class="select-trigger-main">' + U.escapeHtml(batch.no_batch) + '</div>' +
         '<div class="select-trigger-sub">' + U.escapeHtml(sub) + '</div>';
@@ -1359,7 +1265,8 @@ const LoginForm = {
   _variant: 'compact',
   _submitting: false,
   _mounted: false,
-  _showWelcomeToast: true,   // v5.4.1: default true untuk backward-compat
+  _showWelcomeToast: true,
+  _slowLoginTimer: null,   // v5.5.1
 
   mount(containerOrSelector, onSuccess, opts) {
     const container = typeof containerOrSelector === 'string'
@@ -1370,12 +1277,11 @@ const LoginForm = {
     this._container = container;
     this._onSuccess = onSuccess;
     this._variant = opts.variant || 'compact';
-    // v5.4.1: caller bisa matikan welcome toast (mis. index.html yang mau
-    // tampilkan toast setelah shell siap, bukan sebelum layer transition)
     this._showWelcomeToast = (opts.welcomeToast !== undefined) ? opts.welcomeToast : true;
     this._pin = '';
     this._submitting = false;
     this._mounted = true;
+    this._slowLoginTimer = null;
 
     container.innerHTML = this._renderHTML();
     this._attachListeners();
@@ -1458,13 +1364,10 @@ const LoginForm = {
                 '</div>' +
               '</div>' +
             '</div>' +
-            '<div class="split-right">' +
-              formHTML +
-            '</div>' +
+            '<div class="split-right">' + formHTML + '</div>' +
           '</div>' +
         '</div>';
     }
-
     return '<div class="login-screen compact">' + formHTML + '</div>';
   },
 
@@ -1558,6 +1461,10 @@ const LoginForm = {
       window.removeEventListener('online', this._onlineHandler);
       window.removeEventListener('offline', this._onlineHandler);
     }
+    if (this._slowLoginTimer) {
+      clearTimeout(this._slowLoginTimer);
+      this._slowLoginTimer = null;
+    }
     this._keydownHandler = null;
     this._onlineHandler = null;
     if (this._container) this._container.innerHTML = '';
@@ -1579,7 +1486,6 @@ const LoginForm = {
 
     FormError.clear(usernameEl);
 
-    // Validasi input — reset _submitting di setiap early return
     if (!username) {
       FormError.set(usernameEl, 'Username wajib diisi');
       this._submitting = false;
@@ -1601,8 +1507,14 @@ const LoginForm = {
     if (formEl) formEl.classList.add('busy');
     dbg('Login: ' + username);
 
+    // v5.5.1: pesan informatif kalau login lambat (cold start)
+    this._slowLoginTimer = setTimeout(() => {
+      Toast.info('Server sedang sibuk (cold start). Mohon tunggu...');
+    }, 5000);
+
     try {
       const res = await Api.login(username, this._pin);
+      if (this._slowLoginTimer) { clearTimeout(this._slowLoginTimer); this._slowLoginTimer = null; }
       dbg('Login OK code=' + res.code);
 
       const session = {
@@ -1622,9 +1534,6 @@ const LoginForm = {
       if (formEl) formEl.classList.remove('busy');
       if (submitBtn) submitBtn.disabled = false;
 
-      // v5.4.1: welcome toast opsional.
-      // index.html set welcomeToast=false dan tampilkan sendiri setelah
-      // shell siap. scan.html pakai default (true) — toast sebelum layer ganti.
       if (this._showWelcomeToast) {
         Toast.success('Selamat datang, ' + res.nama);
       }
@@ -1640,6 +1549,7 @@ const LoginForm = {
       return;
 
     } catch (err) {
+      if (this._slowLoginTimer) { clearTimeout(this._slowLoginTimer); this._slowLoginTimer = null; }
       dbgWarn('Login gagal: ' + err.code + ' — ' + err.message);
       U.vibrate([100, 50, 100]);
       U.beepError();
@@ -1649,8 +1559,7 @@ const LoginForm = {
       if (formEl) formEl.classList.remove('busy');
       if (submitBtn) submitBtn.disabled = false;
     } finally {
-      // v5.4 FIX: SELALU reset — sebelumnya hanya direset kalau _onSuccess kosong,
-      // sehingga user terkunci permanen kalau login gagal.
+      // v5.4 FIX: SELALU reset _submitting
       this._submitting = false;
     }
   }
@@ -1693,11 +1602,7 @@ function setupCoreListeners() {
 
 function bootCore() {
   setupCoreListeners();
-
-  if (typeof CS !== 'undefined' && CS.init) {
-    CS.init();
-  }
-
+  if (typeof CS !== 'undefined' && CS.init) CS.init();
   dbg('[CORE] v' + CONFIG.APP_VERSION + ' booted');
 }
 
