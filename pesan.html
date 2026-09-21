@@ -16,11 +16,8 @@
 
 <style>
 /* ============================================================
-   PESAN v5.5.1 — FRESH MODERN
-   100% viewport (height fixed) + scrolling proporsional
+   BOOT SPLASH
    ============================================================ */
-
-/* ---------- BOOT SPLASH ---------- */
 .boot-splash {
   position: fixed; inset: 0;
   display: flex; align-items: center; justify-content: center;
@@ -34,7 +31,8 @@
 .boot-splash.hide { opacity: 0; pointer-events: none; }
 .boot-splash-inner { text-align: center; color: white; padding: 20px; }
 .boot-splash-logo {
-  width: 84px; height: 84px; margin: 0 auto 20px;
+  width: 84px; height: 84px;
+  margin: 0 auto 20px;
   background: rgba(255,255,255,0.18);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.25);
@@ -53,285 +51,44 @@
 }
 @keyframes bootspin { to { transform: rotate(360deg); } }
 
-/* ---------- 100% VIEWPORT LAYOUT (v5.5.1 FIX) ---------- */
-html, body {
-  height: 100%;
-  overflow: hidden;
-}
-#pesan-root {
-  height: 100vh;
-  height: 100dvh;
-  width: 100%;
-  overflow: hidden;
-}
-
-/* ---------- LOGIN ---------- */
-.login-ruang {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-  padding-top: calc(20px + var(--safe-top));
-  padding-bottom: calc(20px + var(--safe-bottom));
-  background:
-    radial-gradient(circle at 15% 15%, rgba(20, 163, 168, 0.4) 0%, transparent 45%),
-    radial-gradient(circle at 85% 85%, rgba(13, 115, 119, 0.5) 0%, transparent 45%),
-    linear-gradient(135deg, #0d7377 0%, #14a3a8 100%);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.login-ruang-card {
-  background: var(--surface);
-  width: 100%;
-  max-width: 420px;
-  border-radius: 24px;
-  padding: 36px 28px 28px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.22);
-  animation: cardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(16px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.login-ruang-logo {
-  width: 68px; height: 68px;
-  margin: 0 auto 18px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-  color: white;
-  border-radius: 20px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 26px; font-weight: 800;
-  letter-spacing: -1px;
-  box-shadow: 0 8px 24px rgba(13,115,119,0.32);
-}
-.login-ruang-title {
-  font-size: 24px; font-weight: 800;
-  text-align: center;
-  margin-bottom: 6px;
-  letter-spacing: -0.5px;
-  color: var(--text);
-}
-.login-ruang-subtitle {
-  font-size: 13.5px; color: var(--text-muted);
-  text-align: center;
-  margin-bottom: 28px;
-  line-height: 1.5;
-}
-.login-ruang-footer {
-  text-align: center;
-  font-size: 11.5px;
-  color: var(--text-light);
-  margin-top: 20px;
-  padding-top: 18px;
-  border-top: 1px dashed var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
+/* ============================================================
+   LOGIN — PJ HINT
+   ============================================================ */
 .pj-hint {
   display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   background: var(--primary-bg-soft);
   border: 1px dashed var(--primary-light);
-  border-radius: 12px;
-  font-size: 12.5px;
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
   color: var(--primary-dark);
-  margin-top: 10px;
+  margin-top: 6px;
   margin-bottom: var(--sp-3);
-  line-height: 1.4;
-  animation: fadeIn 0.25s ease-out;
 }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .pj-hint svg { width: 14px; height: 14px; flex-shrink: 0; }
 .pj-hint strong { color: var(--primary-dark); font-weight: 700; }
 
-.ruang-error-block {
-  padding: 12px 0;
-  color: var(--danger);
-  font-size: 13px;
-  line-height: 1.5;
-}
-.ruang-error-block button {
-  color: var(--primary);
-  text-decoration: underline;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  font-size: 13px;
-  margin-top: 6px;
-  font-weight: 600;
-}
-
-/* ---------- APP LAYOUT (100dvh, scrolling proporsional) ---------- */
+/* ============================================================
+   MAIN APP
+   ============================================================ */
 .pesan-app {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  width: 100%;
-  overflow: hidden;
-  background: var(--bg);
-}
-
-.pesan-topbar {
-  flex-shrink: 0;
-  height: 62px;
-  padding-top: var(--safe-top);
-  padding-left: calc(16px + var(--safe-left));
-  padding-right: calc(16px + var(--safe-right));
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 12px;
-  z-index: 20;
-}
-.pesan-topbar-logo {
-  width: 38px; height: 38px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-  color: white; border-radius: 11px;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 12px;
-  flex-shrink: 0;
-  box-shadow: 0 3px 10px rgba(13,115,119,0.28);
-  letter-spacing: -0.3px;
-}
-.pesan-topbar-info { flex: 1; min-width: 0; }
-.pesan-topbar-title {
-  font-weight: 700; font-size: 14px;
-  color: var(--text);
-  line-height: 1.2;
-  letter-spacing: -0.2px;
-}
-.pesan-topbar-sub {
-  font-size: 11.5px; color: var(--text-muted);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-top: 1px;
-}
-
-.pesan-tabbar {
-  flex-shrink: 0;
-  padding: 10px 16px 8px;
-  background: var(--bg);
-}
-.pesan-tabbar-inner {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  background: var(--surface-2);
-  border-radius: 12px;
-}
-.pesan-tabbar-btn {
-  position: relative;
-  padding: 10px 12px;
-  border-radius: 9px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.pesan-tabbar-btn svg { width: 15px; height: 15px; }
-.pesan-tabbar-btn.active {
-  background: var(--surface);
-  color: var(--primary);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  font-weight: 700;
-}
-.pesan-tabbar-count {
-  display: inline-flex;
-  align-items: center; justify-content: center;
-  min-width: 18px; height: 18px;
-  padding: 0 6px;
-  background: var(--danger);
-  color: white;
-  border-radius: 9px;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.pesan-content {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  padding: 4px 16px 20px;
-  padding-left: calc(16px + var(--safe-left));
-  padding-right: calc(16px + var(--safe-right));
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-}
-.pesan-content::-webkit-scrollbar { width: 8px; }
-.pesan-content::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 4px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-.pesan-content-inner {
-  max-width: 720px;
-  margin: 0 auto;
+  grid-template-rows: auto 1fr;
+  min-height: 100dvh;
   width: 100%;
 }
-@keyframes contentIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+.pesan-main {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--sp-3);
+  padding-left: calc(var(--sp-3) + var(--safe-left));
+  padding-right: calc(var(--sp-3) + var(--safe-right));
+  padding-bottom: calc(var(--sp-4) + var(--safe-bottom));
 }
-.pesan-content-inner > * {
-  animation: contentIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
+.pesan-inner { max-width: 720px; margin: 0 auto; width: 100%; }
 
-.pesan-cart {
-  flex-shrink: 0;
-  padding: 12px 16px;
-  padding-bottom: calc(12px + var(--safe-bottom));
-  padding-left: calc(16px + var(--safe-left));
-  padding-right: calc(16px + var(--safe-right));
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-  display: none;
-  z-index: 15;
-}
-.pesan-cart.visible { display: block; }
-.pesan-cart-inner {
-  max-width: 720px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.pesan-cart-info { flex: 1; min-width: 0; }
-.pesan-cart-count {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  margin-bottom: 2px;
-}
-.pesan-cart-total {
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--primary-dark);
-  letter-spacing: -0.3px;
-}
-.pesan-cart-submit {
-  flex-shrink: 0;
-  min-height: 48px;
-  padding: 12px 22px;
-  font-size: 14px;
-  font-weight: 700;
-  border-radius: 12px;
-}
-
-/* ---------- WELCOME ---------- */
-.welcome { padding: 14px 0 16px; }
+/* Welcome */
+.welcome { padding: var(--sp-3) 0 var(--sp-4); }
 .welcome-greet { font-size: var(--fs-sm); color: var(--text-muted); margin-bottom: 2px; }
 .welcome-name {
   font-size: var(--fs-xl); font-weight: 700;
@@ -339,312 +96,297 @@ html, body {
   letter-spacing: -0.3px;
 }
 .welcome-room {
-  display: inline-block; margin-top: 8px;
+  display: inline-block; margin-top: var(--sp-2);
   padding: 4px 12px;
   background: var(--primary-bg); color: var(--primary-dark);
   border-radius: var(--r-full);
   font-size: var(--fs-xs); font-weight: 600;
 }
 
-/* ---------- SEARCH ---------- */
+/* Tabs */
+.tabbar {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4px; padding: 4px;
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-3);
+}
+.tabbar button {
+  position: relative;
+  padding: 10px; border-radius: var(--r-sm);
+  font-size: var(--fs-sm); font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.tabbar button.active {
+  background: var(--surface); color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+.tabbar .tab-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  background: var(--danger); color: white;
+  border-radius: 9px;
+  font-size: 10px; font-weight: 700;
+  line-height: 1;
+}
+.tabbar button.active .tab-count { background: var(--danger); }
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
 .search-wrap { position: relative; }
 .search-results {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0; right: 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.12);
-  max-height: 360px;
-  overflow-y: auto;
-  z-index: 100;
-  padding: 6px;
-  animation: dropdownIn 0.16s ease-out;
-}
-@keyframes dropdownIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); box-shadow: var(--shadow-lg);
+  max-height: 340px; overflow-y: auto; z-index: 100;
+  padding: 4px;
 }
 .search-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px;
-  border-radius: 10px;
-  width: 100%; text-align: left;
-  background: none; border: none; cursor: pointer;
-  color: var(--text);
-  transition: background 0.12s;
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 10px 12px; border-radius: var(--r-sm);
+  width: 100%; text-align: left; background: none; color: var(--text);
+  cursor: pointer; transition: background 0.1s;
 }
 .search-item:hover { background: var(--primary-bg-soft); }
 .search-item-main { flex: 1; min-width: 0; }
 .search-item-name {
-  font-weight: 600; font-size: 13.5px;
+  font-weight: 600; font-size: var(--fs-sm);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-bottom: 2px;
 }
 .search-item-meta {
-  font-size: 11.5px; color: var(--text-muted);
-  display: flex; align-items: center; flex-wrap: wrap;
-  gap: 6px;
+  font-size: 11px; color: var(--text-muted); margin-top: 2px;
 }
 .search-item-meta strong {
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  color: var(--primary-dark);
-  font-weight: 700;
+  font-family: ui-monospace, monospace; color: var(--primary-dark);
+}
+.search-empty {
+  padding: 16px; text-align: center;
+  color: var(--text-muted); font-size: 12px;
 }
 .search-stok-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 7px;
-  border-radius: 999px;
-  font-size: 10.5px;
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: var(--r-full);
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.1px;
+  margin-left: 4px;
 }
 .search-stok-badge.ok { background: var(--success-bg); color: var(--success); }
 .search-stok-badge.low { background: var(--warning-bg); color: var(--warning); }
 .search-stok-badge.empty { background: var(--danger-bg); color: var(--danger); }
-.search-empty {
-  padding: 20px;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 13px;
-}
 
-/* ---------- CART LIST ---------- */
+/* ============================================================
+   CART
+   ============================================================ */
 .cart-empty {
-  text-align: center;
-  padding: 56px 24px;
+  text-align: center; padding: var(--sp-5) var(--sp-3);
   color: var(--text-muted);
 }
 .cart-empty svg {
-  width: 48px; height: 48px; color: var(--text-light);
-  margin: 0 auto 14px;
-  opacity: 0.6;
+  width: 42px; height: 42px; color: var(--text-light);
+  margin: 0 auto var(--sp-3);
 }
-.cart-empty h3 {
-  font-size: 15px; color: var(--text);
-  margin-bottom: 6px; font-weight: 700;
-}
-.cart-empty p { font-size: 13px; }
+.cart-empty h3 { font-size: var(--fs-md); color: var(--text); margin-bottom: 4px; }
+.cart-empty p { font-size: var(--fs-sm); }
 
-.cart-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+.cart-list { display: flex; flex-direction: column; gap: var(--sp-2); }
 .cart-item {
-  display: flex; gap: 12px;
-  padding: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  align-items: center;
-  transition: border-color 0.15s;
+  display: flex; gap: var(--sp-2); padding: var(--sp-3);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); align-items: center;
 }
-.cart-item:hover { border-color: var(--border-strong); }
 .cart-item-info { flex: 1; min-width: 0; }
 .cart-item-name {
-  font-weight: 600; font-size: 13.5px;
-  margin-bottom: 3px;
+  font-weight: 600; font-size: var(--fs-sm); margin-bottom: 2px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .cart-item-meta {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  word-break: break-word;
+  font-size: 11px; color: var(--text-muted);
+  font-family: ui-monospace, monospace;
 }
+.cart-item-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
 .cart-item-warning {
-  display: flex; align-items: flex-start;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 7px 10px;
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
   background: var(--warning-bg);
   border-left: 3px solid var(--warning);
-  border-radius: 8px;
-  font-size: 11.5px;
+  border-radius: var(--r-sm);
+  font-size: 11px;
   color: var(--warning-dark, var(--warning));
   font-weight: 600;
-  line-height: 1.35;
 }
-.cart-item-warning svg { width: 12px; height: 12px; flex-shrink: 0; margin-top: 1px; }
-.cart-item-actions {
-  display: flex; align-items: center; gap: 8px;
-  flex-shrink: 0;
-}
+.cart-item-warning svg { width: 12px; height: 12px; flex-shrink: 0; }
 
 .qty-ctrl {
   display: flex; align-items: center;
   border: 1px solid var(--border-strong);
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--surface);
+  border-radius: var(--r-md); overflow: hidden;
 }
 .qty-ctrl button {
   width: 34px; height: 38px;
   display: flex; align-items: center; justify-content: center;
   color: var(--primary); font-size: 18px; font-weight: 700;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s;
-  line-height: 1;
+  background: var(--surface); transition: background 0.15s;
 }
 .qty-ctrl button:hover { background: var(--primary-bg); }
 .qty-ctrl input {
-  width: 50px; height: 38px;
-  border: none; text-align: center;
-  font-size: 15px; font-weight: 700;
-  background: var(--surface-2);
-  color: var(--text);
-  outline: none;
-  -moz-appearance: textfield;
-  appearance: textfield;
-  font-variant-numeric: tabular-nums;
+  width: 52px; height: 38px; border: none; text-align: center;
+  font-size: 16px; font-weight: 700;
+  background: var(--surface-2); color: var(--text);
+  -moz-appearance: textfield; appearance: textfield;
 }
 .qty-ctrl input::-webkit-outer-spin-button,
 .qty-ctrl input::-webkit-inner-spin-button {
   -webkit-appearance: none; margin: 0;
 }
 .cart-del {
-  width: 36px; height: 36px;
-  border-radius: 9px;
+  width: 34px; height: 34px; border-radius: var(--r-sm);
   color: var(--danger);
-  background: transparent;
-  border: none;
-  cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  transition: background 0.15s;
 }
 .cart-del:hover { background: var(--danger-bg); }
-.cart-del svg { width: 16px; height: 16px; }
 
-/* ---------- NOTE ---------- */
-.note-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px 16px;
-  margin-top: 16px;
+/* Cart bar */
+.cart-bar {
+  padding: var(--sp-3); background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  display: flex; align-items: center; gap: var(--sp-2);
+  flex-wrap: wrap; margin-top: var(--sp-2);
 }
-.note-card .field { margin-bottom: 0; }
+.cart-bar-info { flex: 1; min-width: 0; }
+.cart-bar-count { font-size: var(--fs-xs); color: var(--text-muted); }
+.cart-bar-total {
+  font-size: var(--fs-lg); font-weight: 800; color: var(--primary-dark);
+}
+.cart-bar .btn { flex-shrink: 0; }
 
-/* ---------- RIWAYAT ---------- */
+/* ============================================================
+   RIWAYAT
+   ============================================================ */
 .riwayat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
-  gap: 10px;
+  margin-bottom: 12px;
+  gap: 8px;
 }
 .riwayat-title {
   font-size: 13px;
   color: var(--text-muted);
   font-weight: 500;
 }
-.riwayat-card {
-  padding: 16px;
+
+.history-card {
+  padding: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  margin-bottom: 12px;
-  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 14px;
+  margin-bottom: 10px;
+  transition: all 0.15s;
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
 }
-.riwayat-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  background: transparent;
-  transition: background 0.2s;
-}
-.riwayat-card:hover {
+.history-card:hover {
   border-color: var(--primary-light);
-  box-shadow: 0 8px 24px rgba(13,115,119,0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(13, 115, 119, 0.08);
+  transform: translateY(-1px);
 }
-.riwayat-card:hover::before { background: var(--primary); }
-.riwayat-card:active { transform: translateY(0); }
+.history-card:active { transform: translateY(0); }
 
-.riwayat-card-head {
+.history-card-head {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
 }
-.riwayat-card-id {
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+.history-card-id {
+  font-family: ui-monospace, monospace;
   font-size: 13px;
   font-weight: 700;
   color: var(--primary-dark);
   letter-spacing: -0.2px;
-  margin-bottom: 3px;
 }
-.riwayat-card-date {
-  font-size: 11.5px;
+.history-card-date {
+  font-size: 11px;
   color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  margin-top: 2px;
 }
-.riwayat-card-date svg { width: 11px; height: 11px; }
-.riwayat-card-body {
+
+.history-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+.history-card-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.history-card-body {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px dashed var(--border);
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-muted);
   flex-wrap: wrap;
 }
-.riwayat-card-body strong { color: var(--text); font-weight: 600; }
-.riwayat-card-hint {
+.history-card-body strong { color: var(--text); }
+.history-card-hint {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   color: var(--primary);
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
 }
-.riwayat-card-hint svg { width: 13px; height: 13px; }
+.history-card-hint svg { width: 12px; height: 12px; }
 
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 11px;
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
+/* Status warna */
+.status-baru {
+  background: var(--warning-bg);
+  color: var(--warning-dark, var(--warning));
 }
-.status-pill::before {
-  content: '';
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: currentColor;
+.status-diproses {
+  background: var(--info-bg);
+  color: var(--info);
 }
-.status-baru { background: var(--warning-bg); color: var(--warning-dark, var(--warning)); }
-.status-diproses { background: var(--info-bg); color: var(--info); }
-.status-selesai { background: var(--success-bg); color: var(--success); }
-.status-ditolak { background: var(--danger-bg); color: var(--danger); }
-.status-gagal { background: var(--surface-2); color: var(--text-muted); }
+.status-selesai {
+  background: var(--success-bg);
+  color: var(--success);
+}
+.status-ditolak {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.status-gagal {
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
 
-/* ---------- MODAL DETAIL ---------- */
+/* Detail modal */
 .detail-section {
   padding: 12px 14px;
   background: var(--surface-2);
-  border-radius: 12px;
+  border-radius: 10px;
   margin-bottom: 14px;
 }
 .detail-row {
@@ -652,29 +394,33 @@ html, body {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 7px 0;
-  font-size: 13px;
+  padding: 6px 0;
 }
-.detail-row + .detail-row { border-top: 1px dashed var(--border); }
-.detail-label { font-size: 12.5px; color: var(--text-muted); }
+.detail-row + .detail-row {
+  border-top: 1px dashed var(--border);
+}
+.detail-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
 .detail-value {
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text);
   text-align: right;
-  font-size: 13px;
 }
 .detail-items {
   background: var(--surface-2);
-  border-radius: 12px;
-  padding: 4px 14px;
-  max-height: 340px;
+  border-radius: 10px;
+  padding: 4px 12px;
+  max-height: 320px;
   overflow-y: auto;
 }
 .detail-item {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 11px 0;
+  padding: 10px 0;
   border-bottom: 1px dashed var(--border);
 }
 .detail-item:last-child { border-bottom: none; }
@@ -682,13 +428,13 @@ html, body {
 .detail-item-name {
   font-weight: 600;
   font-size: 13px;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   word-break: break-word;
 }
 .detail-item-meta {
   font-size: 11px;
   color: var(--text-muted);
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: ui-monospace, monospace;
 }
 .detail-item-warn {
   font-size: 11px;
@@ -702,40 +448,24 @@ html, body {
 .detail-item-qty {
   font-weight: 700;
   color: var(--primary-dark);
-  font-size: 15px;
+  font-size: 14px;
   flex-shrink: 0;
   text-align: right;
-  font-variant-numeric: tabular-nums;
 }
 .detail-item-qty span {
   display: block;
   font-size: 10px;
   font-weight: 500;
   color: var(--text-muted);
-  margin-top: 2px;
 }
 .detail-note {
   font-size: 13px;
-  color: var(--text);
-  padding: 12px 14px;
+  color: var(--text-muted);
+  padding: 10px 12px;
   background: var(--surface-2);
-  border-radius: 12px;
-  line-height: 1.55;
-  margin-bottom: 14px;
-}
-.detail-hint {
-  padding: 11px 14px;
-  background: var(--primary-bg-soft);
-  border-radius: 12px;
-  font-size: 12.5px;
-  color: var(--primary-dark);
-  margin-bottom: 14px;
+  border-radius: 10px;
   line-height: 1.5;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
 }
-.detail-hint svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
 .detail-empty {
   text-align: center;
   padding: 20px 12px;
@@ -744,64 +474,47 @@ html, body {
   line-height: 1.5;
 }
 
-/* ---------- SUCCESS / CONFIRM MODAL ---------- */
+/* Success modal action buttons */
 .modal-success-info {
   text-align: center;
   padding: 8px 0;
 }
 .success-icon {
-  width: 76px; height: 76px;
-  border-radius: 50%;
+  width: 72px; height: 72px; border-radius: 50%;
   background: var(--success-bg); color: var(--success);
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto var(--sp-3);
-  animation: successPop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
-@keyframes successPop {
-  0% { transform: scale(0.5); opacity: 0; }
-  60% { transform: scale(1.08); }
-  100% { transform: scale(1); opacity: 1; }
-}
-.success-icon svg { width: 40px; height: 40px; }
 .success-title {
-  font-size: 18px;
-  font-weight: 800;
-  margin-bottom: 8px;
-  letter-spacing: -0.3px;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  margin-bottom: 6px;
 }
 .success-id {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-muted);
-  margin-bottom: 18px;
-}
-.success-id strong {
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  color: var(--primary-dark);
-  font-size: 14px;
+  margin-bottom: 16px;
 }
 
+/* Confirm modal */
 .confirm-list {
-  max-height: 220px;
-  overflow-y: auto;
+  max-height: 220px; overflow-y: auto;
   background: var(--surface-2);
-  border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 12.5px;
-  line-height: 1.8;
-  margin-top: 12px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px; line-height: 1.8;
 }
-.confirm-list strong { color: var(--text); font-weight: 700; }
+.confirm-list strong { color: var(--text); }
 .confirm-warning {
-  display: flex;
-  gap: 10px;
+  display: flex; gap: 10px;
   padding: 12px 14px;
   background: var(--warning-bg);
   border: 1px solid var(--warning);
-  border-radius: 12px;
-  font-size: 12.5px;
+  border-radius: 10px;
+  font-size: 12px;
   color: var(--warning-dark, var(--warning));
   line-height: 1.5;
-  margin-top: 12px;
+  margin-bottom: 12px;
 }
 .confirm-warning svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
 .confirm-warning strong { font-weight: 700; }
@@ -820,7 +533,7 @@ html, body {
 <div id="pesan-root"></div>
 
 <div class="toast-container" id="toast-container"></div>
-<!-- v5.5.1: loading-overlay dihapus — pakai .busy / inline loader -->
+<div class="loading-overlay" id="loading-overlay"><div class="spinner"></div></div>
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal"></div>
 </div>
@@ -831,34 +544,28 @@ html, body {
 'use strict';
 
 /* ============================================================
-   PESAN v5.5.1 — Pesan Barang Ruang
-   Tidak redeclare U/Api/Store/Toast/Modal/Btn/FormError/CS/
-   LibLoader/LoginForm/AuthGuard — dari core.js.
+   HELPERS
    ============================================================ */
-
-/* ---------- HELPER ---------- */
 const H = {
   loader(text) {
     return '<div class="inline-loading">' +
       '<span class="spinner"></span>' +
-      '<span>' + U.escapeHtml(text || 'Memuat...') + '</span>' +
-    '</div>';
+      '<span>' + U.escapeHtml(text || 'Memuat...') + '</span></div>';
   },
   loaderSm(text) {
     return '<span class="inline-loading-sm">' +
       '<span class="spinner"></span>' +
-      U.escapeHtml(text || '') +
-    '</span>';
+      U.escapeHtml(text || '') + '</span>';
   },
   empty(title, desc, icon) {
-    return '<div class="empty-state">' + U.icon(icon || 'info', 48) +
+    return '<div class="empty-state">' + U.icon(icon || 'info', 42) +
       '<h3>' + U.escapeHtml(title) + '</h3>' +
       (desc ? '<p>' + U.escapeHtml(desc) + '</p>' : '') + '</div>';
   }
 };
 
 /* ============================================================
-   RUANG STORE
+   SESSION RUANG
    ============================================================ */
 const RUANG_SESSION_KEY = 'pkm_ruang_session';
 const RUANG_CACHE_KEY = 'pkm_ruang_list';
@@ -909,7 +616,8 @@ const RuangCache = {
 };
 
 /* ============================================================
-   SNAPSHOT PESANAN
+   SNAPSHOT PESANAN — simpan detail cart saat kirim
+   agar bisa dilihat lagi di riwayat
    ============================================================ */
 const SnapshotStore = {
   KEY: 'pkm_psn_snapshots',
@@ -955,6 +663,11 @@ const SnapshotStore = {
   get(idPesanan) {
     if (!idPesanan) return null;
     return this._load()[idPesanan] || null;
+  },
+
+  clear() {
+    this._cache = {};
+    try { localStorage.removeItem(this.KEY); } catch (e) {}
   }
 };
 
@@ -1015,45 +728,47 @@ const PesanApp = {
   currentTab: 'pesan',
   catatan: '',
   submitting: false,
-  _loggingIn: false,      // v5.5.1: guard double-submit login
   _riwayatItems: [],
   _pendingCount: 0,
   _renderId: 0,
-  _detailRequestId: 0,
-  _searchClickHandler: null,
 
   /* -------------------------------------------------- INIT */
   async init() {
-    dbg('PesanApp v5.5.1 init');
+    dbg('PesanApp init');
+
     const stored = RuangStore.get();
 
     if (stored && stored.token) {
-      try {
-        const res = await Api.whoAmI();
-        if (res && res.code === 200 && res.data && res.data.role === 'Ruang') {
-          this.session = {
-            token: stored.token,
-            role: 'Ruang',
-            id_petugas: res.data.id_petugas,
-            username: res.data.username,
-            nama: res.data.nama,
-            kode_ruang: res.data.kode_ruang,
-            nama_ruang: res.data.nama_ruang,
-            pj: res.data.pj || '',
-            expiry: res.data.expiry
-          };
-          RuangStore.set(this.session);
-          this._hideBoot();
-          await this.showMain();
-          return;
-        }
-      } catch (err) {
-        dbgWarn('whoAmI gagal:', err.message);
+      const [whoRes] = await Promise.allSettled([
+        Api.whoAmI()
+      ]);
+
+      if (whoRes.status === 'fulfilled' &&
+          whoRes.value && whoRes.value.code === 200 &&
+          whoRes.value.data && whoRes.value.data.role === 'Ruang') {
+        const res = whoRes.value;
+        this.session = {
+          token: stored.token,
+          role: 'Ruang',
+          id_petugas: res.data.id_petugas,
+          username: res.data.username,
+          nama: res.data.nama,
+          kode_ruang: res.data.kode_ruang,
+          nama_ruang: res.data.nama_ruang,
+          pj: res.data.pj || '',
+          expiry: res.data.expiry
+        };
+        RuangStore.set(this.session);
+        this._hideBoot();
+        await this.showMain();
+        return;
       }
+
       RuangStore.clear();
     }
 
     await this._ensureRuangList();
+
     this._hideBoot();
     this.showLogin();
   },
@@ -1080,10 +795,10 @@ const PesanApp = {
     if (cached && cached.length > 0) {
       this.ruangList = cached;
       dbg('Ruang list dari cache: ' + cached.length);
-      // Refresh di background
       this._fetchRuangList().catch(err => dbgWarn('BG refresh ruang gagal:', err.message));
       return cached;
     }
+
     try {
       const items = await Promise.race([
         this._fetchRuangList(),
@@ -1116,10 +831,10 @@ const PesanApp = {
     this.cart = {};
     this.catatan = '';
     this.currentTab = 'pesan';
-    this._loggingIn = false;
 
     const root = U.$('#pesan-root');
     root.innerHTML = this._renderLogin();
+
     this._populateRuangDropdown();
 
     const form = U.$('#form-login-ruang');
@@ -1129,6 +844,7 @@ const PesanApp = {
         this._doLogin();
       });
     }
+
     setTimeout(() => {
       const pinEl = U.$('#login-pin');
       if (pinEl) pinEl.focus();
@@ -1137,24 +853,26 @@ const PesanApp = {
 
   _renderLogin() {
     const hasRuang = this.ruangList.length > 0;
-    const errorBlock = hasRuang
+    const placeholder = hasRuang
       ? ''
-      : '<div class="ruang-error-block">' +
-        'Gagal memuat daftar ruang. Periksa koneksi internet Anda.<br>' +
-        '<button type="button" id="btn-reload-ruang">Coba lagi</button>' +
+      : '<div style="padding:12px 0;color:var(--danger);font-size:13px">' +
+        'Gagal memuat daftar ruang. <br>' +
+        '<button type="button" id="btn-reload-ruang" ' +
+        'style="color:var(--primary);text-decoration:underline;background:none;border:none;' +
+        'cursor:pointer;padding:0;font-size:13px;margin-top:6px">Coba lagi</button>' +
         '</div>';
 
     return '' +
-      '<div class="login-ruang">' +
-        '<div class="login-ruang-card">' +
-          '<div class="login-ruang-logo">PKM</div>' +
-          '<div class="login-ruang-title">Pesan Barang</div>' +
-          '<div class="login-ruang-subtitle">Puskesmas Sanden, Bantul</div>' +
+      '<div class="login-screen compact">' +
+        '<div class="login-card">' +
+          '<div class="login-logo">PKM</div>' +
+          '<div class="login-title">Pesan Barang</div>' +
+          '<div class="login-subtitle">Puskesmas Sanden, Bantul</div>' +
           '<form class="login-form" id="form-login-ruang" autocomplete="off">' +
             '<div class="field">' +
               '<label class="field-label">Ruang <span class="required">*</span></label>' +
               '<div id="login-ruang-wrap"></div>' +
-              errorBlock +
+              placeholder +
               '<div class="pj-hint" id="pj-hint" style="display:none"></div>' +
             '</div>' +
             '<div class="field">' +
@@ -1168,7 +886,10 @@ const PesanApp = {
               U.icon('check', 18) + ' Masuk' +
             '</button>' +
           '</form>' +
-          '<div class="login-ruang-footer">' +
+          '<div class="login-help mt-3">' +
+            'Halaman ini untuk <strong>pemesanan barang</strong> dari ruang.' +
+          '</div>' +
+          '<div class="login-footer">' +
             '<span>v' + CONFIG.APP_VERSION + ' · Pesan Barang</span>' +
           '</div>' +
         '</div>' +
@@ -1180,8 +901,8 @@ const PesanApp = {
     if (!wrap) return;
 
     if (this.ruangList.length === 0) {
-      wrap.innerHTML = '<div style="padding:12px;background:var(--surface-2);' +
-        'border-radius:12px;color:var(--text-muted);font-size:13px">' +
+      wrap.innerHTML = '<div style="padding:10px;background:var(--surface-2);' +
+        'border-radius:var(--r-md);color:var(--text-muted);font-size:13px">' +
         'Tidak ada ruang aktif</div>';
       const reloadBtn = U.$('#btn-reload-ruang');
       if (reloadBtn) {
@@ -1203,7 +924,9 @@ const PesanApp = {
     wrap.innerHTML = '';
     wrap.appendChild(select);
 
-    // CS auto-enhance via MutationObserver core.js — panggil manual sebagai safety
+    // CS auto-enhance sudah jalan via MutationObserver core.js.
+    // Tapi karena mungkin belum ke-trigger saat parentnya di-replace,
+    // panggil manual untuk jaga-jaga.
     if (typeof CS !== 'undefined' && CS.enhance) CS.enhance(select);
 
     const self = this;
@@ -1223,10 +946,9 @@ const PesanApp = {
 
   async _reloadRuangList() {
     const wrap = U.$('#login-ruang-wrap');
-    if (wrap) {
-      wrap.innerHTML = '<div style="padding:12px 0">' +
-        H.loaderSm('Memuat ulang ruang...') + '</div>';
-    }
+    if (wrap) wrap.innerHTML = '<div style="padding:12px 0">' +
+      H.loaderSm('Memuat ulang ruang...') + '</div>';
+
     try {
       await this._fetchRuangList();
       this.showLogin();
@@ -1237,10 +959,6 @@ const PesanApp = {
   },
 
   async _doLogin() {
-    // v5.5.1: guard anti double-submit
-    if (this._loggingIn) { dbgWarn('Login sedang proses, abaikan'); return; }
-    this._loggingIn = true;
-
     const select = U.$('#login-ruang');
     const pinEl = U.$('#login-pin');
     const btn = U.$('#btn-login');
@@ -1248,16 +966,8 @@ const PesanApp = {
     const kode = select ? select.value : '';
     const pin = pinEl ? pinEl.value : '';
 
-    if (!kode) {
-      Toast.error('Pilih ruang dulu');
-      this._loggingIn = false;
-      return;
-    }
-    if (!pin || pin.length < 4) {
-      Toast.error('PIN minimal 4 digit');
-      this._loggingIn = false;
-      return;
-    }
+    if (!kode) { Toast.error('Pilih ruang dulu'); return; }
+    if (!pin || pin.length < 4) { Toast.error('PIN minimal 4 digit'); return; }
 
     Btn.setLoading(btn, 'Memeriksa...');
     try {
@@ -1289,8 +999,6 @@ const PesanApp = {
       Toast.error(err.message || 'Login gagal');
       if (pinEl) pinEl.value = '';
       Btn.stopLoading(btn, 'Masuk', 'check');
-    } finally {
-      this._loggingIn = false;
     }
   },
 
@@ -1309,7 +1017,7 @@ const PesanApp = {
     this.barangLoading = true;
     this._renderTab();
 
-    // Fetch barang di background (tidak blocking UI)
+    // Fetch barang di background
     try {
       const res = await PesanApi.getBarangUntukPesan();
       this.barangList = (res.data && res.data.items) || [];
@@ -1330,47 +1038,41 @@ const PesanApp = {
     const s = this.session;
     return '' +
       '<div class="pesan-app">' +
-        '<header class="pesan-topbar">' +
-          '<div class="pesan-topbar-logo">PKM</div>' +
-          '<div class="pesan-topbar-info">' +
-            '<div class="pesan-topbar-title">Pesan Barang</div>' +
-            '<div class="pesan-topbar-sub">' +
-              U.escapeHtml(s.nama_ruang || '') +
-              (s.pj ? ' · PJ: ' + U.escapeHtml(s.pj) : '') +
+        '<header class="app-topbar">' +
+          '<div class="app-topbar-brand">' +
+            '<div class="app-topbar-logo">PKM</div>' +
+            '<div style="min-width:0">' +
+              '<div class="app-topbar-title">Pesan Barang</div>' +
+              '<div class="app-topbar-subtitle">' + U.escapeHtml(s.nama_ruang || '') + '</div>' +
             '</div>' +
           '</div>' +
-          '<button class="app-icon-btn danger" id="btn-logout" title="Keluar">' +
-            U.icon('logout', 20) +
-          '</button>' +
+          '<div class="app-topbar-actions">' +
+            '<button class="app-icon-btn danger" id="btn-logout" title="Keluar">' +
+              U.icon('logout', 20) +
+            '</button>' +
+          '</div>' +
         '</header>' +
-        '<div class="pesan-tabbar">' +
-          '<div class="pesan-tabbar-inner">' +
-            '<button class="pesan-tabbar-btn active" data-tab="pesan">' +
-              U.icon('package', 14) +
-              '<span>Pesan Barang</span>' +
-            '</button>' +
-            '<button class="pesan-tabbar-btn" data-tab="riwayat">' +
-              U.icon('clipboard', 14) +
-              '<span>Riwayat</span>' +
-              '<span class="pesan-tabbar-count" id="tab-count-riwayat" ' +
-                'style="display:none">0</span>' +
-            '</button>' +
-          '</div>' +
-        '</div>' +
-        '<main class="pesan-content" id="pesan-content">' +
-          '<div class="pesan-content-inner" id="pesan-content-inner"></div>' +
-        '</main>' +
-        '<div class="pesan-cart" id="pesan-cart">' +
-          '<div class="pesan-cart-inner">' +
-            '<div class="pesan-cart-info">' +
-              '<div class="pesan-cart-count" id="cart-bar-count">0 item</div>' +
-              '<div class="pesan-cart-total" id="cart-bar-total">0 pcs</div>' +
+        '<main class="pesan-main">' +
+          '<div class="pesan-inner">' +
+            '<div class="welcome">' +
+              '<div class="welcome-greet">Selamat datang,</div>' +
+              '<div class="welcome-name">' + U.escapeHtml(s.pj || s.nama || '-') + '</div>' +
+              '<span class="welcome-room">' + U.escapeHtml(s.nama_ruang || '') + '</span>' +
             '</div>' +
-            '<button class="btn btn-primary pesan-cart-submit" id="btn-kirim" disabled>' +
-              U.icon('check', 16) + ' Kirim Pesanan' +
-            '</button>' +
+            '<div class="tabbar" id="tabbar">' +
+              '<button data-tab="pesan" class="active">' +
+                U.icon('package', 14) +
+                '<span>Pesan Barang</span>' +
+              '</button>' +
+              '<button data-tab="riwayat">' +
+                U.icon('clipboard', 14) +
+                '<span>Riwayat</span>' +
+                '<span class="tab-count" id="tab-count-riwayat" style="display:none">0</span>' +
+              '</button>' +
+            '</div>' +
+            '<div id="tab-content"></div>' +
           '</div>' +
-        '</div>' +
+        '</main>' +
       '</div>';
   },
 
@@ -1384,99 +1086,95 @@ const PesanApp = {
       });
     }
 
-    // v5.5.1: btn-kirim pakai event delegation (1x attach, aman re-render)
-    const cartBar = U.$('#pesan-cart');
-    if (cartBar && !cartBar._bound) {
-      cartBar._bound = true;
-      cartBar.addEventListener('click', (e) => {
-        const btn = e.target.closest('#btn-kirim');
-        if (!btn) return;
-        e.preventDefault();
-        this._confirmKirim();
-      });
-    }
-
-    U.$$('.pesan-tabbar-btn').forEach(btn => {
+    U.$$('#tabbar button').forEach(btn => {
       btn.addEventListener('click', () => {
         const t = btn.dataset.tab;
         if (t === this.currentTab) return;
         this.currentTab = t;
-        U.$$('.pesan-tabbar-btn').forEach(b =>
+        U.$$('#tabbar button').forEach(b =>
           b.classList.toggle('active', b === btn));
         this._renderTab();
-        const content = U.$('#pesan-content');
-        if (content) content.scrollTop = 0;
       });
     });
   },
 
-  _switchTab(tab) {
-    this.currentTab = tab;
-    U.$$('.pesan-tabbar-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.tab === tab));
-    this._renderTab();
-    const content = U.$('#pesan-content');
-    if (content) content.scrollTop = 0;
+  _renderTab() {
+    const el = U.$('#tab-content');
+    if (!el) return;
+    if (this.currentTab === 'pesan') this._renderPesanTab(el);
+    else this._renderRiwayatTab(el);
   },
 
-  _renderTab() {
-    const inner = U.$('#pesan-content-inner');
-    const cartBar = U.$('#pesan-cart');
-    if (!inner) return;
-
-    if (this.currentTab === 'pesan') {
-      if (cartBar) cartBar.classList.add('visible');
-      this._renderPesanTab(inner);
-    } else {
-      if (cartBar) cartBar.classList.remove('visible');
-      this._renderRiwayatTab(inner);
-    }
+  _switchTab(tab) {
+    this.currentTab = tab;
+    U.$$('#tabbar button').forEach(b =>
+      b.classList.toggle('active', b.dataset.tab === tab));
+    this._renderTab();
   },
 
   /* -------------------------------------------------- TAB: PESAN */
-  _renderPesanTab(inner) {
+  _renderPesanTab(el) {
     const cartCount = Object.keys(this.cart).length;
+    const cartTotal = Object.values(this.cart).reduce((a, b) => a + b.qty, 0);
 
     const searchPlaceholder = this.barangLoading
       ? 'Memuat daftar barang...'
-      : 'Cari nama atau kode barang...';
+      : 'Cari nama barang BMHP / ATK...';
     const searchDisabled = this.barangLoading ? ' disabled' : '';
 
-    inner.innerHTML =
-      '<div class="welcome">' +
-        '<div class="welcome-greet">Selamat datang,</div>' +
-        '<div class="welcome-name">' +
-          U.escapeHtml(this.session.pj || this.session.nama || '-') + '</div>' +
-        '<span class="welcome-room">' +
-          U.escapeHtml(this.session.nama_ruang || '') + '</span>' +
-      '</div>' +
-      '<div style="display:flex;gap:8px;margin-bottom:14px">' +
+    el.innerHTML = '' +
+      '<div style="display:flex;gap:8px;margin-bottom:var(--sp-3)">' +
         '<div class="search-wrap" style="flex:1">' +
           '<input type="text" class="input" id="barang-search" ' +
             'placeholder="' + U.escapeHtml(searchPlaceholder) + '" ' +
-            'autocomplete="off" autocapitalize="none"' + searchDisabled + '>' +
+            'autocomplete="off"' + searchDisabled + '>' +
           '<div class="search-results" id="search-results" style="display:none"></div>' +
         '</div>' +
         '<button type="button" class="btn btn-secondary" id="btn-refresh-stok" ' +
-          'title="Refresh stok" style="width:48px;min-height:46px;padding:0">' +
-          U.icon('refresh', 18) +
+          'title="Refresh stok">' +
+          U.icon('refresh', 16) +
         '</button>' +
       '</div>' +
-      '<div id="cart-area"></div>' +
-      '<div class="note-card">' +
-        '<div class="field">' +
+
+      '<div class="card" style="padding:0">' +
+        '<div class="card-title" style="padding:var(--sp-3) var(--sp-3) 0">' +
+          '<span>Keranjang</span>' +
+          '<span class="badge badge-primary" id="cart-badge">' + cartCount + ' item</span>' +
+        '</div>' +
+        '<div id="cart-area" style="padding:var(--sp-3)"></div>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="field" style="margin-bottom:0">' +
           '<label class="field-label">Catatan (opsional)</label>' +
           '<textarea class="textarea" id="pesan-ket" rows="2" ' +
             'placeholder="Mis. untuk kegiatan posyandu..." maxlength="500">' +
             U.escapeHtml(this.catatan) +
           '</textarea>' +
         '</div>' +
+      '</div>' +
+
+      '<div class="cart-bar">' +
+        '<div class="cart-bar-info">' +
+          '<div class="cart-bar-count" id="cart-bar-count">' +
+            cartCount + ' item · ' + cartTotal + ' pcs' +
+          '</div>' +
+          '<div class="cart-bar-total" id="cart-bar-total">' +
+            cartCount + ' item' +
+          '</div>' +
+        '</div>' +
+        '<button class="btn btn-primary btn-lg" id="btn-kirim" ' +
+          (cartCount === 0 ? 'disabled' : '') + '>' +
+          U.icon('check', 18) + ' Kirim Pesanan' +
+        '</button>' +
       '</div>';
 
     this._renderCart();
     this._attachSearch();
     this._attachCatatan();
-    this._updateCartBar();
+
+    const btnKirim = U.$('#btn-kirim');
+    if (btnKirim) btnKirim.addEventListener('click', () => this._confirmKirim());
 
     const btnRefresh = U.$('#btn-refresh-stok');
     if (btnRefresh) {
@@ -1487,17 +1185,16 @@ const PesanApp = {
   async _refreshBarang(btn) {
     if (this.barangLoading) return;
     this.barangLoading = true;
+
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner" ' +
-        'style="width:16px;height:16px;border-width:2.5px"></span>';
+      btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px"></span>';
     }
 
     try {
       const res = await PesanApi.getBarangUntukPesan();
       this.barangList = (res.data && res.data.items) || [];
 
-      // Update stok di cart kalau ada
       const byKode = {};
       this.barangList.forEach(b => { byKode[b.kode] = b; });
       Object.keys(this.cart).forEach(kode => {
@@ -1516,7 +1213,7 @@ const PesanApp = {
       this.barangLoading = false;
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = U.icon('refresh', 18);
+        btn.innerHTML = U.icon('refresh', 16);
       }
     }
   },
@@ -1544,8 +1241,7 @@ const PesanApp = {
       results.style.display = 'block';
 
       if (this.barangLoading) {
-        results.innerHTML = '<div class="search-empty">' +
-          H.loaderSm('Memuat...') + '</div>';
+        results.innerHTML = '<div class="search-empty">' + H.loaderSm('Memuat...') + '</div>';
         return;
       }
       if (!this.barangList.length) {
@@ -1574,16 +1270,15 @@ const PesanApp = {
             '<div class="search-item-main">' +
               '<div class="search-item-name">' + U.escapeHtml(b.nama) + '</div>' +
               '<div class="search-item-meta">' +
-                '<strong>' + U.escapeHtml(b.kode) + '</strong>' +
-                '<span>·</span>' +
-                '<span>' + U.escapeHtml(b.tipe) + '</span>' +
-                (b.satuan ? '<span>·</span><span>' + U.escapeHtml(b.satuan) + '</span>' : '') +
-                '<span class="search-stok-badge ' + stokCls + '">Sisa ' +
-                  U.formatNumber(stok) + '</span>' +
+                '<strong>' + U.escapeHtml(b.kode) + '</strong> · ' +
+                U.escapeHtml(b.tipe) + ' · ' + U.escapeHtml(b.satuan || '-') +
+                '<span class="search-stok-badge ' + stokCls + '">' +
+                  'Sisa: ' + U.formatNumber(stok) +
+                '</span>' +
               '</div>' +
             '</div>' +
             '<span class="badge ' + (inCart ? 'badge-success' : 'badge-primary') + '">' +
-              (inCart ? U.icon('check', 12) + ' Ada' : U.icon('plus', 12) + ' Tambah') +
+              (inCart ? U.icon('check', 12) + ' di keranjang' : U.icon('plus', 12) + ' Tambah') +
             '</span>' +
           '</button>';
       }).join('');
@@ -1622,15 +1317,8 @@ const PesanApp = {
       Toast.info('Sudah ada di keranjang');
       return;
     }
-    if (this.barangLoading) {
-      Toast.warning('Sedang memuat daftar barang, coba sebentar lagi');
-      return;
-    }
     const b = this.barangList.find(x => x.kode === kode);
-    if (!b) {
-      Toast.error('Barang tidak ditemukan di daftar');
-      return;
-    }
+    if (!b) return;
 
     const itemCount = Object.keys(this.cart).length;
     if (itemCount >= 20) {
@@ -1651,7 +1339,6 @@ const PesanApp = {
     this._renderCart();
     this._updateCartBar();
 
-    // Refresh dropdown kalau masih terbuka
     const results = U.$('#search-results');
     if (results && results.style.display === 'block') {
       const input = U.$('#barang-search');
@@ -1678,35 +1365,35 @@ const PesanApp = {
       const warnHtml = kurang
         ? '<div class="cart-item-warning">' + U.icon('alert', 12) +
           '<span>Minta ' + it.qty + ', stok tinggal ' + stok +
-          '. Gudang akan konfirmasi.</span></div>'
+          '. Gudang akan konfirmasi ketersediaan.</span></div>'
         : '';
       return '' +
-        '<div class="cart-item" data-kode="' + U.escapeHtml(it.kode) + '">' +
-          '<div class="cart-item-info">' +
-            '<div class="cart-item-name">' + U.escapeHtml(it.nama) + '</div>' +
-            '<div class="cart-item-meta">' +
-              U.escapeHtml(it.kode) + ' · ' + U.escapeHtml(it.tipe) +
-              (it.satuan ? ' · ' + U.escapeHtml(it.satuan) : '') +
-              ' · Sisa ' + U.formatNumber(stok) +
-            '</div>' +
-            warnHtml +
+      '<div class="cart-item" data-kode="' + U.escapeHtml(it.kode) + '">' +
+        '<div class="cart-item-info">' +
+          '<div class="cart-item-name">' + U.escapeHtml(it.nama) + '</div>' +
+          '<div class="cart-item-meta">' +
+            U.escapeHtml(it.kode) + ' · ' + U.escapeHtml(it.tipe) +
+            (it.satuan ? ' · ' + U.escapeHtml(it.satuan) : '') +
+            ' · Sisa: ' + U.formatNumber(stok) +
           '</div>' +
-          '<div class="cart-item-actions">' +
-            '<div class="qty-ctrl">' +
-              '<button type="button" data-act="dec" data-kode="' +
-                U.escapeHtml(it.kode) + '" aria-label="Kurangi">−</button>' +
-              '<input type="number" min="1" max="1000" step="1" ' +
-                'value="' + it.qty + '" data-act="set" data-kode="' +
-                U.escapeHtml(it.kode) + '" inputmode="numeric">' +
-              '<button type="button" data-act="inc" data-kode="' +
-                U.escapeHtml(it.kode) + '" aria-label="Tambah">+</button>' +
-            '</div>' +
-            '<button type="button" class="cart-del" data-act="del" data-kode="' +
-              U.escapeHtml(it.kode) + '" title="Hapus" aria-label="Hapus">' +
-              U.icon('trash', 16) +
-            '</button>' +
+          warnHtml +
+        '</div>' +
+        '<div class="cart-item-actions">' +
+          '<div class="qty-ctrl">' +
+            '<button type="button" data-act="dec" data-kode="' +
+              U.escapeHtml(it.kode) + '">−</button>' +
+            '<input type="number" min="1" max="1000" step="1" ' +
+              'value="' + it.qty + '" data-act="set" data-kode="' +
+              U.escapeHtml(it.kode) + '">' +
+            '<button type="button" data-act="inc" data-kode="' +
+              U.escapeHtml(it.kode) + '">+</button>' +
           '</div>' +
-        '</div>';
+          '<button type="button" class="cart-del" data-act="del" data-kode="' +
+            U.escapeHtml(it.kode) + '" title="Hapus">' +
+            U.icon('trash', 16) +
+          '</button>' +
+        '</div>' +
+      '</div>';
     }).join('') + '</div>';
 
     U.$$('[data-act]', area).forEach(el => {
@@ -1760,86 +1447,90 @@ const PesanApp = {
     const count = Object.keys(this.cart).length;
     const total = Object.values(this.cart).reduce((a, b) => a + b.qty, 0);
 
-    const barCount = U.$('#cart-bar-count');
+    const badge = U.$('#cart-badge');
     const barTotal = U.$('#cart-bar-total');
+    const barCount = U.$('#cart-bar-count');
     const btnKirim = U.$('#btn-kirim');
 
-    if (barCount) barCount.textContent = count + ' item';
-    if (barTotal) barTotal.textContent = total + ' pcs';
+    if (badge) badge.textContent = count + ' item';
+    if (barTotal) barTotal.textContent = count + ' item';
+    if (barCount) barCount.textContent = count + ' item · ' + total + ' pcs';
     if (btnKirim) btnKirim.disabled = count === 0;
   },
 
   /* -------------------------------------------------- TAB: RIWAYAT */
-  async _renderRiwayatTab(inner) {
-    const myId = ++this._renderId;
-    inner.innerHTML = H.loader('Memuat riwayat...');
+  async _renderRiwayatTab(el) {
+    el.innerHTML = '<div class="card">' + H.loader('Memuat riwayat...') + '</div>';
 
     try {
       const res = await PesanApi.getPesananSaya(30);
-      if (myId !== this._renderId) return;
       const items = (res.data && res.data.items) || [];
       this._riwayatItems = items;
 
+      // Update badge tab (hitung yang belum selesai)
       this._pendingCount = items.filter(it =>
         it.status === 'Baru' || it.status === 'Diproses').length;
       this._updateTabBadge();
 
       if (items.length === 0) {
-        inner.innerHTML = H.empty('Belum ada pesanan',
-          'Pesanan yang Anda kirim akan muncul di sini.', 'clipboard');
+        el.innerHTML = '<div class="card">' +
+          H.empty('Belum ada pesanan',
+            'Pesanan yang Anda kirim akan muncul di sini.', 'clipboard') +
+          '</div>';
         return;
       }
 
-      inner.innerHTML =
-        '<div class="riwayat-header" style="margin-top:14px">' +
+      el.innerHTML = '' +
+        '<div class="riwayat-header">' +
           '<div class="riwayat-title">' + items.length + ' pesanan terakhir</div>' +
           '<button class="btn btn-secondary btn-sm" id="btn-refresh-riwayat">' +
             U.icon('refresh', 14) + ' Refresh' +
           '</button>' +
         '</div>' +
-        items.map(it => this._renderRiwayatCard(it)).join('');
+        items.map(it => this._renderHistoryCard(it)).join('');
 
       const refreshBtn = U.$('#btn-refresh-riwayat');
       if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => this._renderRiwayatTab(inner));
+        refreshBtn.addEventListener('click', () => this._renderRiwayatTab(el));
       }
 
-      U.$$('[data-riwayat-id]', inner).forEach(card => {
+      U.$$('[data-riwayat-id]', el).forEach(card => {
         card.addEventListener('click', () => {
           this._openRiwayatDetail(card.dataset.riwayatId);
         });
       });
     } catch (err) {
-      if (myId !== this._renderId) return;
       if (this._handleApiError(err)) return;
-      inner.innerHTML = H.empty('Gagal memuat', err.message, 'alertCircle');
+      el.innerHTML = '<div class="card">' +
+        H.empty('Gagal memuat', err.message, 'alertCircle') +
+        '</div>';
     }
   },
 
-  _renderRiwayatCard(it) {
+  _renderHistoryCard(it) {
     const statusCls = this._statusCls(it.status);
     const timeAgo = this._formatTimeAgo(it.timestamp);
 
     return '' +
-      '<div class="riwayat-card" data-riwayat-id="' + U.escapeHtml(it.id_pesanan) + '">' +
-        '<div class="riwayat-card-head">' +
+      '<div class="history-card" data-riwayat-id="' + U.escapeHtml(it.id_pesanan) + '">' +
+        '<div class="history-card-head">' +
           '<div style="min-width:0;flex:1">' +
-            '<div class="riwayat-card-id">' + U.escapeHtml(it.id_pesanan) + '</div>' +
-            '<div class="riwayat-card-date">' +
+            '<div class="history-card-id">' + U.escapeHtml(it.id_pesanan) + '</div>' +
+            '<div class="history-card-date">' +
               U.icon('calendar', 11) + ' ' + timeAgo +
             '</div>' +
           '</div>' +
-          '<span class="status-pill ' + statusCls + '">' +
+          '<span class="history-card-status ' + statusCls + '">' +
             U.escapeHtml(it.status) + '</span>' +
         '</div>' +
-        '<div class="riwayat-card-body">' +
+        '<div class="history-card-body">' +
           '<span><strong>' + it.total_item + '</strong> item' +
             (it.keterangan
               ? ' · <span>' + U.escapeHtml(it.keterangan.substring(0, 40)) +
                 (it.keterangan.length > 40 ? '…' : '') + '</span>'
               : '') +
           '</span>' +
-          '<span class="riwayat-card-hint">' +
+          '<span class="history-card-hint">' +
             'Lihat detail ' + U.icon('chevronRight', 12) +
           '</span>' +
         '</div>' +
@@ -1857,16 +1548,31 @@ const PesanApp = {
 
   _statusInfo(status) {
     const map = {
-      'Baru': { cls: 'status-baru', modalIcon: 'warning',
-        hint: 'Menunggu diproses gudang. Barang akan segera disiapkan.' },
-      'Diproses': { cls: 'status-diproses', modalIcon: 'info',
-        hint: 'Sedang disiapkan oleh gudang.' },
-      'Selesai': { cls: 'status-selesai', modalIcon: 'success',
-        hint: 'Pesanan sudah selesai diproses.' },
-      'Ditolak': { cls: 'status-ditolak', modalIcon: 'danger',
-        hint: 'Pesanan ditolak. Silakan hubungi gudang untuk informasi lebih lanjut.' },
-      'Gagal': { cls: 'status-gagal', modalIcon: 'warning',
-        hint: 'Pesanan gagal dicatat. Silakan coba kirim ulang atau hubungi admin.' }
+      'Baru': {
+        cls: 'status-baru',
+        modalIcon: 'warning',
+        hint: 'Menunggu diproses gudang. Barang akan segera disiapkan.'
+      },
+      'Diproses': {
+        cls: 'status-diproses',
+        modalIcon: 'info',
+        hint: 'Sedang disiapkan oleh gudang.'
+      },
+      'Selesai': {
+        cls: 'status-selesai',
+        modalIcon: 'success',
+        hint: 'Pesanan sudah selesai diproses.'
+      },
+      'Ditolak': {
+        cls: 'status-ditolak',
+        modalIcon: 'danger',
+        hint: 'Pesanan ditolak. Silakan hubungi gudang untuk informasi lebih lanjut.'
+      },
+      'Gagal': {
+        cls: 'status-gagal',
+        modalIcon: 'warning',
+        hint: 'Pesanan gagal dicatat. Silakan coba kirim ulang atau hubungi admin.'
+      }
     };
     return map[status] || map['Baru'];
   },
@@ -1894,7 +1600,7 @@ const PesanApp = {
     const statusInfo = this._statusInfo(it.status);
 
     let itemsHtml = '';
-    if (snap && Array.isArray(snap.items) && snap.items.length > 0) {
+    if (snap && snap.items && snap.items.length > 0) {
       itemsHtml = snap.items.map(item => {
         const stok = Number(item.stok_tersedia) || 0;
         const kurang = item.qty > stok;
@@ -1911,7 +1617,8 @@ const PesanApp = {
                   '<span>Stok saat pesan: ' + stok + '</span></div>'
                 : '') +
             '</div>' +
-            '<div class="detail-item-qty">' + item.qty +
+            '<div class="detail-item-qty">' +
+              item.qty +
               '<span>' + U.escapeHtml(item.satuan || '') + '</span>' +
             '</div>' +
           '</div>';
@@ -1928,7 +1635,7 @@ const PesanApp = {
         '<div class="detail-row">' +
           '<div class="detail-label">Status</div>' +
           '<div class="detail-value">' +
-            '<span class="status-pill ' + statusInfo.cls + '">' +
+            '<span class="history-card-status ' + statusInfo.cls + '">' +
               U.escapeHtml(it.status) + '</span>' +
           '</div>' +
         '</div>' +
@@ -1945,16 +1652,20 @@ const PesanApp = {
           '<div class="detail-value">' + U.escapeHtml(this.session.nama_ruang) + '</div>' +
         '</div>' +
       '</div>' +
-      '<div class="detail-hint">' +
-        U.icon('info', 14) + '<span>' + U.escapeHtml(statusInfo.hint) + '</span>' +
+
+      '<div style="padding:10px 14px;background:var(--primary-bg-soft);border-radius:10px;' +
+        'font-size:12.5px;color:var(--primary-dark);margin-bottom:14px;line-height:1.5">' +
+        U.icon('info', 14) + ' ' + U.escapeHtml(statusInfo.hint) +
       '</div>' +
+
       (snap && snap.catatan
         ? '<div style="margin-bottom:14px">' +
-          '<div style="font-size:12.5px;font-weight:700;margin-bottom:6px;color:var(--text-muted)">Catatan:</div>' +
+          '<div style="font-size:12px;font-weight:600;margin-bottom:6px">Catatan:</div>' +
           '<div class="detail-note">' + U.escapeHtml(snap.catatan) + '</div>' +
           '</div>'
         : '') +
-      '<div style="font-size:12.5px;font-weight:700;margin-bottom:8px;color:var(--text-muted)">Item:</div>' +
+
+      '<div style="font-size:12px;font-weight:600;margin-bottom:6px">Item:</div>' +
       '<div class="detail-items">' + itemsHtml + '</div>';
 
     Modal.open({
@@ -1962,7 +1673,9 @@ const PesanApp = {
       icon: statusInfo.modalIcon,
       subtitle: idPesanan,
       body: body,
-      actions: [{ label: 'Tutup', class: 'btn-primary' }]
+      actions: [
+        { label: 'Tutup', class: 'btn-primary' }
+      ]
     });
   },
 
@@ -1993,10 +1706,7 @@ const PesanApp = {
   _confirmKirim() {
     if (this.submitting) return;
     const items = Object.values(this.cart);
-    if (items.length === 0) {
-      Toast.error('Keranjang kosong');
-      return;
-    }
+    if (items.length === 0) { Toast.error('Keranjang kosong'); return; }
 
     const totalQty = items.reduce((a, b) => a + b.qty, 0);
     const itemsKurang = items.filter(it => it.qty > (Number(it.stok_tersedia) || 0));
@@ -2006,8 +1716,8 @@ const PesanApp = {
         'Pesanan tetap dikirim. Gudang akan konfirmasi ketersediaan.</div></div>'
       : '';
 
-    const body =
-      '<div style="font-size:13.5px;line-height:1.6">' +
+    const body = '' +
+      '<div style="font-size:var(--fs-sm);line-height:1.6;margin-bottom:12px">' +
         'Pesanan dari <strong>' + U.escapeHtml(this.session.nama_ruang) + '</strong>:<br>' +
         '<strong>' + items.length + ' item</strong> · total <strong>' +
         totalQty + ' pcs</strong>' +
@@ -2070,7 +1780,7 @@ const PesanApp = {
       const notified = !!(res.data && res.data.notified);
       const itemsKurang = (res.data && res.data.items_kurang) || 0;
 
-      // Simpan snapshot untuk "Pesan Lagi" & offline fallback
+      // Simpan snapshot SEBELUM reset cart
       SnapshotStore.set(idPesanan, {
         items: itemsSnapshot,
         catatan: keterangan,
@@ -2078,10 +1788,11 @@ const PesanApp = {
         waktu: Date.now()
       });
 
-      // Reset cart SEGERA setelah sukses
+      // Reset cart & catatan SEGERA setelah sukses
       this.cart = {};
       this.catatan = '';
 
+      // Re-render tab pesan supaya cart langsung kosong
       if (this.currentTab === 'pesan') {
         this._renderTab();
       }
@@ -2090,75 +1801,66 @@ const PesanApp = {
       U.vibrate([50, 50, 50]);
       U.beepSuccess();
 
+      // Refresh badge pending
       this._refreshPendingCount();
 
       const self = this;
-      setTimeout(() => {
-        Modal.open({
-          title: 'Pesanan Terkirim',
-          icon: 'success',
-          body:
-            '<div class="modal-success-info">' +
-              '<div class="success-icon">' + U.icon('check', 40) + '</div>' +
-              '<div class="success-title">Pesanan berhasil dikirim</div>' +
-              '<div class="success-id">ID: <strong>' +
-                U.escapeHtml(idPesanan) + '</strong></div>' +
-              (notified
-                ? '<div class="badge badge-success" ' +
-                  'style="padding:8px 14px;font-size:12px">' +
-                  U.icon('check', 14) + ' Notifikasi Telegram terkirim</div>'
-                : '<div class="badge badge-warning" ' +
-                  'style="padding:8px 14px;font-size:12px">' +
-                  '⚠️ Notifikasi Telegram tidak terkirim</div>') +
-              (itemsKurang > 0
-                ? '<div class="badge badge-warning" ' +
-                  'style="padding:8px 14px;font-size:12px;margin-top:8px">' +
-                  U.icon('alert', 14) + ' ' + itemsKurang +
-                  ' item melebihi stok — gudang akan konfirmasi</div>'
-                : '') +
-            '</div>',
-          actions: [
-            {
-              label: 'Pesan Lagi',
-              class: 'btn-secondary',
-              onClick: () => { self._switchTab('pesan'); }
-            },
-            {
-              label: 'Lihat Riwayat',
-              class: 'btn-primary',
-              icon: 'clipboard',
-              onClick: () => { self._switchTab('riwayat'); }
+      Modal.open({
+        title: 'Pesanan Terkirim',
+        icon: 'success',
+        body: '' +
+          '<div class="modal-success-info">' +
+            '<div class="success-icon">' + U.icon('check', 36) + '</div>' +
+            '<div class="success-title">Pesanan berhasil dikirim</div>' +
+            '<div class="success-id">ID: <strong style="font-family:ui-monospace,monospace">' +
+              U.escapeHtml(idPesanan) + '</strong></div>' +
+            (notified
+              ? '<div class="badge badge-success" style="padding:8px 14px;font-size:12px">' +
+                U.icon('check', 14) + ' Notifikasi Telegram terkirim</div>'
+              : '<div class="badge badge-warning" style="padding:8px 14px;font-size:12px">' +
+                '⚠️ Notifikasi Telegram tidak terkirim</div>') +
+            (itemsKurang > 0
+              ? '<div class="badge badge-warning" style="padding:8px 14px;font-size:12px;margin-top:8px">' +
+                U.icon('alert', 14) + ' ' + itemsKurang + ' item melebihi stok — gudang akan konfirmasi</div>'
+              : '') +
+          '</div>',
+        actions: [
+          {
+            label: 'Pesan Lagi',
+            class: 'btn-secondary',
+            onClick: () => {
+              // Cart sudah bersih. Cukup pastikan tab pesan aktif.
+              self._switchTab('pesan');
             }
-          ]
-        });
-      }, 220);
+          },
+          {
+            label: 'Lihat Riwayat',
+            class: 'btn-primary',
+            icon: 'clipboard',
+            onClick: () => {
+              self._switchTab('riwayat');
+            }
+          }
+        ]
+      });
     } catch (err) {
       dbgErr('Kirim gagal:', err.message);
       if (this._handleApiError(err)) return;
 
       Toast.error('Gagal kirim: ' + err.message);
 
-      // PARTIAL_WRITE: backend sudah beri id_pesanan di err.raw.data
-      if (err.code === 'PARTIAL_WRITE' &&
-          err.raw && err.raw.data && err.raw.data.id_pesanan) {
+      if (err.code === 'PARTIAL_WRITE' && err.raw && err.raw.data && err.raw.data.id_pesanan) {
         Modal.close();
-        const partialData = err.raw.data;
-        setTimeout(() => {
-          Modal.open({
-            title: 'Pesanan Tercatat Sebagian',
-            icon: 'warning',
-            body:
-              '<div style="font-size:13.5px;line-height:1.6">' +
-                'ID pesanan <strong style="font-family:ui-monospace,monospace;' +
-                'color:var(--primary-dark)">' +
-                  U.escapeHtml(partialData.id_pesanan) + '</strong> ' +
-                'tercatat di header, namun detail item gagal disimpan.' +
-                '<br><br>' +
-                'Hubungi admin dengan ID ini untuk perbaikan manual.' +
-              '</div>',
-            actions: [{ label: 'Tutup', class: 'btn-primary' }]
-          });
-        }, 220);
+        Modal.open({
+          title: 'Pesanan Tercatat Sebagian',
+          icon: 'warning',
+          body: '<div style="font-size:var(--fs-sm);line-height:1.6">' +
+            'ID pesanan <strong style="font-family:ui-monospace,monospace">' +
+            U.escapeHtml(err.raw.data.id_pesanan) + '</strong> ' +
+            'tercatat, namun detail item gagal disimpan. ' +
+            'Hubungi admin dengan ID ini untuk perbaikan manual.</div>',
+          actions: [{ label: 'Tutup', class: 'btn-primary' }]
+        });
         return;
       }
 
@@ -2170,7 +1872,7 @@ const PesanApp = {
 
   /* -------------------------------------------------- LOGOUT */
   async logout() {
-    try { await Api.logout(); } catch (e) {}
+    try { await Api.logout(); } catch (e) { /* silent */ }
     RuangStore.clear();
     this.session = null;
     this.cart = {};
@@ -2178,7 +1880,6 @@ const PesanApp = {
     this.barangList = [];
     this._riwayatItems = [];
     this._pendingCount = 0;
-    this._loggingIn = false;
     Toast.info('Anda telah keluar.');
     this.showLogin();
   }
@@ -2188,22 +1889,16 @@ const PesanApp = {
    BOOT
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
-  dbg('[PESAN] v5.5.1 DOM ready');
+  dbg('pesan.html ready');
 
   if (!installRuangApiOverride()) {
     const el = document.getElementById('boot-splash');
     if (el) el.classList.add('hide');
     document.getElementById('pesan-root').innerHTML =
-      '<div style="padding:32px;text-align:center;color:#d32f2f;' +
-      'font-family:system-ui,sans-serif">' +
-        '<h2 style="margin-bottom:12px">Gagal memuat sistem</h2>' +
-        '<p style="color:#666;line-height:1.6">' +
-          'File <code style="background:#f0f0f0;padding:2px 6px;' +
-          'border-radius:4px">shared/core.js</code> tidak ditemukan.' +
-          '<br><br>' +
-          'Pastikan struktur folder: <code>pesan.html</code> dan folder ' +
-          '<code>shared/</code> sejajar.' +
-        '</p>' +
+      '<div style="padding:32px;text-align:center;color:#d32f2f">' +
+        '<h2>Gagal memuat sistem</h2>' +
+        '<p>File <code>shared/core.js</code> tidak ditemukan.</p>' +
+        '<p>Pastikan struktur folder: <code>pesan.html</code> dan folder <code>shared/</code> sejajar.</p>' +
       '</div>';
     return;
   }
