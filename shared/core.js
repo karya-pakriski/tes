@@ -1,22 +1,26 @@
 /**
  * ============================================================
- * SHARED CORE JS — Sistem Gudang Puskesmas v5.5.1
+ * SHARED CORE JS — Sistem Gudang Puskesmas v5.5.2
  * ============================================================
- * Changelog v5.5.1 (vs v5.4.1):
- *   - Timeout tuning: LOGIN 12s→25s, MASTER 20s→25s, WHOAMI 6s→10s
- *     (handle Apps Script cold start + queue)
- *   - LoginForm: pesan "cold start" muncul kalau login >5s
- *   - +Api.getBadgeCounts() — 1 call untuk badge approval + pesanan
- *   - LibLoader cooldown 30s + local-first (shared/vendor/)
- *   - LoginForm welcome toast opsional via opts.welcomeToast
+ * Changelog v5.5.2 (vs v5.5.1):
+ *   - HAPUS warmup call di LoginForm.mount
+ *     → warmup GET mengantri di Apps Script queue yang sama dengan
+ *       login POST, menyebabkan login timeout saat cold start.
+ *   - warmup() dijadikan no-op (backward-compat).
+ *   - LOGIN_TIMEOUT_MS 25s → 45s (toleransi cold start)
+ *   - MASTER_TIMEOUT_MS 25s → 35s
+ *   - WHOAMI_TIMEOUT_MS 10s → 15s
+ *   - Notifikasi cold start 2-tahap (5s + 15s)
+ *   - _verySlowLoginTimer state + cleanup
  *
- * Changelog v5.4.1 (base):
- *   - Fix LoginForm._submitting (tidak terkunci saat login gagal)
- *   - LibLoader overhaul: no-hang, per-source timeout 5s, reset()
- *   - LoginForm pakai .busy class, bukan loading overlay
- *   - Loading object deprecated (no-op + dbgWarn)
+ * Changelog v5.5.1 (base):
+ *   - LoginForm pakai .busy class, bukan overlay
+ *   - Fix LoginForm._submitting (tidak terkunci saat gagal)
+ *   - Loading object deprecated
+ *   - LibLoader local-first + cooldown 30s
+ *   - Api.getPesananDetail + getLaporan + getBadgeCounts
  *   - Api skip retry untuk PARTIAL_WRITE
- *   - Api.getPesananDetail() + getLaporan() (backend v5.4)
+ *   - LibLoader.reset() + cleanup script tag
  * ============================================================
  */
 'use strict';
@@ -27,13 +31,13 @@
 const CONFIG = Object.freeze({
   API_URL: 'https://script.google.com/macros/s/AKfycbxX6oAam5bFHR4ngUEWwZ7TXXzuo9mGxBrXtnj1e6y8BT9Fm3rw7JWDKsxYpZwTb45pSw/exec',
   API_KEY: 'PKM_SANDEN_26',
-  APP_VERSION: '5.5.1',
+  APP_VERSION: '5.5.2',
 
-  // Timeouts per endpoint (ms) — v5.5.1 tuned untuk GAS cold start
+  // Timeouts per endpoint (ms) — v5.5.2 tuned untuk GAS cold start
   REQUEST_TIMEOUT_MS: 15000,
-  LOGIN_TIMEOUT_MS: 25000,
-  MASTER_TIMEOUT_MS: 25000,
-  WHOAMI_TIMEOUT_MS: 10000,
+  LOGIN_TIMEOUT_MS: 45000,
+  MASTER_TIMEOUT_MS: 35000,
+  WHOAMI_TIMEOUT_MS: 15000,
   RETRY_ATTEMPTS: 2,
 
   // Cache TTL (localStorage)
@@ -644,18 +648,19 @@ class ApiError extends Error {
 }
 
 const Api = {
-  _warmedUp: false,
-
+  /**
+   * v5.5.2 — Warmup di-DISABLE.
+   *
+   * Alasan: warmup GET ?action=health mengantri di Apps Script queue
+   * yang sama dengan POST login. Saat cold start, warmup (30s) blocking
+   * login (timeout 25s) → user lihat timeout.
+   *
+   * Alternatif: _loadMaster() di AdminApp._showLogin sudah otomatis
+   * warm up Apps Script setelah login sukses, tanpa blocking login.
+   */
   warmup() {
-    if (this._warmedUp) return;
-    this._warmedUp = true;
-    try {
-      const url = CONFIG.API_URL + '?action=health';
-      const t0 = performance.now();
-      fetch(url, { method: 'GET', mode: 'cors', cache: 'no-store' })
-        .then(() => dbg('Warmup OK (' + Math.round(performance.now() - t0) + 'ms)'))
-        .catch(err => dbgWarn('Warmup failed:', err.message));
-    } catch (e) { /* silent */ }
+    dbg('Warmup disabled (v5.5.2)');
+    // no-op
   },
 
   _buildRequest(action, payload, opts) {
@@ -1266,7 +1271,8 @@ const LoginForm = {
   _submitting: false,
   _mounted: false,
   _showWelcomeToast: true,
-  _slowLoginTimer: null,   // v5.5.1
+  _slowLoginTimer: null,       // v5.5.1
+  _verySlowLoginTimer: null,   // v5.5.2
 
   mount(containerOrSelector, onSuccess, opts) {
     const container = typeof containerOrSelector === 'string'
@@ -1282,12 +1288,15 @@ const LoginForm = {
     this._submitting = false;
     this._mounted = true;
     this._slowLoginTimer = null;
+    this._verySlowLoginTimer = null;
 
     container.innerHTML = this._renderHTML();
     this._attachListeners();
     this._render();
 
-    Api.warmup();
+    // v5.5.2: warmup dihapus — requestnya mengantri di Apps Script queue
+    // yang sama dengan login, malah bikin login timeout. Cold start login
+    // sekarang jadi single request, tidak ada contention.
     dbg('LoginForm mounted (' + this._variant + ', welcomeToast=' + this._showWelcomeToast + ')');
   },
 
@@ -1465,6 +1474,10 @@ const LoginForm = {
       clearTimeout(this._slowLoginTimer);
       this._slowLoginTimer = null;
     }
+    if (this._verySlowLoginTimer) {
+      clearTimeout(this._verySlowLoginTimer);
+      this._verySlowLoginTimer = null;
+    }
     this._keydownHandler = null;
     this._onlineHandler = null;
     if (this._container) this._container.innerHTML = '';
@@ -1507,14 +1520,18 @@ const LoginForm = {
     if (formEl) formEl.classList.add('busy');
     dbg('Login: ' + username);
 
-    // v5.5.1: pesan informatif kalau login lambat (cold start)
+    // v5.5.2: pesan bertahap — kasih tahu user apa yang terjadi saat cold start
     this._slowLoginTimer = setTimeout(() => {
-      Toast.info('Server sedang sibuk (cold start). Mohon tunggu...');
+      Toast.info('Server sedang cold start. Mohon tunggu 10-30 detik...');
     }, 5000);
+    this._verySlowLoginTimer = setTimeout(() => {
+      Toast.info('Masih memuat... Cold start pertama bisa sampai 30 detik.');
+    }, 15000);
 
     try {
       const res = await Api.login(username, this._pin);
       if (this._slowLoginTimer) { clearTimeout(this._slowLoginTimer); this._slowLoginTimer = null; }
+      if (this._verySlowLoginTimer) { clearTimeout(this._verySlowLoginTimer); this._verySlowLoginTimer = null; }
       dbg('Login OK code=' + res.code);
 
       const session = {
@@ -1550,6 +1567,7 @@ const LoginForm = {
 
     } catch (err) {
       if (this._slowLoginTimer) { clearTimeout(this._slowLoginTimer); this._slowLoginTimer = null; }
+      if (this._verySlowLoginTimer) { clearTimeout(this._verySlowLoginTimer); this._verySlowLoginTimer = null; }
       dbgWarn('Login gagal: ' + err.code + ' — ' + err.message);
       U.vibrate([100, 50, 100]);
       U.beepError();
